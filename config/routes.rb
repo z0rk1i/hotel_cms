@@ -1,5 +1,14 @@
 Rails.application.routes.draw do
   devise_for :administrators, path: "admin"
+  devise_for :users, controllers: {
+    omniauth_callbacks: "users/omniauth_callbacks",
+    registrations: "users/registrations",
+    sessions: "users/sessions"
+  }
+
+  resources :bookings, only: %i[index new create show] do
+    get :available_rooms, on: :collection
+  end
 
   namespace :admin do
     root to: "dashboard#index"

@@ -1,6 +1,7 @@
 class Booking < ApplicationRecord
   belongs_to :guest
   belongs_to :room
+  belongs_to :user, optional: true
 
   enum :status, { pending: "pending", confirmed: "confirmed", checked_in: "checked_in", checked_out: "checked_out", cancelled: "cancelled" }
 

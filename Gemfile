@@ -36,6 +36,11 @@ gem "bootsnap", require: false
 # Authentication for the admin area
 gem "devise"
 
+# OAuth authentication for public users (VK.ru, Yandex)
+gem "omniauth"
+gem "omniauth-oauth2"
+gem "omniauth-rails_csrf_protection"
+
 # Pagination
 gem "pagy", "~> 9.0"
 

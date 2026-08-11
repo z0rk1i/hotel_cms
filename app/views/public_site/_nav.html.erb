@@ -17,6 +17,15 @@
               aria-label="Переключить тему">
         <%= render "shared/theme_icon" %>
       </button>
+      <% if user_signed_in? %>
+        <%= link_to "Мои брони", bookings_path,
+            class: "px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" %>
+        <%= button_to "Выйти", destroy_user_session_path, method: :delete,
+            class: "px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" %>
+      <% else %>
+        <%= link_to "Войти", new_user_session_path,
+            class: "px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" %>
+      <% end %>
       <%= link_to "Вход для персонала", new_administrator_session_path,
           class: "ml-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors" %>
     </nav>

@@ -1,0 +1,116 @@
+<div class="max-w-3xl mx-auto px-6 py-12">
+  <h1 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">Бронирование номера</h1>
+  <p class="text-slate-500 dark:text-slate-400 mb-8">Заполните даты и контактные данные — подтверждение придёт от отеля.</p>
+
+  <% if notice.present? %>
+    <div class="mb-6 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-200 px-4 py-3 text-sm"><%= notice %></div>
+  <% end %>
+  <% if alert.present? %>
+    <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-700/50 text-red-800 dark:text-red-200 px-4 py-3 text-sm"><%= alert %></div>
+  <% end %>
+
+  <% errors = (@booking.errors.full_messages + @user.errors.full_messages).uniq %>
+  <% if errors.any? %>
+    <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-700/50 text-red-800 dark:text-red-200 px-4 py-3 text-sm">
+      <strong><%= pluralize(errors.count, "ошибка") %>:</strong> <%= errors.to_sentence %>
+    </div>
+  <% end %>
+
+  <%= form_with model: @booking, url: bookings_path, class: "space-y-6" do |form| %>
+    <div data-controller="booking-form"
+         data-booking-form-url-value="<%= available_rooms_bookings_path %>"
+         data-booking-form-exclude-value="0">
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
+        <h2 class="font-medium text-slate-900 dark:text-white">Номер и даты</h2>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= form.label :check_in, "Дата заезда", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" %>
+            <%= form.date_field :check_in, data: { booking_form_target: "checkIn", action: "change->booking-form#refreshRooms" },
+                min: Date.current, value: @booking.check_in,
+                class: "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" %>
+          </div>
+          <div>
+            <%= form.label :check_out, "Дата выезда", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" %>
+            <%= form.date_field :check_out, data: { booking_form_target: "checkOut", action: "change->booking-form#refreshRooms" },
+                min: (Date.current + 1), value: @booking.check_out,
+                class: "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" %>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= form.label :room_id, "Номер", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" %>
+            <%= form.select :room_id, [],
+                { include_blank: "Выберите даты…" },
+                data: { booking_form_target: "room" },
+                class: "w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100" %>
+          </div>
+          <div>
+            <%= form.label :guests_count, "Количество гостей", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" %>
+            <%= form.number_field :guests_count, min: 1, value: @booking.guests_count,
+                class: "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" %>
+          </div>
+        </div>
+
+        <div>
+          <%= form.label :notes, "Пожелания", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" %>
+          <%= form.text_area :notes, rows: 2, placeholder: "Например: поздний заезд, детская кроватка…",
+              class: "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" %>
+        </div>
+      </div>
+    </div>
+
+    <% unless user_signed_in? %>
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-medium text-slate-900 dark:text-white">Ваши данные</h2>
+          <span class="text-xs text-slate-400 dark:text-slate-500">Создаст аккаунт для отслеживания брони</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <%= form.label "user[full_name]", "ФИО", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" %>
+            <input type="text" name="user[full_name]" value="<%= @user.full_name %>" required
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                   placeholder="Иванов Иван Иванович">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <input type="email" name="user[email]" value="<%= @user.email %>" required
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                   placeholder="you@example.com">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон</label>
+            <input type="tel" name="user[phone]" value="<%= @user.phone %>"
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                   placeholder="+7 900 000-00-00">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Пароль</label>
+            <input type="password" name="user[password]" autocomplete="new-password" required
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 pt-2">
+          <span class="text-sm text-slate-500 dark:text-slate-400">или войдите через:</span>
+          <div class="flex items-center gap-3">
+            <%= link_to user_vkontakte_omniauth_authorize_path, data: { turbo_method: :post }, class: "inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077FF] hover:bg-[#0064d8] text-white text-sm font-medium transition-colors" do %>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M13.162 18.994c.609 0 .858-.406.851-.915-.031-1.917.714-2.949 2.059-1.604 1.488 1.488 1.796 2.519 3.603 2.519h3.2c.808 0 1.126-.26 1.126-.668 0-.863-1.421-2.386-2.625-3.504-1.686-1.565-1.765-1.602-.313-3.486 1.801-2.339 4.157-5.336 2.073-5.336h-3.204c-.54 0-.787.131-.985.548-.359.759-1.39 2.029-1.879 2.464-.25.222-.544.144-.764-.088-.927-.961-1.94-2.924-2.487-2.924-.335 0-.539.221-.775.479l-1.169 1.489c-.735.973-.554 2.038-.215 2.823.635 1.474 1.945 2.707 1.945 2.707s-2.318 3.031-2.852 4.288c-.214.504.035.706.537.706z"/></svg>
+              VK
+            <% end %>
+            <%= link_to user_yandex_omniauth_authorize_path, data: { turbo_method: :post }, class: "inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FC3F1D] hover:bg-[#d93516] text-white text-sm font-medium transition-colors" do %>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm3.5 17h-2.154l-1.496-4.368L10.31 18H8.155l2.587-6.908c.434-1.16.942-1.684 1.524-1.684.584 0 1.09.526 1.518 1.576L16.5 18z"/></svg>
+              Яндекс
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%= form.submit "Забронировать", class: "w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-8 py-3 rounded-lg transition-colors" %>
+  <% end %>
+</div>

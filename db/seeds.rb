@@ -7,6 +7,14 @@ Administrator.find_or_create_by!(email: "admin@example.com") do |admin|
   admin.password_confirmation = "password123"
 end
 
+# --- Public user (guest account) ---
+User.find_or_create_by!(email: "guest@example.com") do |user|
+  user.full_name = "Иванов Иван"
+  user.phone = "+7 900 000-00-00"
+  user.password = "password123"
+  user.password_confirmation = "password123"
+end
+
 # --- Room categories ---
 categories = [
   { name: "Стандарт", base_price: 2_500, description: "Уютный номер 18 м² с двуспальной кроватью, рабочим столом и Wi-Fi." },
