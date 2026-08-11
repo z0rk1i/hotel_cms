@@ -1,0 +1,29 @@
+<%= form_with model: [:admin, @news], url: @news.new_record? ? admin_news_index_path : admin_news_path(@news), class: "space-y-6" do |form| %>
+  <% if @news.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
+      <strong><%= pluralize(@news.errors.count, "ошибка") %>:</strong>
+      <%= @news.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+    <div>
+      <%= field_label(form, :title, "Заголовок") %>
+      <%= text_input(form, :title, placeholder: "Открытие нового SPA-комплекса…") %>
+      <%= field_errors(form, :title) %>
+    </div>
+    <div>
+      <%= field_label(form, :published_at, "Дата публикации") %>
+      <%= form.datetime_local_field :published_at, class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" %>
+    </div>
+    <div>
+      <%= field_label(form, :body, "Текст новости") %>
+      <%= text_area(form, :body, rows: 8, placeholder: "Текст новости…") %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit @news.new_record? ? "Опубликовать" : "Сохранить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg" %>
+    <%= link_to "Отмена", admin_news_index_path, class: "text-sm text-slate-600 hover:text-slate-800 px-3 py-2" %>
+  </div>
+<% end %>

@@ -1,0 +1,15 @@
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-100">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="<%= root_path %>" class="text-xl font-semibold text-slate-900 tracking-tight">Гостиница</a>
+    <nav class="flex items-center gap-6 text-sm text-slate-600">
+      <%= link_to "Номера", root_path(anchor: "rooms"), class: "hover:text-slate-900" %>
+      <%= link_to "Услуги", root_path(anchor: "services"), class: "hover:text-slate-900" %>
+      <%= link_to "Новости", root_path(anchor: "news"), class: "hover:text-slate-900" %>
+      <%= link_to "Галерея", root_path(anchor: "gallery"), class: "hover:text-slate-900" %>
+      <% Page.order(:title).limit(4).each do |page| %>
+        <%= link_to page.title, public_page_path(page.slug), class: "hover:text-slate-900" %>
+      <% end %>
+      <%= link_to "Вход для персонала", new_administrator_session_path, class: "ml-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700" %>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,25 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-900">Галерея</h1>
+    <%= link_to "+ Добавить фото", new_admin_gallery_image_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" %>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <% @gallery_images.each do |image| %>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <%= image_tag image.image, class: "w-full h-40 object-cover" %>
+        <div class="p-3 flex items-center justify-between">
+          <div class="text-sm font-medium text-slate-800 truncate"><%= image.title %></div>
+          <%= button_to "Удалить", admin_gallery_image_path(image), method: :delete,
+              data: { turbo_confirm: "Удалить фото?" },
+              class: "text-red-500 hover:text-red-700 text-xs shrink-0 ml-2" %>
+        </div>
+      </div>
+    <% end %>
+    <% if @gallery_images.empty? %>
+      <div class="col-span-full bg-white rounded-xl border border-slate-200 py-10 text-center text-slate-400 text-sm">
+        Фотографий пока нет
+      </div>
+    <% end %>
+  </div>
+</div>

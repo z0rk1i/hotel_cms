@@ -1,0 +1,13 @@
+<% if notice.present? %>
+  <div class="mb-6 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 text-sm"
+       data-controller="autodismiss">
+    <%= notice %>
+  </div>
+<% end %>
+
+<% if alert.present? %>
+  <div class="mb-6 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm"
+       data-controller="autodismiss">
+    <%= alert %>
+  </div>
+<% end %>

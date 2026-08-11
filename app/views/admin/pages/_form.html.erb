@@ -1,0 +1,30 @@
+<%= form_with model: [:admin, @page], class: "space-y-6" do |form| %>
+  <% if @page.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
+      <strong><%= pluralize(@page.errors.count, "ошибка") %>:</strong>
+      <%= @page.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+    <div>
+      <%= field_label(form, :title, "Заголовок") %>
+      <%= text_input(form, :title, placeholder: "О гостинице, Контакты, Правила…") %>
+      <%= field_errors(form, :title) %>
+    </div>
+    <div>
+      <%= field_label(form, :slug, "Slug (адрес страницы)") %>
+      <%= text_input(form, :slug, placeholder: "o-gostinitse") %>
+      <%= field_errors(form, :slug) %>
+    </div>
+    <div>
+      <%= field_label(form, :body, "Содержимое") %>
+      <%= text_area(form, :body, rows: 12, placeholder: "Текст страницы…") %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit @page.new_record? ? "Создать страницу" : "Сохранить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg" %>
+    <%= link_to "Отмена", admin_pages_path, class: "text-sm text-slate-600 hover:text-slate-800 px-3 py-2" %>
+  </div>
+<% end %>

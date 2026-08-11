@@ -1,0 +1,21 @@
+<% if pagy.pages > 1 %>
+  <nav class="flex items-center justify-center gap-1 mt-6" aria-label="Пагинация">
+    <% if pagy.prev %>
+      <%= link_to "← Назад", pagy_url_for(pagy, pagy.prev), class: "px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50" %>
+    <% end %>
+
+    <% pagy.series.each do |item| %>
+      <% if item == :gap %>
+        <span class="px-2 text-slate-400">…</span>
+      <% elsif item == pagy.page %>
+        <span class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium"><%= item %></span>
+      <% else %>
+        <%= link_to item, pagy_url_for(pagy, item), class: "px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50" %>
+      <% end %>
+    <% end %>
+
+    <% if pagy.next %>
+      <%= link_to "Вперёд →", pagy_url_for(pagy, pagy.next), class: "px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50" %>
+    <% end %>
+  </nav>
+<% end %>
