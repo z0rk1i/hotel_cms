@@ -7,11 +7,22 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
+
+    <script>
+      (function () {
+        var saved = null;
+        try { saved = localStorage.getItem("hotel-theme"); } catch (e) {}
+        var dark = saved ? saved === "dark"
+                         : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
+
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-white text-slate-800 font-sans antialiased">
+  <body class="bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-200 font-sans antialiased">
     <%= render "public_site/nav" %>
     <main>
       <%= yield %>

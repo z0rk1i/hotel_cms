@@ -1,46 +1,46 @@
 <div class="space-y-8">
   <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-semibold text-slate-900">Дашборд</h1>
-    <div class="text-sm text-slate-500"><%= l(Date.current, format: :long) %></div>
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Дашборд</h1>
+    <div class="text-sm text-slate-500 dark:text-slate-400"><%= l(Date.current, format: :long) %></div>
   </div>
 
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-      <div class="text-sm text-slate-500">Загрузка отеля</div>
-      <div class="text-3xl font-semibold text-slate-900 mt-1"><%= @stats[:occupancy_rate] %>%</div>
-      <div class="text-xs text-slate-400 mt-1">за текущий месяц</div>
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="text-sm text-slate-500 dark:text-slate-400">Загрузка отеля</div>
+      <div class="text-3xl font-semibold text-slate-900 dark:text-white mt-1"><%= @stats[:occupancy_rate] %>%</div>
+      <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">за текущий месяц</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-      <div class="text-sm text-slate-500">Номера</div>
-      <div class="text-3xl font-semibold text-slate-900 mt-1">
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="text-sm text-slate-500 dark:text-slate-400">Номера</div>
+      <div class="text-3xl font-semibold text-slate-900 dark:text-white mt-1">
         <%= @stats[:rooms_available] %> / <%= @stats[:rooms_total] %>
       </div>
       <div class="text-xs text-emerald-600 mt-1">свободно из всех</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-      <div class="text-sm text-slate-500">Гости сейчас</div>
-      <div class="text-3xl font-semibold text-slate-900 mt-1"><%= @stats[:checked_in_now].count %></div>
-      <div class="text-xs text-slate-400 mt-1"><%= @stats[:rooms_occupied] %> номеров занято</div>
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="text-sm text-slate-500 dark:text-slate-400">Гости сейчас</div>
+      <div class="text-3xl font-semibold text-slate-900 dark:text-white mt-1"><%= @stats[:checked_in_now].count %></div>
+      <div class="text-xs text-slate-400 dark:text-slate-500 mt-1"><%= @stats[:rooms_occupied] %> номеров занято</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-      <div class="text-sm text-slate-500">Выручка за месяц</div>
-      <div class="text-3xl font-semibold text-slate-900 mt-1"><%= money(@stats[:monthly_revenue]) %></div>
-      <div class="text-xs text-slate-400 mt-1">по выехавшим</div>
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="text-sm text-slate-500 dark:text-slate-400">Выручка за месяц</div>
+      <div class="text-3xl font-semibold text-slate-900 dark:text-white mt-1"><%= money(@stats[:monthly_revenue]) %></div>
+      <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">по выехавшим</div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-        <h2 class="font-medium text-slate-800">Предстоящие заезды</h2>
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <h2 class="font-medium text-slate-800 dark:text-slate-100">Предстоящие заезды</h2>
         <%= link_to "Все брони", admin_bookings_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
       </div>
-      <ul class="divide-y divide-slate-100">
+      <ul class="divide-y divide-slate-100 dark:divide-slate-800">
         <% @stats[:upcoming_check_ins].each do |booking| %>
           <li class="px-5 py-3 flex items-center justify-between">
             <div>
-              <div class="font-medium text-slate-800"><%= booking.guest.full_name %></div>
-              <div class="text-sm text-slate-500">
+              <div class="font-medium text-slate-800 dark:text-slate-100"><%= booking.guest.full_name %></div>
+              <div class="text-sm text-slate-500 dark:text-slate-400">
                 <%= booking.room.label %> · <%= l(booking.check_in) %> → <%= l(booking.check_out) %>
               </div>
             </div>
@@ -48,27 +48,27 @@
           </li>
         <% end %>
         <% if @stats[:upcoming_check_ins].empty? %>
-          <li class="px-5 py-6 text-sm text-slate-400 text-center">Нет предстоящих заездов</li>
+          <li class="px-5 py-6 text-sm text-slate-400 dark:text-slate-500 text-center">Нет предстоящих заездов</li>
         <% end %>
       </ul>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200">
-        <h2 class="font-medium text-slate-800">Гости в отеле</h2>
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="font-medium text-slate-800 dark:text-slate-100">Гости в отеле</h2>
       </div>
-      <ul class="divide-y divide-slate-100">
+      <ul class="divide-y divide-slate-100 dark:divide-slate-800">
         <% @stats[:checked_in_now].each do |booking| %>
           <li class="px-5 py-3 flex items-center justify-between">
             <div>
-              <div class="font-medium text-slate-800"><%= booking.guest.full_name %></div>
-              <div class="text-sm text-slate-500"><%= booking.room.label %></div>
+              <div class="font-medium text-slate-800 dark:text-slate-100"><%= booking.guest.full_name %></div>
+              <div class="text-sm text-slate-500 dark:text-slate-400"><%= booking.room.label %></div>
             </div>
-            <span class="text-sm text-slate-400">до <%= l(booking.check_out) %></span>
+            <span class="text-sm text-slate-400 dark:text-slate-500">до <%= l(booking.check_out) %></span>
           </li>
         <% end %>
         <% if @stats[:checked_in_now].empty? %>
-          <li class="px-5 py-6 text-sm text-slate-400 text-center">Сейчас никто не заселён</li>
+          <li class="px-5 py-6 text-sm text-slate-400 dark:text-slate-500 text-center">Сейчас никто не заселён</li>
         <% end %>
       </ul>
     </div>
