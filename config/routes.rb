@@ -10,6 +10,9 @@ Rails.application.routes.draw do
     get :available_rooms, on: :collection
   end
   get "bookings", to: redirect("/account"), as: :bookings_redirect
+  resources :rooms, only: %i[show]
+  resources :services, only: %i[show]
+  resources :reviews, only: %i[create]
   resources :service_orders, only: %i[new create] do
     post :cancel, on: :member
   end
@@ -45,6 +48,12 @@ Rails.application.routes.draw do
       end
     end
     resources :gallery_images, only: %i[index new create destroy]
+    resources :reviews, only: %i[index destroy] do
+      member do
+        patch :approve
+        patch :reject
+      end
+    end
   end
 
   get "pages/:slug", to: "public_site#page", as: :public_page

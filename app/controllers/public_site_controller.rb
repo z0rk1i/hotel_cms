@@ -2,9 +2,9 @@ class PublicSiteController < ApplicationController
   layout "public"
 
   def index
-    @categories = RoomCategory.includes(:rooms).order(:name)
-    @rooms = Room.includes(:category).order(:floor, :number)
-    @services = Service.order(:name)
+    @categories = RoomCategory.includes(rooms: :approved_reviews).order(:name)
+    @rooms = Room.includes(:category, :approved_reviews).order(:floor, :number)
+    @services = Service.includes(:approved_reviews).order(:name)
     @news = News.published.limit(3)
     @gallery = GalleryImage.includes(:image_attachment).limit(8)
   end

@@ -11,7 +11,9 @@ module ApplicationHelper
       "confirmed" => "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
       "checked_in" => "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
       "checked_out" => "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
-      "cancelled" => "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300"
+      "cancelled" => "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300",
+      "approved" => "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+      "rejected" => "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300"
     }
     color = classes[status.to_s] || "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
     "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{color}"
@@ -27,11 +29,37 @@ module ApplicationHelper
     }.fetch(status.to_s, status.to_s)
   end
 
-  def service_order_status_label(status)
+def average_rating(reviewable)
+    reviews = reviewable.approved_reviews
+    return 0 if reviews.empty?
+
+    (reviews.sum(&:rating).to_f / reviews.size).round(1)
+  end
+
+  def russian_pluralize(count, one, few, many)
+    remainder10 = count % 10
+    remainder100 = count % 100
+
+    return many if remainder100 >= 11 && remainder100 <= 14
+    return one if remainder10 == 1
+    return few if remainder10 >= 2 && remainder10 <= 4
+
+    many
+  end
+
+def service_order_status_label(status)
     {
       "pending" => "Ожидает",
       "confirmed" => "Подтверждён",
       "cancelled" => "Отменён"
+    }.fetch(status.to_s, status.to_s)
+  end
+
+  def review_status_label(status)
+    {
+      "pending" => "На модерации",
+      "approved" => "Одобрен",
+      "rejected" => "Отклонён"
     }.fetch(status.to_s, status.to_s)
   end
 end

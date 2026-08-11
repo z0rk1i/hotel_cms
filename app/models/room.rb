@@ -2,6 +2,8 @@ class Room < ApplicationRecord
   belongs_to :category, class_name: "RoomCategory"
 
   has_many :bookings, dependent: :restrict_with_error
+  has_many :reviews, as: :reviewable, dependent: :destroy
+  has_many :approved_reviews, -> { approved }, as: :reviewable, class_name: "Review"
   has_many_attached :photos
 
   enum :status, { available: "available", occupied: "occupied", maintenance: "maintenance", cleaning: "cleaning" }

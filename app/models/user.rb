@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_many :guests, through: :bookings
   has_many :service_orders, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :reviews, dependent: :destroy
 
   validates :full_name, presence: true
   validates :phone, length: { maximum: 30 }, allow_blank: true

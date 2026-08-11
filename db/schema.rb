@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_194801) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_201625) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -127,6 +127,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_194801) do
     t.index ["slug"], name: "index_pages_on_slug", unique: true
   end
 
+  create_table "reviews", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.integer "rating", null: false
+    t.bigint "reviewable_id", null: false
+    t.string "reviewable_type", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["reviewable_type", "reviewable_id", "status"], name: "index_reviews_on_reviewable_type_and_reviewable_id_and_status"
+    t.index ["reviewable_type", "reviewable_id"], name: "index_reviews_on_reviewable"
+    t.index ["user_id", "reviewable_type", "reviewable_id"], name: "index_reviews_on_user_id_and_reviewable_type_and_reviewable_id"
+    t.index ["user_id"], name: "index_reviews_on_user_id"
+  end
+
   create_table "room_categories", force: :cascade do |t|
     t.decimal "base_price", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "created_at", null: false
@@ -198,6 +213,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_194801) do
   add_foreign_key "bookings", "rooms"
   add_foreign_key "bookings", "users"
   add_foreign_key "notifications", "users"
+  add_foreign_key "reviews", "users"
   add_foreign_key "rooms", "room_categories", column: "category_id"
   add_foreign_key "service_orders", "services"
   add_foreign_key "service_orders", "users"
