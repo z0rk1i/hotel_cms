@@ -4,6 +4,8 @@ class User < ApplicationRecord
 
   has_many :bookings, dependent: :nullify
   has_many :guests, through: :bookings
+  has_many :service_orders, dependent: :destroy
+  has_many :notifications, dependent: :destroy
 
   validates :full_name, presence: true
   validates :phone, length: { maximum: 30 }, allow_blank: true
@@ -15,5 +17,9 @@ class User < ApplicationRecord
       user.password = Devise.friendly_token[0, 20] if user.encrypted_password.blank?
       user.save
     end
+  end
+
+  def email_deliverable?
+    email.present? && !email.end_with?("@example.com")
   end
 end

@@ -26,4 +26,12 @@ module ApplicationHelper
       "cancelled" => "Отменена"
     }.fetch(status.to_s, status.to_s)
   end
+
+  def service_order_status_label(status)
+    {
+      "pending" => "Ожидает",
+      "confirmed" => "Подтверждён",
+      "cancelled" => "Отменён"
+    }.fetch(status.to_s, status.to_s)
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_190030) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_194801) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -96,9 +96,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_190030) do
     t.text "body"
     t.datetime "created_at", null: false
     t.datetime "published_at"
+    t.string "slug", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["published_at"], name: "index_news_on_published_at"
+    t.index ["slug"], name: "index_news_on_slug", unique: true
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.string "kind"
+    t.bigint "notifiable_id", null: false
+    t.string "notifiable_type", null: false
+    t.datetime "read_at"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "pages", force: :cascade do |t|
@@ -134,6 +151,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_190030) do
     t.index ["status"], name: "index_rooms_on_status"
   end
 
+  create_table "service_orders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "notes"
+    t.integer "quantity", default: 1, null: false
+    t.date "service_date", null: false
+    t.bigint "service_id", null: false
+    t.string "status", default: "pending", null: false
+    t.decimal "total_price", precision: 12, scale: 2, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["service_date"], name: "index_service_orders_on_service_date"
+    t.index ["service_id"], name: "index_service_orders_on_service_id"
+    t.index ["user_id", "status"], name: "index_service_orders_on_user_id_and_status"
+    t.index ["user_id"], name: "index_service_orders_on_user_id"
+  end
+
   create_table "services", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
@@ -164,5 +197,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_190030) do
   add_foreign_key "bookings", "guests"
   add_foreign_key "bookings", "rooms"
   add_foreign_key "bookings", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "rooms", "room_categories", column: "category_id"
+  add_foreign_key "service_orders", "services"
+  add_foreign_key "service_orders", "users"
 end

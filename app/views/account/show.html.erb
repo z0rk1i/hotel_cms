@@ -1,0 +1,122 @@
+<div class="max-w-6xl mx-auto px-6 py-12">
+  <% if notice.present? %>
+    <div class="mb-6 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-200 px-4 py-3 text-sm"><%= notice %></div>
+  <% end %>
+  <% if alert.present? %>
+    <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-700/50 text-red-800 dark:text-red-200 px-4 py-3 text-sm"><%= alert %></div>
+  <% end %>
+
+  <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Здравствуйте, <%= current_user.full_name.presence || current_user.email %>!</h1>
+      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Личный кабинет: ваши брони и заказы услуг</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to new_booking_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+        Забронировать номер
+      <% end %>
+      <%= link_to new_service_order_path, class: "bg-slate-900 hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg" do %>
+        Заказать услугу
+      <% end %>
+    </div>
+  </div>
+
+  <% if @notifications.any? %>
+    <div class="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <div class="border-b border-slate-200 dark:border-slate-700 px-5 py-3 flex items-center justify-between">
+        <h2 class="font-medium text-slate-900 dark:text-white">Последние уведомления</h2>
+        <%= link_to "Все уведомления", notifications_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" %>
+      </div>
+      <ul class="divide-y divide-slate-100 dark:divide-slate-700">
+        <% @notifications.each do |notification| %>
+          <li class="px-5 py-3 flex items-start justify-between gap-4 <%= 'bg-slate-50 dark:bg-slate-700/40' if notification.unread? %>">
+            <div>
+              <p class="text-sm font-medium text-slate-900 dark:text-white"><%= notification.title %></p>
+              <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400"><%= notification.body %></p>
+            </div>
+            <span class="text-xs text-slate-400 dark:text-slate-500 shrink-0"><%= l(notification.created_at, format: :short) %></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid lg:grid-cols-2 gap-8">
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Бронирования</h2>
+        <%= link_to new_booking_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do %>
+          + Добавить
+        <% end %>
+      </div>
+
+      <% if @bookings.none? %>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">У вас пока нет броней.</p>
+      <% else %>
+        <div class="space-y-3">
+          <% @bookings.each do |booking| %>
+            <%= link_to booking_path(booking), class: "block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors" do %>
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-medium text-slate-900 dark:text-white">Бронь №<%= booking.id %> — номер <%= booking.room.number %></p>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <%= l(booking.check_in, format: :long) %> → <%= l(booking.check_out, format: :long) %>
+                    · <%= booking.nights %> ночей · <%= booking.guests_count %> чел.
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium <%= status_badge_class(booking.status) %>">
+                    <%= booking_status_label(booking.status) %>
+                  </span>
+                  <p class="mt-1 text-sm font-medium text-slate-900 dark:text-white"><%= number_to_currency(booking.total_price, unit: "₽", precision: 0) %></p>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Заказы услуг</h2>
+        <%= link_to new_service_order_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do %>
+          + Добавить
+        <% end %>
+      </div>
+
+      <% if @service_orders.none? %>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">У вас пока нет заказов услуг.</p>
+      <% else %>
+        <div class="space-y-3">
+          <% @service_orders.each do |order| %>
+            <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-medium text-slate-900 dark:text-white"><%= order.service.name %></p>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <%= l(order.service_date, format: :long) %> · <%= order.quantity %> шт.
+                    <% if order.notes.present? %>
+                      <span class="block mt-1"><%= order.notes %></span>
+                    <% end %>
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium <%= status_badge_class(order.status) %>">
+                    <%= service_order_status_label(order.status) %>
+                  </span>
+                  <p class="mt-1 text-sm font-medium text-slate-900 dark:text-white"><%= number_to_currency(order.total_price, unit: "₽", precision: 0) %></p>
+                  <% if order.pending? %>
+                    <%= button_to "Отменить", cancel_service_order_path(order), method: :post, remote: true,
+                        data: { turbo_confirm: "Отменить заказ услуги?" },
+                        class: "mt-2 text-xs text-red-500 hover:text-red-700" %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  </div>
+</div>

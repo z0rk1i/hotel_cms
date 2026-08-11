@@ -32,7 +32,7 @@ RSpec.describe "Public bookings", type: :request do
       end.to change(User, :count).by(1).and change(Guest, :count).by(1).and change(Booking, :count).by(1)
 
       booking = Booking.last
-      expect(response).to redirect_to(bookings_path)
+      expect(response).to redirect_to(account_path)
       expect(booking.user.email).to eq("ivan@example.com")
       expect(booking.guest.full_name).to eq("Иванов Иван")
       expect(booking.total_price).to eq(4000)
@@ -109,20 +109,11 @@ RSpec.describe "Public bookings", type: :request do
   end
 
   describe "GET /bookings" do
-    it "requires authentication" do
-      get bookings_path
-      expect(response).to redirect_to(new_user_session_path)
-    end
-
-    it "lists only the current user's bookings" do
+    it "redirects to the personal account dashboard" do
       user = create(:user)
-      own_booking = create(:booking, user: user)
-      create(:booking, user: create(:user))
-
       sign_in user
       get bookings_path
-
-      expect(response.body).to include("Бронь №#{own_booking.id}")
+      expect(response).to redirect_to(account_path)
     end
   end
 

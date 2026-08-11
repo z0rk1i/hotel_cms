@@ -18,6 +18,12 @@ RSpec.describe "Authentication", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
+    it "redirects an administrator to the dashboard after signing in" do
+      admin = create(:administrator)
+      post "/admin/sign_in", params: { administrator: { email: admin.email, password: admin.password } }
+      expect(response).to redirect_to(admin_root_path)
+    end
+
     it "allows authenticated administrators to list rooms" do
       sign_in create(:administrator)
       get "/admin/rooms"

@@ -1,5 +1,7 @@
 module Users
   class RegistrationsController < Devise::RegistrationsController
+    layout "auth"
+
     before_action :configure_sign_up_params, only: [ :create ]
 
     private

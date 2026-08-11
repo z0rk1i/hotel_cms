@@ -1,11 +1,7 @@
 class BookingsController < ApplicationController
   layout "public"
 
-  before_action :authenticate_user!, only: %i[index show]
-
-  def index
-    @bookings = current_user.bookings.includes(:room, :guest).order(check_in: :desc)
-  end
+  before_action :authenticate_user!, only: %i[show]
 
   def new
     @booking = Booking.new
@@ -23,7 +19,7 @@ class BookingsController < ApplicationController
 
     if @user.persisted? && @booking.save
       sign_in(@user, scope: :user) unless user_signed_in?
-      redirect_to bookings_path, notice: "Бронь создана! Ожидает подтверждения отеля."
+      redirect_to account_path, notice: "Бронь создана! Ожидает подтверждения отеля."
     else
       render :new, status: :unprocessable_entity
     end

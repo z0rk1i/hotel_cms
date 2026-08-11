@@ -32,7 +32,7 @@ RSpec.describe "User OAuth authentication", type: :request do
       expect(user.uid).to eq("111")
       expect(user.email).to eq("ivan.vk@example.com")
       expect(user.full_name).to eq("Иван Иванов")
-      expect(response).to redirect_to(bookings_path)
+      expect(response).to redirect_to(account_path)
     end
 
     it "signs in an existing VK user without duplicating" do
@@ -45,7 +45,7 @@ RSpec.describe "User OAuth authentication", type: :request do
         get user_vkontakte_omniauth_callback_path
       end.not_to change(User, :count)
 
-      expect(response).to redirect_to(bookings_path)
+      expect(response).to redirect_to(account_path)
     end
 
     it "falls back to a placeholder email when VK does not provide one" do

@@ -27,7 +27,30 @@ class Booking < ApplicationRecord
     (check_out - check_in).to_i
   end
 
+  after_update :notify_status_change, if: -> { saved_change_to_status? }
+
   private
+
+  def notify_status_change
+    return unless user
+
+    user.notifications.create!(
+      notifiable: self,
+      kind: "booking_status",
+      title: "Статус брони №#{id} изменён",
+      body: "Бронь «номер #{room.number}» (#{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}) — #{self.class.status_labels.fetch(status.to_s, status)}."
+    )
+  end
+
+  def self.status_labels
+    {
+      "pending" => "ожидает подтверждения",
+      "confirmed" => "подтверждена",
+      "checked_in" => "гость заселён",
+      "checked_out" => "гость выселен",
+      "cancelled" => "отменена"
+    }
+  end
 
   def set_defaults
     self.status ||= :pending

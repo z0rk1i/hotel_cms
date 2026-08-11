@@ -93,4 +93,25 @@ RSpec.describe Booking, type: :model do
       expect(Booking.active_overlapping(Date.current + 6, Date.current + 8).count).to eq(0)
     end
   end
+
+  describe "notifications" do
+    it "notifies the user when the status changes" do
+      booking = create(:booking, user: create(:user))
+      expect { booking.confirmed! }.to change(booking.user.notifications, :count).by(1)
+      notification = booking.user.notifications.last
+      expect(notification.notifiable).to eq(booking)
+      expect(notification.kind).to eq("booking_status")
+      expect(notification.title).to include("брони №#{booking.id}")
+    end
+
+    it "does not notify when the booking has no user" do
+      booking = create(:booking)
+      expect { booking.confirmed! }.not_to change(Notification, :count)
+    end
+
+    it "does not notify when status is unchanged" do
+      booking = create(:booking, :confirmed, user: create(:user))
+      expect { booking.update(notes: "Обновлено") }.not_to change(Notification, :count)
+    end
+  end
 end

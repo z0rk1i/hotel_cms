@@ -12,4 +12,8 @@ class PublicSiteController < ApplicationController
   def page
     @page = Page.find_by!(slug: params[:slug])
   end
+
+  def news
+    @news = News.published.find_by!(slug: params[:slug])
+  end
 end
