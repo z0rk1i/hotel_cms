@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_123100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_123101) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -169,6 +169,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123100) do
   end
 
   create_table "service_orders", force: :cascade do |t|
+    t.bigint "booking_id", null: false
     t.datetime "created_at", null: false
     t.text "notes"
     t.integer "quantity", default: 1, null: false
@@ -178,6 +179,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123100) do
     t.decimal "total_price", precision: 12, scale: 2, default: "0.0", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["booking_id"], name: "index_service_orders_on_booking_id"
     t.index ["service_date"], name: "index_service_orders_on_service_date"
     t.index ["service_id"], name: "index_service_orders_on_service_id"
     t.index ["user_id", "status"], name: "index_service_orders_on_user_id_and_status"
@@ -217,6 +219,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123100) do
   add_foreign_key "notifications", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "rooms", "room_categories", column: "category_id"
+  add_foreign_key "service_orders", "bookings"
   add_foreign_key "service_orders", "services"
   add_foreign_key "service_orders", "users"
 end

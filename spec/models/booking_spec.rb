@@ -162,6 +162,20 @@ RSpec.describe Booking, type: :model do
     end
   end
 
+  describe "service orders" do
+    it "cancels pending service orders when the booking is cancelled" do
+      user = create(:user)
+      booking = create(:booking, :confirmed, user: user, check_in: Date.current + 1, check_out: Date.current + 5)
+      pending_order = create(:service_order, user: user, booking: booking, service_date: Date.current + 3)
+      confirmed_order = create(:service_order, :confirmed, user: user, booking: booking, service_date: Date.current + 3)
+
+      booking.transition_to(:cancelled)
+
+      expect(pending_order.reload).to be_cancelled
+      expect(confirmed_order.reload).to be_confirmed
+    end
+  end
+
   describe "database constraints" do
     it "rejects overlapping active bookings at the database level" do
       existing = create(:booking, :confirmed, check_in: Date.current + 10, check_out: Date.current + 12)

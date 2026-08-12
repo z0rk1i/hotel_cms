@@ -19,6 +19,54 @@ RSpec.describe ServiceOrder, type: :model do
     expect(build(:service_order, service_date: Date.current)).to be_valid
   end
 
+  it "requires a booking" do
+    expect(build(:service_order, booking: nil, with_booking: false)).to be_invalid
+  end
+
+  it "rejects a booking that does not belong to the user" do
+    other_booking = create(:booking, :confirmed, user: create(:user))
+    order = build(:service_order, booking: other_booking)
+    expect(order).to be_invalid
+    expect(order.errors[:booking]).to include("не принадлежит пользователю")
+  end
+
+  it "rejects a pending booking" do
+    user = create(:user)
+    booking = create(:booking, :pending, user: user, check_in: Date.current + 1, check_out: Date.current + 5)
+    order = build(:service_order, user: user, booking: booking)
+    expect(order).to be_invalid
+    expect(order.errors[:booking]).to be_present
+  end
+
+  it "rejects a cancelled booking" do
+    user = create(:user)
+    booking = create(:booking, :cancelled, user: user, check_in: Date.current + 1, check_out: Date.current + 5)
+    order = build(:service_order, user: user, booking: booking)
+    expect(order).to be_invalid
+    expect(order.errors[:booking]).to be_present
+  end
+
+  it "accepts a checked_in booking" do
+    user = create(:user)
+    booking = create(:booking, :checked_in, user: user, check_in: Date.current - 1, check_out: Date.current + 5)
+    expect(build(:service_order, user: user, booking: booking)).to be_valid
+  end
+
+  it "rejects a service date outside the booking period" do
+    user = create(:user)
+    booking = create(:booking, :confirmed, user: user, check_in: Date.current + 1, check_out: Date.current + 5)
+    order = build(:service_order, user: user, booking: booking, service_date: Date.current + 6)
+    expect(order).to be_invalid
+    expect(order.errors[:service_date]).to include("должна попадать в период брони")
+  end
+
+  it "accepts a service date on the last night of the booking" do
+    user = create(:user)
+    booking = create(:booking, :confirmed, user: user, check_in: Date.current + 1, check_out: Date.current + 5)
+    order = build(:service_order, user: user, booking: booking, service_date: Date.current + 4)
+    expect(order).to be_valid
+  end
+
   it "requires quantity of at least 1" do
     expect(build(:service_order, quantity: 0)).to be_invalid
     expect(build(:service_order, quantity: nil)).to be_invalid

@@ -62,4 +62,10 @@ def service_order_status_label(status)
       "rejected" => "Отклонён"
     }.fetch(status.to_s, status.to_s)
   end
+
+  def active_booking?(user = current_user)
+    return false if user.blank?
+
+    user.bookings.active_for_service.exists?
+  end
 end

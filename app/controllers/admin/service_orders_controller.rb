@@ -3,7 +3,7 @@ module Admin
     before_action :set_service_order, only: %i[confirm cancel]
 
     def index
-      @service_orders = ServiceOrder.includes(:service, :user)
+      @service_orders = ServiceOrder.includes(:service, :user, booking: :room)
       @service_orders = @service_orders.where(status: params[:status]) if params[:status].present?
       @service_orders = @service_orders.ordered
       @service_orders = paginate(@service_orders)

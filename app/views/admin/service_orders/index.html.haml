@@ -10,6 +10,7 @@
       %thead.bg-slate-50.text-slate-500.dark:text-slate-400.text-left{:class => "dark:bg-slate-800/60"}
         %tr
           %th.px-5.py-3.font-medium Гость
+          %th.px-5.py-3.font-medium Бронь
           %th.px-5.py-3.font-medium Услуга
           %th.px-5.py-3.font-medium Дата
           %th.px-5.py-3.font-medium Кол-во
@@ -20,6 +21,11 @@
         - @service_orders.each do |order|
           %tr.hover:bg-slate-50{:class => "dark:hover:bg-slate-700/40"}
             %td.px-5.py-3.font-medium.text-slate-900.dark:text-white= order.user.full_name.presence || order.user.email
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300.whitespace-nowrap
+              - if order.booking.present?
+                №#{order.booking.id} · номер #{order.booking.room.number}
+              - else
+                %span.text-slate-400 —
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= order.service.name
             %td.px-5.py-3.text-slate-600.dark:text-slate-300.whitespace-nowrap= l(order.service_date, format: :long)
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= order.quantity
@@ -34,4 +40,4 @@
                   class: "text-red-500 hover:text-red-700 text-xs"                              
         - if @service_orders.empty?
           %tr
-            %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "7"} Заказов услуг пока нет
+            %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "8"} Заказов услуг пока нет

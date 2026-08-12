@@ -8,12 +8,15 @@ class ServiceOrdersController < ApplicationController
     @service_order.service_date = Date.current + 1
     @service_order.quantity = 1
     @service_order.service_id = params[:service_id] if params[:service_id].present?
+    @service_order.booking_id = params[:booking_id] if params[:booking_id].present?
     @services = Service.order(:name)
+    @bookings = current_user.bookings.active_for_service
   end
 
   def create
     @service_order = current_user.service_orders.new(service_order_params)
     @services = Service.order(:name)
+    @bookings = current_user.bookings.active_for_service
 
     if @service_order.save
       redirect_to account_path, notice: "Заказ услуги оформлен! Ожидает подтверждения отеля."
@@ -31,6 +34,6 @@ class ServiceOrdersController < ApplicationController
   private
 
   def service_order_params
-    params.require(:service_order).permit(:service_id, :service_date, :quantity, :notes)
+    params.require(:service_order).permit(:service_id, :service_date, :quantity, :notes, :booking_id)
   end
 end

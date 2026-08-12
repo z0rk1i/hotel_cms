@@ -11,8 +11,9 @@
     .flex.items-center.gap-3
       = link_to new_booking_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do
         Забронировать номер
-      = link_to new_service_order_path, class: "bg-slate-900 hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg" do
-        Заказать услугу
+      - if active_booking?
+        = link_to new_service_order_path, class: "bg-slate-900 hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg" do
+          Заказать услугу
   - if @notifications.any?
     .mb-8.rounded-xl.border.border-slate-200.dark:border-slate-700.bg-white.dark:bg-slate-800.overflow-hidden
       .border-b.border-slate-200.dark:border-slate-700.px-5.py-3.flex.items-center.justify-between
@@ -52,8 +53,12 @@
     %section
       .flex.items-center.justify-between.mb-4
         %h2.text-lg.font-semibold.text-slate-900.dark:text-white Заказы услуг
-        = link_to new_service_order_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do
-          + Добавить
+        - if active_booking?
+          = link_to new_service_order_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do
+            + Добавить
+        - else
+          = link_to new_booking_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do
+            Забронируйте номер
       - if @service_orders.none?
         %p.text-slate-500.dark:text-slate-400.text-sm У вас пока нет заказов услуг.
       - else

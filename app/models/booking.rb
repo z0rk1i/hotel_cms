@@ -9,6 +9,8 @@ class Booking < ApplicationRecord
   belongs_to :room
   belongs_to :user, optional: true
 
+  has_many :service_orders, dependent: :restrict_with_error
+
   enum :status, { pending: "pending", confirmed: "confirmed", checked_in: "checked_in", checked_out: "checked_out", cancelled: "cancelled" }
 
   transitions_for(
@@ -31,10 +33,12 @@ class Booking < ApplicationRecord
   before_save :calculate_total_price, if: -> { room && check_in && check_out }
 
   after_save :sync_room_status, if: -> { saved_change_to_status? }
+  after_save :cancel_pending_service_orders, if: -> { saved_change_to_status? && cancelled? }
   before_destroy :free_room, if: -> { checked_in? }
 
   scope :active, -> { where.not(status: :cancelled) }
   scope :occupying, -> { where(status: %i[confirmed checked_in]) }
+  scope :active_for_service, -> { occupying.order(:check_in) }
   scope :overlapping, ->(start_date, end_date) { where("check_in < ? AND check_out > ?", end_date, start_date) }
   scope :occupying_overlapping, ->(start_date, end_date) { occupying.overlapping(start_date, end_date) }
   scope :upcoming, -> { active.where("check_in >= ?", Date.current).order(:check_in) }
@@ -45,6 +49,10 @@ class Booking < ApplicationRecord
 
   def nights
     (check_out - check_in).to_i
+  end
+
+  def booking_option_label
+    "№#{id} · номер #{room.number} · #{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}"
   end
 
   def self.status_labels
@@ -102,6 +110,10 @@ class Booking < ApplicationRecord
 
   def free_room
     room.update_column(:status, :available) if room.occupied?
+  end
+
+  def cancel_pending_service_orders
+    service_orders.pending.each { |order| order.transition_to(:cancelled) }
   end
 
   def notification_kind

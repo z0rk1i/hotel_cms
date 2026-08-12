@@ -14,6 +14,14 @@ RSpec.describe "Admin service orders", type: :request do
       expect(response.body).to include(order.service.name)
     end
 
+    it "shows the booking tied to the order" do
+      order = create(:service_order)
+
+      get admin_service_orders_path
+      expect(response.body).to include("№#{order.booking.id}")
+      expect(response.body).to include("номер #{order.booking.room.number}")
+    end
+
     it "filters by status" do
       confirmed = create(:service_order, :confirmed)
       create(:service_order)
