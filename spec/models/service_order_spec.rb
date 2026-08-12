@@ -40,4 +40,18 @@ RSpec.describe ServiceOrder, type: :model do
       expect { order.update(notes: "Обновлено") }.not_to change(Notification, :count)
     end
   end
+
+  describe "status transitions" do
+    it "allows confirming a pending order and cancelling a confirmed one" do
+      order = create(:service_order)
+      expect(order.transition_to(:confirmed)).to be(true)
+      expect(order.transition_to(:cancelled)).to be(true)
+    end
+
+    it "rejects confirming an already cancelled order" do
+      order = create(:service_order, :cancelled)
+      expect(order.transition_to(:confirmed)).to be(false)
+      expect(order).to be_cancelled
+    end
+  end
 end

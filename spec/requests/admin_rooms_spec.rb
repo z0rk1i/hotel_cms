@@ -21,6 +21,14 @@ RSpec.describe "Admin rooms", type: :request do
       expect(body.map { |r| r["id"] }).not_to include(room.id)
     end
 
+    it "excludes rooms under maintenance or cleaning" do
+      create(:room, status: :maintenance)
+      free_room = create(:room)
+      get available_admin_rooms_path(check_in: Date.current + 10, check_out: Date.current + 12)
+      body = JSON.parse(response.body)
+      expect(body.map { |r| r["id"] }).to eq([ free_room.id ])
+    end
+
     it "returns an empty array for invalid dates" do
       get available_admin_rooms_path(check_in: "not-a-date", check_out: Date.current + 2)
       expect(JSON.parse(response.body)).to eq([])

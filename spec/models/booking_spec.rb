@@ -114,4 +114,51 @@ RSpec.describe Booking, type: :model do
       expect { booking.update(notes: "Обновлено") }.not_to change(Notification, :count)
     end
   end
+
+  describe "guests count" do
+    it "rejects a guests count below 1" do
+      expect(build(:booking, guests_count: 0)).to be_invalid
+      expect(build(:booking, guests_count: nil)).to be_valid
+    end
+  end
+
+  describe "status transitions" do
+    it "allows legal transitions" do
+      booking = create(:booking)
+      expect(booking.can_transition_to?(:confirmed)).to be(true)
+      booking.confirmed!
+      expect(booking.can_transition_to?(:checked_in)).to be(true)
+      expect(booking.can_transition_to?(:cancelled)).to be(true)
+    end
+
+    it "rejects illegal transitions" do
+      booking = create(:booking, :confirmed)
+      expect(booking.can_transition_to?(:pending)).to be(false)
+      expect(booking.can_transition_to?(:checked_out)).to be(false)
+      expect { booking.update!(status: :checked_out) }.to raise_error(ActiveRecord::RecordInvalid)
+    end
+
+    it "does not check in a cancelled booking" do
+      booking = create(:booking, :cancelled)
+      expect(booking.transition_to(:checked_in)).to be(false)
+      expect(booking).to be_cancelled
+    end
+
+    it "marks the room occupied when checked in and frees it when checked out" do
+      room = create(:room)
+      booking = create(:booking, :confirmed, room: room)
+      booking.checked_in!
+      expect(room.reload).to be_occupied
+      booking.checked_out!
+      expect(room.reload).to be_available
+    end
+
+    it "frees the room when a checked-in booking is cancelled" do
+      room = create(:room)
+      booking = create(:booking, :checked_in, room: room)
+      expect(room.reload).to be_occupied
+      booking.cancelled!
+      expect(room.reload).to be_available
+    end
+  end
 end

@@ -13,14 +13,20 @@ class BookingsController < ApplicationController
   end
 
   def create
-    build_user
+    result = BookingCreator.new.call(
+      current_user: current_user,
+      booking_attrs: booking_params,
+      user_attrs: (user_signed_in? ? {} : user_params)
+    )
 
-    @booking = Booking.new(booking_params.merge(user: @user, guest: find_or_create_guest, status: :pending))
-
-    if @user.persisted? && @booking.save
+    if result.success?
+      @booking = result.value!.booking
+      @user = result.value!.user
       sign_in(@user, scope: :user) unless user_signed_in?
       redirect_to account_path, notice: "Бронь создана! Ожидает подтверждения отеля."
     else
+      @booking = result.failure.booking
+      @user = result.failure.user
       render :new, status: :unprocessable_entity
     end
   end
@@ -30,32 +36,11 @@ class BookingsController < ApplicationController
   end
 
   def available_rooms
-    start_date = Date.parse(params[:check_in])
-    end_date = Date.parse(params[:check_out])
-    occupied = Booking.active_overlapping(start_date, end_date).select(:room_id)
-    rooms = Room.where.not(id: occupied).order(:number)
-    render json: rooms.map { |r| { id: r.id, label: r.label, price: r.price_per_night.to_f } }
-  rescue ArgumentError, TypeError
-    render json: []
+    result = RoomAvailability.new.call(check_in: params[:check_in], check_out: params[:check_out])
+    render json: result.value_or([])
   end
 
   private
-
-  def build_user
-    @user = current_user
-    return if @user
-
-    @user = User.new(user_params)
-    @user.save
-  end
-
-  def find_or_create_guest
-    guest = Guest.find_or_initialize_by(email: @user.email)
-    guest.full_name = @user.full_name if guest.full_name.blank?
-    guest.phone = @user.phone if guest.phone.present? && guest.phone.blank?
-    guest.save
-    guest
-  end
 
   def user_params
     params.require(:user).permit(:full_name, :email, :phone, :password, :password_confirmation)

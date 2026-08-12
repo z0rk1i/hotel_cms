@@ -1,8 +1,17 @@
 class ServiceOrder < ApplicationRecord
+  include StatusNotifiable
+  include StatusTransitionable
+
   belongs_to :service
   belongs_to :user
 
   enum :status, { pending: "pending", confirmed: "confirmed", cancelled: "cancelled" }
+
+  transitions_for(
+    pending: %i[confirmed cancelled],
+    confirmed: %i[cancelled],
+    cancelled: []
+  )
 
   validates :service_date, presence: true
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
@@ -10,19 +19,6 @@ class ServiceOrder < ApplicationRecord
   before_save :calculate_total_price
 
   scope :ordered, -> { order(service_date: :desc, created_at: :desc) }
-
-  after_update :notify_status_change, if: -> { saved_change_to_status? }
-
-  private
-
-  def notify_status_change
-    user.notifications.create!(
-      notifiable: self,
-      kind: "service_order_status",
-      title: "Статус заказа услуги изменён",
-      body: "Заказ «#{service.name}» на #{I18n.l(service_date, format: :long)} — #{self.class.status_labels.fetch(status.to_s, status)}."
-    )
-  end
 
   def self.status_labels
     {
@@ -32,7 +28,21 @@ class ServiceOrder < ApplicationRecord
     }
   end
 
+  private
+
   def calculate_total_price
     self.total_price = service.price.present? ? service.price * quantity : 0
+  end
+
+  def notification_kind
+    "service_order_status"
+  end
+
+  def notification_title
+    "Статус заказа услуги изменён"
+  end
+
+  def notification_body
+    "Заказ «#{service.name}» на #{I18n.l(service_date, format: :long)} — #{self.class.status_labels.fetch(status.to_s, status)}."
   end
 end

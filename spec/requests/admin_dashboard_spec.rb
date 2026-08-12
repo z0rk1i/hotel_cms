@@ -11,10 +11,29 @@ RSpec.describe "Admin dashboard", type: :request do
 
     it "counts rooms booked tonight as unavailable" do
       room = create(:room)
-      create(:booking, room: room, check_in: Date.current, check_out: Date.current + 2)
+      create(:booking, room: room, status: :confirmed,
+                       check_in: Date.current, check_out: Date.current + 2)
 
       get "/admin"
       expect(response.body).to include("0 / 1")
+    end
+
+    it "does not count pending bookings as occupying rooms tonight" do
+      room = create(:room)
+      create(:booking, room: room, status: :pending,
+                       check_in: Date.current, check_out: Date.current + 2)
+
+      get "/admin"
+      expect(response.body).to include("1 / 1")
+    end
+
+    it "does not count checked-out bookings as occupying rooms tonight" do
+      room = create(:room)
+      create(:booking, room: room, status: :checked_out,
+                       check_in: Date.current, check_out: Date.current + 2)
+
+      get "/admin"
+      expect(response.body).to include("1 / 1")
     end
 
     it "counts currently staying guests and their rooms" do

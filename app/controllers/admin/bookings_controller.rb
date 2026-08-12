@@ -67,26 +67,35 @@ module Admin
     end
 
     def confirm
-      @booking.confirmed!
-      redirect_back fallback_location: admin_booking_path(@booking), notice: "Бронь подтверждена."
+      if @booking.transition_to(:confirmed)
+        redirect_back fallback_location: admin_booking_path(@booking), notice: "Бронь подтверждена."
+      else
+        redirect_back fallback_location: admin_booking_path(@booking), alert: transition_alert(@booking, "подтвердить")
+      end
     end
 
     def check_in
-      if @booking.checked_in!
-        @booking.room.occupied!
+      if @booking.transition_to(:checked_in)
         redirect_back fallback_location: admin_booking_path(@booking), notice: "Гость заселён."
+      else
+        redirect_back fallback_location: admin_booking_path(@booking), alert: transition_alert(@booking, "заселить гостя")
       end
     end
 
     def check_out
-      @booking.checked_out!
-      @booking.room.available!
-      redirect_back fallback_location: admin_booking_path(@booking), notice: "Гость выселен."
+      if @booking.transition_to(:checked_out)
+        redirect_back fallback_location: admin_booking_path(@booking), notice: "Гость выселен."
+      else
+        redirect_back fallback_location: admin_booking_path(@booking), alert: transition_alert(@booking, "выселить гостя")
+      end
     end
 
     def cancel
-      @booking.cancelled!
-      redirect_back fallback_location: admin_booking_path(@booking), notice: "Бронь отменена."
+      if @booking.transition_to(:cancelled)
+        redirect_back fallback_location: admin_booking_path(@booking), notice: "Бронь отменена."
+      else
+        redirect_back fallback_location: admin_booking_path(@booking), alert: transition_alert(@booking, "отменить бронь")
+      end
     end
 
     private

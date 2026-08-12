@@ -1,45 +1,47 @@
 class Booking < ApplicationRecord
+  include StatusNotifiable
+  include StatusTransitionable
+
   belongs_to :guest
   belongs_to :room
   belongs_to :user, optional: true
 
   enum :status, { pending: "pending", confirmed: "confirmed", checked_in: "checked_in", checked_out: "checked_out", cancelled: "cancelled" }
 
+  transitions_for(
+    pending: %i[confirmed cancelled],
+    confirmed: %i[checked_in cancelled],
+    checked_in: %i[checked_out cancelled],
+    checked_out: [],
+    cancelled: []
+  )
+
   validates :check_in, presence: true
   validates :check_out, presence: true
+  validates :guests_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
   validate :check_out_after_check_in
   validate :no_date_overlap
   validate :capacity_within_limit
+  validate :room_bookable
 
   before_validation :set_defaults, on: :create
   before_save :calculate_total_price, if: -> { room && check_in && check_out }
 
+  after_save :sync_room_status, if: -> { saved_change_to_status? }
+  before_destroy :free_room, if: -> { checked_in? }
+
   scope :active, -> { where.not(status: :cancelled) }
+  scope :occupying, -> { where(status: %i[confirmed checked_in]) }
+  scope :overlapping, ->(start_date, end_date) { where("check_in < ? AND check_out > ?", end_date, start_date) }
+  scope :occupying_overlapping, ->(start_date, end_date) { occupying.overlapping(start_date, end_date) }
   scope :upcoming, -> { active.where("check_in >= ?", Date.current).order(:check_in) }
   scope :checked_in_now, -> { where(status: :checked_in) }
-  scope :active_overlapping, ->(start_date, end_date) do
-    active.where("check_in < ? AND check_out > ?", end_date, start_date)
-  end
+  scope :active_overlapping, ->(start_date, end_date) { active.overlapping(start_date, end_date) }
   scope :for_period, ->(from, to) { where("check_in < ? AND check_out > ?", to, from) }
   scope :by_month, ->(date) { where("check_in >= ? AND check_in <= ?", date.beginning_of_month, date.end_of_month) }
 
   def nights
     (check_out - check_in).to_i
-  end
-
-  after_update :notify_status_change, if: -> { saved_change_to_status? }
-
-  private
-
-  def notify_status_change
-    return unless user
-
-    user.notifications.create!(
-      notifiable: self,
-      kind: "booking_status",
-      title: "Статус брони №#{id} изменён",
-      body: "Бронь «номер #{room.number}» (#{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}) — #{self.class.status_labels.fetch(status.to_s, status)}."
-    )
   end
 
   def self.status_labels
@@ -51,6 +53,8 @@ class Booking < ApplicationRecord
       "cancelled" => "отменена"
     }
   end
+
+  private
 
   def set_defaults
     self.status ||= :pending
@@ -75,7 +79,37 @@ class Booking < ApplicationRecord
     errors.add(:guests_count, "превышает вместимость номера") if guests_count > room.capacity
   end
 
+  def room_bookable
+    return if room.blank?
+
+    errors.add(:room, "недоступен для бронирования") if room.maintenance? || room.cleaning?
+  end
+
   def calculate_total_price
     self.total_price = nights * room.price_per_night
+  end
+
+  def sync_room_status
+    if checked_in?
+      room.update_column(:status, :occupied) unless room.occupied?
+    elsif status_before_last_save == "checked_in"
+      room.update_column(:status, :available) if room.occupied?
+    end
+  end
+
+  def free_room
+    room.update_column(:status, :available) if room.occupied?
+  end
+
+  def notification_kind
+    "booking_status"
+  end
+
+  def notification_title
+    "Статус брони №#{id} изменён"
+  end
+
+  def notification_body
+    "Бронь «номер #{room.number}» (#{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}) — #{self.class.status_labels.fetch(status.to_s, status)}."
   end
 end

@@ -4,7 +4,7 @@ module Admin
       today = Date.current
       checked_in_now = Booking.checked_in_now.where("check_in <= ? AND check_out > ?", today, today)
       occupied_room_ids = checked_in_now.select(:room_id).distinct
-      booked_tonight_ids = Booking.active_overlapping(today, today + 1).select(:room_id)
+      booked_tonight_ids = Booking.occupying_overlapping(today, today + 1).select(:room_id)
       unavailable_ids = Room.where(status: %i[maintenance cleaning]).select(:id)
 
       @stats = {

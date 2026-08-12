@@ -49,5 +49,10 @@ RSpec.describe Review, type: :model do
       expect(service.approved_reviews).to include(service_review)
       expect(room.approved_reviews).not_to include(service_review)
     end
+
+    it "rejects an unsupported reviewable type" do
+      expect(build(:review, reviewable_type: "User", reviewable_id: 1)).to be_invalid
+      expect(build(:review, reviewable_type: "Room", reviewable_id: 999_999)).to be_invalid
+    end
   end
 end

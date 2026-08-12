@@ -28,10 +28,12 @@ module Sluggable
   end
 
   def unique_slug_for(base)
-    return base unless self.class.exists?(slug: base)
+    scope = self.class
+    scope = scope.where.not(id: id) if persisted?
+    return base unless scope.exists?(slug: base)
 
     suffix = 1
-    suffix += 1 while self.class.exists?(slug: "#{base}-#{suffix}")
+    suffix += 1 while scope.exists?(slug: "#{base}-#{suffix}")
     "#{base}-#{suffix}"
   end
 

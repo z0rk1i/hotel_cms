@@ -40,5 +40,9 @@ module Admin
       @pagy, items = pagy(scope, items: default_per)
       items
     end
+
+    def transition_alert(record, action)
+      record.errors.full_messages.presence&.to_sentence || "Невозможно #{action} в текущем статусе."
+    end
   end
 end

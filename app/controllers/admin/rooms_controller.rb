@@ -8,15 +8,12 @@ module Admin
     end
 
     def available
-      start_date = Date.parse(params[:check_in])
-      end_date = Date.parse(params[:check_out])
-      occupied = Booking.active_overlapping(start_date, end_date).select(:room_id)
-      occupied = occupied.where.not(room_id: params[:exclude]) if params[:exclude].present?
-
-      rooms = Room.where.not(id: occupied).order(:number)
-      render json: rooms.map { |r| { id: r.id, label: r.label, price: r.price_per_night.to_f } }
-    rescue ArgumentError, TypeError
-      render json: []
+      result = RoomAvailability.new.call(
+        check_in: params[:check_in],
+        check_out: params[:check_out],
+        exclude_room_id: params[:exclude]
+      )
+      render json: result.value_or([])
     end
 
     def new

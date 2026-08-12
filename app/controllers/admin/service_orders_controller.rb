@@ -10,13 +10,19 @@ module Admin
     end
 
     def confirm
-      @service_order.confirmed!
-      redirect_back_or admin_service_orders_path, notice: "Заказ услуги подтверждён."
+      if @service_order.transition_to(:confirmed)
+        redirect_back_or admin_service_orders_path, notice: "Заказ услуги подтверждён."
+      else
+        redirect_back_or admin_service_orders_path, alert: transition_alert(@service_order, "подтвердить заказ")
+      end
     end
 
     def cancel
-      @service_order.cancelled!
-      redirect_back_or admin_service_orders_path, notice: "Заказ услуги отменён."
+      if @service_order.transition_to(:cancelled)
+        redirect_back_or admin_service_orders_path, notice: "Заказ услуги отменён."
+      else
+        redirect_back_or admin_service_orders_path, alert: transition_alert(@service_order, "отменить заказ")
+      end
     end
 
     private

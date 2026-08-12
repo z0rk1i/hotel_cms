@@ -18,4 +18,11 @@ RSpec.describe Page, type: :model do
     page = create(:page, slug: "О Гостинице!")
     expect(page.reload.slug).to eq("o-gostinitse")
   end
+
+  it "does not treat its own slug as taken when regenerating" do
+    page = create(:page, title: "О нас", slug: "o-nas")
+    page.slug = nil
+    page.valid?
+    expect(page.slug).to eq("o-nas")
+  end
 end

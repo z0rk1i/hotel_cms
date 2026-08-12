@@ -29,6 +29,21 @@ RSpec.describe "Admin bookings", type: :request do
       patch cancel_admin_booking_path(booking)
       expect(booking.reload).to be_cancelled
     end
+
+    it "does not check in a cancelled booking" do
+      booking = create(:booking, :cancelled)
+      patch check_in_admin_booking_path(booking)
+      expect(booking.reload).to be_cancelled
+      expect(booking.room.reload).to be_available
+    end
+
+    it "frees the room when cancelling a checked-in booking" do
+      booking = create(:booking, :checked_in)
+      expect(booking.room.reload).to be_occupied
+      patch cancel_admin_booking_path(booking)
+      expect(booking.reload).to be_cancelled
+      expect(booking.room.reload).to be_available
+    end
   end
 
   describe "booking creation" do

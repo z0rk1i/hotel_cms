@@ -89,6 +89,51 @@ RSpec.describe "Public bookings", type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "copies the user's phone to the guest" do
+      room = create(:room)
+
+      post bookings_path, params: {
+        booking: {
+          room_id: room.id,
+          check_in: Date.current + 3,
+          check_out: Date.current + 5,
+          guests_count: 1
+        },
+        user: {
+          full_name: "С Телефоном",
+          email: "phone@example.com",
+          phone: "+7 900 333-33-33",
+          password: "password123"
+        }
+      }
+
+      expect(Booking.last.guest.phone).to eq("+7 900 333-33-33")
+    end
+
+    it "does not create a user or guest when the booking fails" do
+      existing = create(:booking, check_in: Date.current + 3, check_out: Date.current + 5)
+      room = existing.room
+
+      before_post = [ User.count, Guest.count ]
+      post bookings_path, params: {
+        booking: {
+          room_id: room.id,
+          check_in: Date.current + 4,
+          check_out: Date.current + 6,
+          guests_count: 1
+        },
+        user: {
+          full_name: "Без Аккаунта",
+          email: "noaccount@example.com",
+          phone: "+7 900 444-44-44",
+          password: "password123"
+        }
+      }
+
+      expect([ User.count, Guest.count ]).to eq(before_post)
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 
   describe "GET /bookings/available_rooms" do
@@ -105,6 +150,30 @@ RSpec.describe "Public bookings", type: :request do
       json = JSON.parse(response.body)
       expect(json.map { |r| r["id"] }).to include(free_room.id)
       expect(json.map { |r| r["id"] }).not_to include(taken_room.id)
+    end
+
+    it "does not offer rooms under maintenance or cleaning" do
+      maintenance_room = create(:room, status: :maintenance)
+      cleaning_room = create(:room, status: :cleaning)
+      free_room = create(:room)
+
+      get available_rooms_bookings_path, params: {
+        check_in: Date.current + 3,
+        check_out: Date.current + 5
+      }
+
+      json = JSON.parse(response.body)
+      expect(json.map { |r| r["id"] }).to include(free_room.id)
+      expect(json.map { |r| r["id"] }).not_to include(maintenance_room.id, cleaning_room.id)
+    end
+
+    it "returns an empty array when the date range is invalid" do
+      get available_rooms_bookings_path, params: {
+        check_in: Date.current + 5,
+        check_out: Date.current + 3
+      }
+
+      expect(JSON.parse(response.body)).to eq([])
     end
   end
 

@@ -24,7 +24,7 @@ class ServiceOrdersController < ApplicationController
 
   def cancel
     @service_order = current_user.service_orders.find(params[:id])
-    @service_order.cancelled! if @service_order.pending?
+    @service_order.cancelled! if @service_order.can_transition_to?(:cancelled)
     redirect_to account_path, notice: "Заказ услуги отменён."
   end
 
