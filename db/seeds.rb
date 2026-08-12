@@ -44,6 +44,25 @@ rooms_data.each do |number, category, floor, size, capacity|
   end
 end
 
+# --- Amenities ---
+amenities = {
+  "Wi-Fi" => "wifi",
+  "Завтрак" => "coffee",
+  "Кондиционер" => "air",
+  "Балкон" => "balcony",
+  "Вид на парк" => "tree",
+  "Телевизор" => "tv",
+  "Мини-бар" => "fridge",
+  "Сейф" => "lock"
+}
+amenity_records = amenities.map do |name, icon|
+  Amenity.find_or_create_by!(name: name) { |a| a.icon = icon }
+end
+Room.order(:number).each_with_index do |room, i|
+  count = [ 3, 4, 5, 6 ].sample
+  room.amenities = amenity_records.sample(count) if room.amenities.empty?
+end
+
 # --- Guests ---
 guests = [
   [ "Анна Смирнова", "+7 900 111-22-33", "anna@example.com" ],

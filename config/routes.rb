@@ -31,6 +31,7 @@ Rails.application.routes.draw do
       get :available, on: :collection
       delete "photo/:photo_id", to: "rooms#destroy_photo", as: :photo
     end
+    resources :amenities
     resources :guests
     resources :bookings do
       collection do

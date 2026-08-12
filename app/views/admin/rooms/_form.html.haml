@@ -40,6 +40,18 @@
       = text_area(form, :description, rows: 4, placeholder: "Удобства, вид из окна, оснащение…")
   .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6
     %div
+      %span.block.text-sm.font-medium.text-slate-700.dark:text-slate-300.mb-2 Удобства номера
+      - if Amenity.any?
+        .grid.grid-cols-2.md:grid-cols-3.gap-3
+          - Amenity.order(:name).each do |amenity|
+            %label.flex.items-center.gap-2.rounded-lg.border.border-slate-200.dark:border-slate-700.px-3.py-2.text-sm.cursor-pointer{:class => "#{'border-indigo-400 dark:border-indigo-500' if @room.amenities.include?(amenity)}"}
+              = form.check_box :amenity_ids, { multiple: true, checked: @room.amenities.include?(amenity) }, amenity.id, nil
+              %span.text-slate-800.dark:text-slate-200= amenity.name
+      - else
+        %p.text-sm.text-slate-400.dark:text-slate-500
+          Удобств пока нет — #{link_to "добавьте", admin_amenities_path} в разделе «Удобства».
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6
+    %div
       = field_label(form, :photos, "Фотографии номера")
       = form.file_field :photos, multiple: true, accept: "image/*",                                                                                                                                                                                                                                                      |
         class: "block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 dark:file:bg-indigo-900/40 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/60" |

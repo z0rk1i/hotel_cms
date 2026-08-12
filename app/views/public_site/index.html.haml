@@ -4,15 +4,22 @@
     %p.mt-4.text-lg.text-slate-300.max-w-2xl.mx-auto Уютные номера, завтраки и внимательный персонал. Бронируйте напрямую — без посредников и комиссий.
     %a.mt-8.inline-block.bg-indigo-500.hover:bg-indigo-400.text-white.font-medium.px-8.py-3.rounded-lg.transition-colors{:href => "#rooms"} Смотреть номера
 %section#rooms.max-w-6xl.mx-auto.px-6.py-16
-  %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Наши номера
+  %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-4 Наши номера
+  - if @amenities.any?
+    .mb-8.flex.flex-wrap.items-center.gap-2
+      = link_to "Все номера", root_path, class: amenity_chip_class(selected_amenity_ids.empty?)
+      - @amenities.each do |amenity|
+        = amenity_filter_link(amenity)
   - @categories.each do |category|
+    - rooms = @rooms.select { |r| r.category_id == category.id }
+    - next if rooms.empty?
     .mb-10
       .flex.items-baseline.justify-between.mb-4
         %h3.text-xl.font-medium.text-slate-900.dark:text-white= category.name
         %span.text-sm.text-slate-500.dark:text-slate-400
           от #{number_to_currency(category.base_price, unit: "₽", precision: 0)} / ночь
       .grid.grid-cols-1.md:grid-cols-2.lg:grid-cols-3.gap-6
-        - category.rooms.each do |room|
+        - rooms.each do |room|
           = link_to room_path(room), class: "group block rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all" do
             - if room.photos.any?
               = image_tag image_thumb(room.photos.first), class: "w-full h-44 object-cover"
@@ -28,6 +35,11 @@
               .mt-2.text-sm.text-slate-500.dark:text-slate-400
                 = room.capacity
                 чел. · #{room.size_sqm ? "#{room.size_sqm} м²" : "—"} · этаж #{room.floor}
+              - if room.amenities.any?
+                .mt-3.flex.flex-wrap.gap-1.5
+                  - room.amenities.each do |amenity|
+                    %span.inline-flex.items-center.gap-1.rounded-full.bg-indigo-50.px-2.5.py-0.5.text-xs.font-medium.text-indigo-600{:class => "dark:bg-indigo-900/40 dark:text-indigo-300"}
+                      = amenity.name
               - if room.approved_reviews.any?
                 .mt-2.flex.items-center.gap-1.text-xs.text-amber-500
                   - 5.times do |i|

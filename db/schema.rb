@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_123101) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_123103) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -53,6 +53,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123101) do
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_administrators_on_email", unique: true
     t.index ["reset_password_token"], name: "index_administrators_on_reset_password_token", unique: true
+  end
+
+  create_table "amenities", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "icon", default: "star", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "bookings", force: :cascade do |t|
@@ -144,6 +151,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123101) do
     t.index ["user_id"], name: "index_reviews_on_user_id"
   end
 
+  create_table "room_amenities", force: :cascade do |t|
+    t.bigint "amenity_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "room_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["amenity_id"], name: "index_room_amenities_on_amenity_id"
+    t.index ["room_id", "amenity_id"], name: "index_room_amenities_on_room_id_and_amenity_id", unique: true
+    t.index ["room_id"], name: "index_room_amenities_on_room_id"
+  end
+
   create_table "room_categories", force: :cascade do |t|
     t.decimal "base_price", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "created_at", null: false
@@ -218,6 +235,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123101) do
   add_foreign_key "bookings", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "reviews", "users"
+  add_foreign_key "room_amenities", "amenities"
+  add_foreign_key "room_amenities", "rooms"
   add_foreign_key "rooms", "room_categories", column: "category_id"
   add_foreign_key "service_orders", "bookings"
   add_foreign_key "service_orders", "services"

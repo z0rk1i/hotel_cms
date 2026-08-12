@@ -72,4 +72,25 @@ def service_order_status_label(status)
   def image_thumb(attachment, size: [ 640, 400 ])
     attachment.variant(resize_to_fill: size)
   end
+
+  def selected_amenity_ids
+    Array(params[:amenities]).map(&:to_i).reject(&:zero?)
+  end
+
+  def amenity_filter_link(amenity)
+    selected = selected_amenity_ids
+    currently_selected = selected.include?(amenity.id)
+    toggled = currently_selected ? selected - [ amenity.id ] : selected + [ amenity.id ]
+    path = toggled.any? ? root_path(amenities: toggled) : root_path
+    link_to amenity.name, path, class: amenity_chip_class(currently_selected)
+  end
+
+  def amenity_chip_class(selected)
+    base = "px-4 py-1.5 rounded-full text-sm font-medium border transition-colors"
+    if selected
+      "#{base} bg-indigo-600 text-white border-indigo-600"
+    else
+      "#{base} bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-indigo-400"
+    end
+  end
 end

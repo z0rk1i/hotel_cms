@@ -80,4 +80,23 @@ RSpec.describe "Admin rooms", type: :request do
       expect(response).to redirect_to(admin_rooms_path)
     end
   end
+
+  describe "amenities assignment" do
+    it "saves amenity_ids when creating a room" do
+      category = create(:room_category)
+      amenity = create(:amenity)
+      post admin_rooms_path, params: {
+        room: { number: "101", category_id: category.id, floor: 1, capacity: 2,
+                price_per_night: 1000, amenity_ids: [ amenity.id ] }
+      }
+      expect(Room.last.amenities).to include(amenity)
+    end
+
+    it "updates amenity_ids when updating a room" do
+      room = create(:room)
+      amenity = create(:amenity)
+      patch admin_room_path(room), params: { room: { number: room.number, amenity_ids: [ amenity.id ] } }
+      expect(room.reload.amenities).to include(amenity)
+    end
+  end
 end

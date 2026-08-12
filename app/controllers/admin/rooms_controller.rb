@@ -63,7 +63,7 @@ module Admin
 
     def room_params
       params.require(:room).permit(:number, :category_id, :floor, :size_sqm, :capacity,
-                                   :price_per_night, :status, :description, photos: [])
+                                   :price_per_night, :status, :description, photos: [], amenity_ids: [])
     end
   end
 end

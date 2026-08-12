@@ -5,6 +5,8 @@ class Room < ApplicationRecord
   has_many :reviews, as: :reviewable, dependent: :destroy
   has_many :approved_reviews, -> { approved }, as: :reviewable, class_name: "Review"
   has_many_attached :photos
+  has_many :room_amenities, dependent: :destroy
+  has_many :amenities, through: :room_amenities
 
   enum :status, { available: "available", occupied: "occupied", maintenance: "maintenance", cleaning: "cleaning" }
 
@@ -18,6 +20,15 @@ class Room < ApplicationRecord
   validate :photo_size_within_limit
 
   scope :available_now, -> { where(status: :available) }
+  scope :with_all_amenities, ->(ids) do
+    ids = Array(ids).map(&:to_i).reject(&:zero?)
+    next all if ids.empty?
+
+    joins(:room_amenities)
+      .where(room_amenities: { amenity_id: ids })
+      .group("rooms.id")
+      .having("COUNT(DISTINCT room_amenities.amenity_id) = ?", ids.size)
+  end
 
   MAX_PHOTOS = 10
   MAX_PHOTO_SIZE = 10.megabytes

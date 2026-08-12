@@ -1,6 +1,42 @@
 require "rails_helper"
 
 RSpec.describe "Public room pages", type: :request do
+  describe "GET /" do
+    it "renders amenity badges on room cards" do
+      room = create(:room)
+      room.amenities << create(:amenity, name: "Балкон")
+      get root_path
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Балкон")
+    end
+
+    it "filters rooms by selected amenities" do
+      balcony = create(:amenity, name: "Балкон")
+      wifi = create(:amenity, name: "Wi-Fi")
+      with_balcony = create(:room, number: "101")
+      with_balcony.amenities << balcony
+      with_wifi = create(:room, number: "102")
+      with_wifi.amenities << wifi
+
+      get root_path(amenities: [ balcony.id ])
+      expect(response.body).to include("Номер 101")
+      expect(response.body).not_to include("Номер 102")
+    end
+
+    it "matches rooms that have all selected amenities" do
+      balcony = create(:amenity, name: "Балкон")
+      wifi = create(:amenity, name: "Wi-Fi")
+      full_room = create(:room, number: "101")
+      full_room.amenities << [ balcony, wifi ]
+      partial_room = create(:room, number: "102")
+      partial_room.amenities << wifi
+
+      get root_path(amenities: [ balcony.id, wifi.id ])
+      expect(response.body).to include("Номер 101")
+      expect(response.body).not_to include("Номер 102")
+    end
+  end
+
   describe "GET /rooms/:id" do
     it "renders the room details page" do
       room = create(:room, description: "Просторный номер с видом на горы")
@@ -20,6 +56,13 @@ RSpec.describe "Public room pages", type: :request do
       expect(response.body).to include("Отличный номер")
       expect(response.body).not_to include("Ожидает модерации")
       expect(response.body).to include(approved.rating.to_s)
+    end
+
+    it "shows the room amenities as badges" do
+      room = create(:room)
+      room.amenities << create(:amenity, name: "Кондиционер")
+      get room_path(room)
+      expect(response.body).to include("Кондиционер")
     end
 
     it "renders the availability widget with prefilled dates" do

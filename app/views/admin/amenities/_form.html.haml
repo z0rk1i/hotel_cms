@@ -1,0 +1,19 @@
+= form_with model: [:admin, @amenity], class: "space-y-6" do |form|
+  - if @amenity.errors.any?
+    .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
+      %strong
+        = pluralize(@amenity.errors.count, "ошибка")
+        \:
+      = @amenity.errors.full_messages.to_sentence
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6.space-y-4
+    %div
+      = field_label(form, :name, "Название")
+      = text_input(form, :name, placeholder: "Напр. Кондиционер, Wi-Fi, Завтрак")
+      = field_errors(form, :name)
+    %div
+      = field_label(form, :icon, "Иконка")
+      = text_input(form, :icon, placeholder: "wifi, air, coffee…")
+      %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 Свободный ключ для отображения бейджика
+  .flex.items-center.gap-3
+    = form.submit @amenity.new_record? ? "Создать удобство" : "Сохранить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg"
+    = link_to "Отмена", admin_amenities_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"

@@ -32,7 +32,7 @@ bundle exec rubocop                                 # стиль
 ## Структура
 
 - `app/controllers/admin/` — контроллеры админки
-- `app/models/` — Room, RoomCategory, Guest, Booking, Page, News, Service, GalleryImage
+- `app/models/` — Room, RoomCategory, Amenity, Guest, Booking, Page, News, Service, GalleryImage
 - `app/views/admin/` — вьюхи админки
 - `app/views/public_site/` — публичный сайт
 - `spec/` — тесты (models, requests)
