@@ -159,6 +159,18 @@ RSpec.describe "Public bookings", type: :request do
       expect(json.map { |r| r["id"] }).not_to include(taken_room.id)
     end
 
+    it "includes label, price and capacity for each room" do
+      room = create(:room, capacity: 3, price_per_night: 2500)
+      get available_rooms_bookings_path, params: {
+        check_in: Date.current + 3,
+        check_out: Date.current + 5
+      }
+      room_json = JSON.parse(response.body).find { |r| r["id"] == room.id }
+      expect(room_json["label"]).to include(room.number)
+      expect(room_json["price"]).to eq(2500.0)
+      expect(room_json["capacity"]).to eq(3)
+    end
+
     it "does not offer rooms under maintenance or cleaning" do
       maintenance_room = create(:room, status: :maintenance)
       cleaning_room = create(:room, status: :cleaning)

@@ -35,6 +35,6 @@ class RoomAvailability
         .where.not(status: NON_BOOKABLE_STATUSES)
         .order(:floor, :number)
         .includes(:category)
-        .map { |room| { id: room.id, label: room.label, price: room.price_per_night.to_f } }
+        .map { |room| { id: room.id, label: room.label, price: room.price_per_night.to_f, capacity: room.capacity } }
   end
 end
