@@ -53,6 +53,20 @@ RSpec.describe BookingMailer, type: :mailer do
     end
   end
 
+  describe "#check_in_reminder" do
+    let(:mail) { described_class.check_in_reminder(booking) }
+
+    it "sends with a reminder subject" do
+      expect(mail.to).to eq([ user.email ])
+      expect(mail.subject).to eq("Напоминание: заезд завтра, бронь №#{booking.id}")
+    end
+
+    it "renders the check-in date" do
+      expect(mail.text_part.body.decoded).to include("ваш заезд завтра")
+      expect(mail.html_part.body.decoded).to include("ваш заезд завтра")
+    end
+  end
+
   describe "delivery hooks", type: :model do
     it "enqueues an email when a booking with a deliverable user email is created" do
       expect do

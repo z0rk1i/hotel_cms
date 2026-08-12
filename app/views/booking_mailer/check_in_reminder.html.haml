@@ -1,0 +1,21 @@
+%div{:style => "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #0f172a;"}
+  %h1{:style => "font-size: 20px; margin: 0 0 12px;"} Гостиница
+  %p{:style => "margin: 0 0 16px;"}
+    Здравствуйте, #{@user.full_name.presence || @user.email}!
+  %p{:style => "margin: 0 0 16px; font-size: 15px; line-height: 1.5;"}
+    Напоминаем: ваш заезд завтра (#{I18n.l(@booking.check_in, format: :long)}), бронь №#{@booking.id}.
+  %table{:style => "width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 14px;"}
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Номер
+      %td{:style => "padding: 6px 0;"} №#{@booking.room.number} — #{@booking.room.category.name}
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Заезд
+      %td{:style => "padding: 6px 0;"}= I18n.l(@booking.check_in, format: :long)
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Выезд
+      %td{:style => "padding: 6px 0;"}= I18n.l(@booking.check_out, format: :long)
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Гостей
+      %td{:style => "padding: 6px 0;"}= @booking.guests_count
+  %p{:style => "margin: 0;"}
+    = link_to "Открыть личный кабинет", account_url

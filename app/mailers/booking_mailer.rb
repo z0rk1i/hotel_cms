@@ -19,4 +19,11 @@ class BookingMailer < ApplicationMailer
 
     mail(to: @user.email, subject: "Бронь №#{booking.id} отменена")
   end
+
+  def check_in_reminder(booking)
+    @booking = booking
+    @user = booking.user
+
+    mail(to: @user.email, subject: "Напоминание: заезд завтра, бронь №#{booking.id}")
+  end
 end
