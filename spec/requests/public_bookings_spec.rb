@@ -141,6 +141,29 @@ RSpec.describe "Public bookings", type: :request do
       expect([ User.count, Guest.count ]).to eq(before_post)
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "rejects a booking with check_in in the past" do
+      room = create(:room)
+
+      expect do
+        post bookings_path, params: {
+          booking: {
+            room_id: room.id,
+            check_in: Date.current - 1,
+            check_out: Date.current + 1,
+            guests_count: 1
+          },
+          user: {
+            full_name: "Просрочка",
+            email: "overdue@example.com",
+            phone: "+7 900 555-55-55",
+            password: "password123"
+          }
+        }
+      end.not_to change(Booking, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 
   describe "GET /bookings/available_rooms" do

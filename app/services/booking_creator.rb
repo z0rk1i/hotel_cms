@@ -8,12 +8,23 @@ class BookingCreator
     guest = find_or_build_guest(user)
     booking = Booking.new(booking_attrs.merge(user: user, guest: guest, status: :pending))
 
-    return Failure(Result.new(user: user, guest: guest, booking: booking)) unless user.valid? && guest.valid? && booking.valid?
+    return Failure(Result.new(user: user, guest: guest, booking: booking)) unless valid?(user, guest, booking)
 
     persist_all(user, guest, booking)
   end
 
   private
+
+  def valid?(user, guest, booking)
+    user.valid? && guest.valid? && booking.valid? && check_in_not_in_past(booking)
+  end
+
+  def check_in_not_in_past(booking)
+    return true if booking.check_in.blank? || booking.check_in >= Date.current
+
+    booking.errors.add(:check_in, "не может быть в прошлом")
+    false
+  end
 
   def find_or_build_guest(user)
     guest = Guest.find_or_initialize_by(email: user.email)
