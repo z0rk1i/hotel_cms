@@ -14,7 +14,7 @@ module Admin
       @news = News.new(news_params)
 
       if @news.save
-        redirect_to admin_news_index_path, notice: "Новость создана."
+        redirect_to_previous admin_news_index_path, notice: "Новость создана."
       else
         render :new, status: :unprocessable_entity
       end
@@ -24,7 +24,7 @@ module Admin
 
     def update
       if @news.update(news_params)
-        redirect_to admin_news_index_path, notice: "Новость обновлена."
+        redirect_to_previous admin_news_index_path, notice: "Новость обновлена."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -32,7 +32,7 @@ module Admin
 
     def destroy
       @news.destroy
-      redirect_to admin_news_index_path, notice: "Новость удалена."
+      redirect_back_or admin_news_index_path, notice: "Новость удалена."
     end
 
     private

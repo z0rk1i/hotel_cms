@@ -3,10 +3,38 @@ module Admin
     layout "admin"
 
     before_action :authenticate_administrator!
+    before_action :store_return_to
 
     include Pagy::Backend
 
     private
+
+    def redirect_back_or(default, **options)
+      redirect_to safe_referer || default, **options
+    end
+
+    def redirect_to_previous(default, **options)
+      redirect_to session.delete(:return_to) || default, **options
+    end
+
+    def store_return_to
+      return unless %w[new edit].include?(action_name)
+      return unless request.get?
+
+      session[:return_to] = safe_referer if safe_referer.present?
+    end
+
+    def safe_referer
+      referer = request.referer
+      return nil if referer.blank?
+
+      uri = URI.parse(referer)
+      return nil unless uri.host == request.host
+
+      uri.path
+    rescue URI::InvalidURIError
+      nil
+    end
 
     def paginate(scope, default_per = 25)
       @pagy, items = pagy(scope, items: default_per)

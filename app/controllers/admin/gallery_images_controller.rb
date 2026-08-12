@@ -12,7 +12,7 @@ module Admin
       @gallery_image = GalleryImage.new(gallery_image_params)
 
       if @gallery_image.save
-        redirect_to admin_gallery_images_path, notice: "Изображение добавлено."
+        redirect_to_previous admin_gallery_images_path, notice: "Изображение добавлено."
       else
         render :new, status: :unprocessable_entity
       end
@@ -21,7 +21,7 @@ module Admin
     def destroy
       @gallery_image = GalleryImage.find(params[:id])
       @gallery_image.destroy
-      redirect_to admin_gallery_images_path, notice: "Изображение удалено."
+      redirect_back_or admin_gallery_images_path, notice: "Изображение удалено."
     end
 
     private

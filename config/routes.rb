@@ -31,6 +31,9 @@ Rails.application.routes.draw do
     end
     resources :guests
     resources :bookings do
+      collection do
+        get :calendar
+      end
       member do
         patch :confirm
         patch :check_in

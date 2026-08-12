@@ -14,7 +14,7 @@ module Admin
       @page = Page.new(page_params)
 
       if @page.save
-        redirect_to admin_pages_path, notice: "Страница создана."
+        redirect_to_previous admin_pages_path, notice: "Страница создана."
       else
         render :new, status: :unprocessable_entity
       end
@@ -24,7 +24,7 @@ module Admin
 
     def update
       if @page.update(page_params)
-        redirect_to admin_pages_path, notice: "Страница обновлена."
+        redirect_to_previous admin_pages_path, notice: "Страница обновлена."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -32,7 +32,7 @@ module Admin
 
     def destroy
       @page.destroy
-      redirect_to admin_pages_path, notice: "Страница удалена."
+      redirect_back_or admin_pages_path, notice: "Страница удалена."
     end
 
     private

@@ -16,7 +16,7 @@ module Admin
       @guest = Guest.new(guest_params)
 
       if @guest.save
-        redirect_to admin_guests_path, notice: "Гость добавлен."
+        redirect_to_previous admin_guests_path, notice: "Гость добавлен."
       else
         render :new, status: :unprocessable_entity
       end
@@ -26,7 +26,7 @@ module Admin
 
     def update
       if @guest.update(guest_params)
-        redirect_to admin_guests_path, notice: "Данные гостя обновлены."
+        redirect_to_previous admin_guests_path, notice: "Данные гостя обновлены."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -34,9 +34,9 @@ module Admin
 
     def destroy
       if @guest.destroy
-        redirect_to admin_guests_path, notice: "Гость удалён."
+        redirect_back_or admin_guests_path, notice: "Гость удалён."
       else
-        redirect_to admin_guests_path, alert: @guest.errors.full_messages.to_sentence
+        redirect_back_or admin_guests_path, alert: @guest.errors.full_messages.to_sentence
       end
     end
 

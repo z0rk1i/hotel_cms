@@ -11,12 +11,12 @@ module Admin
 
     def confirm
       @service_order.confirmed!
-      redirect_to admin_service_orders_path, notice: "Заказ услуги подтверждён."
+      redirect_back_or admin_service_orders_path, notice: "Заказ услуги подтверждён."
     end
 
     def cancel
       @service_order.cancelled!
-      redirect_to admin_service_orders_path, notice: "Заказ услуги отменён."
+      redirect_back_or admin_service_orders_path, notice: "Заказ услуги отменён."
     end
 
     private

@@ -14,7 +14,7 @@ module Admin
       @service = Service.new(service_params)
 
       if @service.save
-        redirect_to admin_services_path, notice: "Услуга добавлена."
+        redirect_to_previous admin_services_path, notice: "Услуга добавлена."
       else
         render :new, status: :unprocessable_entity
       end
@@ -24,7 +24,7 @@ module Admin
 
     def update
       if @service.update(service_params)
-        redirect_to admin_services_path, notice: "Услуга обновлена."
+        redirect_to_previous admin_services_path, notice: "Услуга обновлена."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -32,7 +32,7 @@ module Admin
 
     def destroy
       @service.destroy
-      redirect_to admin_services_path, notice: "Услуга удалена."
+      redirect_back_or admin_services_path, notice: "Услуга удалена."
     end
 
     private

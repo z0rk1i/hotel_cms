@@ -1,6 +1,6 @@
 module Admin
   class BookingsController < BaseController
-    before_action :set_booking, only: %i[edit update destroy confirm check_in check_out cancel]
+    before_action :set_booking, only: %i[show edit update destroy confirm check_in check_out cancel]
 
     def index
       @bookings = Booking.includes(:guest, :room)
@@ -8,6 +8,29 @@ module Admin
       @bookings = @bookings.order(check_in: :desc)
       @bookings = paginate(@bookings)
     end
+
+    def calendar
+      @month = parse_month(params[:month])
+      @prev_month = @month.prev_month
+      @next_month = @month.next_month
+      range_start = @month.beginning_of_month
+      range_end = @month.end_of_month
+
+      @rooms = Room.order(:floor, :number).includes(:category)
+      bookings = Booking.includes(:guest)
+                        .where.not(status: :cancelled)
+                        .for_period(range_start, range_end.next_day)
+      @bookings_by_room = bookings.group_by(&:room_id)
+
+      @calendar = @rooms.map do |room|
+        {
+          room: room,
+          bookings: visible_bookings(@bookings_by_room[room.id].to_a, range_start, range_end)
+        }
+      end
+    end
+
+    def show; end
 
     def new
       @booking = Booking.new
@@ -22,7 +45,7 @@ module Admin
       @booking = Booking.new(booking_params)
 
       if @booking.save
-        redirect_to admin_bookings_path, notice: "Бронь создана."
+        redirect_to_previous admin_booking_path(@booking), notice: "Бронь создана."
       else
         render :new, status: :unprocessable_entity
       end
@@ -32,7 +55,7 @@ module Admin
 
     def update
       if @booking.update(booking_params)
-        redirect_to admin_bookings_path, notice: "Бронь обновлена."
+        redirect_to_previous admin_booking_path(@booking), notice: "Бронь обновлена."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -40,36 +63,58 @@ module Admin
 
     def destroy
       @booking.destroy
-      redirect_to admin_bookings_path, notice: "Бронь удалена."
+      redirect_back fallback_location: admin_bookings_path, notice: "Бронь удалена."
     end
 
     def confirm
       @booking.confirmed!
-      redirect_to admin_bookings_path, notice: "Бронь подтверждена."
+      redirect_back fallback_location: admin_booking_path(@booking), notice: "Бронь подтверждена."
     end
 
     def check_in
       if @booking.checked_in!
         @booking.room.occupied!
-        redirect_to admin_bookings_path, notice: "Гость заселён."
+        redirect_back fallback_location: admin_booking_path(@booking), notice: "Гость заселён."
       end
     end
 
     def check_out
       @booking.checked_out!
       @booking.room.available!
-      redirect_to admin_bookings_path, notice: "Гость выселен."
+      redirect_back fallback_location: admin_booking_path(@booking), notice: "Гость выселен."
     end
 
     def cancel
       @booking.cancelled!
-      redirect_to admin_bookings_path, notice: "Бронь отменена."
+      redirect_back fallback_location: admin_booking_path(@booking), notice: "Бронь отменена."
     end
 
     private
 
     def set_booking
       @booking = Booking.find(params[:id])
+    end
+
+    def parse_month(value)
+      return Date.current.beginning_of_month if value.blank?
+
+      Date.strptime(value, "%Y-%m")
+    rescue ArgumentError
+      Date.current.beginning_of_month
+    end
+
+    def visible_bookings(bookings, range_start, range_end)
+      bookings.sort_by(&:check_in).map do |booking|
+        start = [ booking.check_in, range_start ].max
+        finish = [ booking.check_out, range_end.next_day ].min
+        next if start >= finish
+
+        {
+          booking: booking,
+          col_start: (start - range_start).to_i,
+          col_span: (finish - start).to_i
+        }
+      end.compact
     end
 
     def booking_params

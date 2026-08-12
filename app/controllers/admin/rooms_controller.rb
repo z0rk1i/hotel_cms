@@ -27,7 +27,7 @@ module Admin
       @room = Room.new(room_params)
 
       if @room.save
-        redirect_to admin_rooms_path, notice: "Номер создан."
+        redirect_to_previous admin_rooms_path, notice: "Номер создан."
       else
         render :new, status: :unprocessable_entity
       end
@@ -37,7 +37,7 @@ module Admin
 
     def update
       if @room.update(room_params)
-        redirect_to admin_rooms_path, notice: "Номер обновлён."
+        redirect_to_previous admin_rooms_path, notice: "Номер обновлён."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -45,9 +45,9 @@ module Admin
 
     def destroy
       if @room.destroy
-        redirect_to admin_rooms_path, notice: "Номер удалён."
+        redirect_back_or admin_rooms_path, notice: "Номер удалён."
       else
-        redirect_to admin_rooms_path, alert: @room.errors.full_messages.to_sentence
+        redirect_back_or admin_rooms_path, alert: @room.errors.full_messages.to_sentence
       end
     end
 

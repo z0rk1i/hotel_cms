@@ -11,17 +11,17 @@ module Admin
 
     def approve
       @review.approved!
-      redirect_to admin_reviews_path, notice: "Отзыв одобрен."
+      redirect_back_or admin_reviews_path, notice: "Отзыв одобрен."
     end
 
     def reject
       @review.rejected!
-      redirect_to admin_reviews_path, notice: "Отзыв отклонён."
+      redirect_back_or admin_reviews_path, notice: "Отзыв отклонён."
     end
 
     def destroy
       @review.destroy
-      redirect_to admin_reviews_path, notice: "Отзыв удалён."
+      redirect_back_or admin_reviews_path, notice: "Отзыв удалён."
     end
 
     private

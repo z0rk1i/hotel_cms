@@ -14,7 +14,7 @@ module Admin
       @room_category = RoomCategory.new(room_category_params)
 
       if @room_category.save
-        redirect_to admin_room_categories_path, notice: "Категория создана."
+        redirect_to_previous admin_room_categories_path, notice: "Категория создана."
       else
         render :new, status: :unprocessable_entity
       end
@@ -24,7 +24,7 @@ module Admin
 
     def update
       if @room_category.update(room_category_params)
-        redirect_to admin_room_categories_path, notice: "Категория обновлена."
+        redirect_to_previous admin_room_categories_path, notice: "Категория обновлена."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -32,9 +32,9 @@ module Admin
 
     def destroy
       if @room_category.destroy
-        redirect_to admin_room_categories_path, notice: "Категория удалена."
+        redirect_back_or admin_room_categories_path, notice: "Категория удалена."
       else
-        redirect_to admin_room_categories_path, alert: @room_category.errors.full_messages.to_sentence
+        redirect_back_or admin_room_categories_path, alert: @room_category.errors.full_messages.to_sentence
       end
     end
 

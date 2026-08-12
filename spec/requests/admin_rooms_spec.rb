@@ -50,4 +50,26 @@ RSpec.describe "Admin rooms", type: :request do
       expect(response).to redirect_to(edit_admin_room_path(room))
     end
   end
+
+  describe "redirects after successful changes" do
+    it "redirects to the previous page after creating" do
+      category = create(:room_category)
+      get new_admin_room_path, headers: { "HTTP_REFERER" => admin_rooms_path }
+      post admin_rooms_path, params: { room: { number: "777", category_id: category.id, floor: 1, capacity: 2, price_per_night: 1000 } }
+      expect(response).to redirect_to(admin_rooms_path)
+    end
+
+    it "redirects to the previous page after updating" do
+      room = create(:room)
+      get edit_admin_room_path(room), headers: { "HTTP_REFERER" => admin_rooms_path }
+      patch admin_room_path(room), params: { room: { number: "778" } }
+      expect(response).to redirect_to(admin_rooms_path)
+    end
+
+    it "falls back to the index when there is no previous page" do
+      category = create(:room_category)
+      post admin_rooms_path, params: { room: { number: "779", category_id: category.id, floor: 1, capacity: 2, price_per_night: 1000 } }
+      expect(response).to redirect_to(admin_rooms_path)
+    end
+  end
 end
