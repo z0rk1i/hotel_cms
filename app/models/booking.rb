@@ -1,6 +1,9 @@
 class Booking < ApplicationRecord
+  include ConstraintGuarded
   include StatusNotifiable
   include StatusTransitionable
+
+  guard_constraint_error :room, "уже забронирован на выбранные даты"
 
   belongs_to :guest
   belongs_to :room

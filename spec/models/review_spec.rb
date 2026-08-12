@@ -55,4 +55,28 @@ RSpec.describe Review, type: :model do
       expect(build(:review, reviewable_type: "Room", reviewable_id: 999_999)).to be_invalid
     end
   end
+
+  describe "uniqueness" do
+    it "rejects a second review by the same user on the same object" do
+      review = create(:review)
+      duplicate = build(:review, user: review.user, reviewable: review.reviewable)
+
+      expect(duplicate).to be_invalid
+      expect(duplicate.errors[:reviewable]).to include("вы уже оставляли отзыв об этом объекте")
+    end
+
+    it "allows the same user to review different objects" do
+      user = create(:user)
+      create(:review, user: user, reviewable: create(:room))
+      expect(build(:review, user: user, reviewable: create(:service))).to be_valid
+    end
+
+    it "enforces uniqueness at the database level" do
+      existing = create(:review)
+      duplicate = Review.new(user: existing.user, reviewable: existing.reviewable, rating: 5, body: "Ещё раз")
+
+      expect(duplicate.save(validate: false)).to be(false)
+      expect(duplicate.errors[:reviewable]).to include("вы уже оставляли отзыв об этом объекте")
+    end
+  end
 end

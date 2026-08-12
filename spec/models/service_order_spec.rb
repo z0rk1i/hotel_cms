@@ -14,6 +14,11 @@ RSpec.describe ServiceOrder, type: :model do
     expect(build(:service_order, service_date: nil)).to be_invalid
   end
 
+  it "rejects a service date in the past" do
+    expect(build(:service_order, service_date: Date.current - 1)).to be_invalid
+    expect(build(:service_order, service_date: Date.current)).to be_valid
+  end
+
   it "requires quantity of at least 1" do
     expect(build(:service_order, quantity: 0)).to be_invalid
     expect(build(:service_order, quantity: nil)).to be_invalid

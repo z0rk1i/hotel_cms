@@ -161,4 +161,34 @@ RSpec.describe Booking, type: :model do
       expect(room.reload).to be_available
     end
   end
+
+  describe "database constraints" do
+    it "rejects overlapping active bookings at the database level" do
+      existing = create(:booking, :confirmed, check_in: Date.current + 10, check_out: Date.current + 12)
+      overlap = Booking.new(room: existing.room, guest: existing.guest,
+                            check_in: existing.check_in + 1, check_out: existing.check_out + 1)
+
+      expect(overlap.save(validate: false)).to be(false)
+      expect(overlap.errors[:room]).to include("уже забронирован на выбранные даты")
+    end
+
+    it "allows overlapping cancelled bookings at the database level" do
+      existing = create(:booking, :cancelled, check_in: Date.current + 10, check_out: Date.current + 12)
+      overlap = Booking.new(room: existing.room, guest: existing.guest,
+                            check_in: existing.check_in, check_out: existing.check_out)
+
+      expect(overlap.save(validate: false)).to be(true)
+    end
+
+    it "enforces the exclusion constraint via raw SQL" do
+      existing = create(:booking, :confirmed, check_in: Date.current + 10, check_out: Date.current + 12)
+
+      expect do
+        ActiveRecord::Base.connection.execute(<<~SQL.squish)
+          INSERT INTO bookings (room_id, guest_id, check_in, check_out, guests_count, status, total_price, created_at, updated_at)
+          VALUES (#{existing.room_id}, #{existing.guest_id}, '#{(existing.check_in + 1).iso8601}', '#{(existing.check_out + 1).iso8601}', 1, 'pending', 0, NOW(), NOW())
+        SQL
+      end.to raise_error(ActiveRecord::StatementInvalid)
+    end
+  end
 end

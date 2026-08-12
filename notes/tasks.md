@@ -13,9 +13,10 @@ created: 2026-08-12
 - [x] Открыть vault в Obsidian: «Open folder as vault» → `~/ai/projects/hotel_cms`
 - [x] Аудит бизнес-логики и исправление багов (телефон гостя, maintenance/cleaning номера, фантомные user/guest, переходы статусов, guests_count, полиморфные отзывы, slug)
 - [x] Рефакторинг: dry-monads (BookingCreator, RoomAvailability), концерны StatusTransitionable/StatusNotifiable, синхронизация статуса номера в модели
+- [x] Exclusion constraint на брони (btree_gist) — защита от гонок
+- [x] Unique index на отзывы (user, reviewable) + валидация
+- [x] Валидация service_date не в прошлом
 
 ## Идеи на будущее
 
-- [ ] DB-ограничение на непересечение броней (exclusion constraint) — защита от гонок
-- [ ] `service_date` не в прошлом для заказов услуг
-- [ ] Запрет повторных отзывов на один объект от одного пользователя
+- [ ] Ограничение: услуга не может быть заказана без активной брони (сервисы привязаны к пребыванию)

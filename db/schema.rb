@@ -10,8 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_201625) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_123100) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -72,6 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_201625) do
     t.index ["room_id"], name: "index_bookings_on_room_id"
     t.index ["status"], name: "index_bookings_on_status"
     t.index ["user_id"], name: "index_bookings_on_user_id"
+    t.exclusion_constraint "room_id WITH =, daterange(check_in, check_out) WITH &&", where: "(status)::text <> 'cancelled'::text", using: :gist, name: "no_overlapping_bookings"
   end
 
   create_table "gallery_images", force: :cascade do |t|
@@ -138,7 +140,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_201625) do
     t.bigint "user_id", null: false
     t.index ["reviewable_type", "reviewable_id", "status"], name: "index_reviews_on_reviewable_type_and_reviewable_id_and_status"
     t.index ["reviewable_type", "reviewable_id"], name: "index_reviews_on_reviewable"
-    t.index ["user_id", "reviewable_type", "reviewable_id"], name: "index_reviews_on_user_id_and_reviewable_type_and_reviewable_id"
+    t.index ["user_id", "reviewable_type", "reviewable_id"], name: "index_reviews_on_user_reviewable_unique", unique: true
     t.index ["user_id"], name: "index_reviews_on_user_id"
   end
 

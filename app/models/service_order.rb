@@ -15,6 +15,7 @@ class ServiceOrder < ApplicationRecord
 
   validates :service_date, presence: true
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validate :service_date_not_in_past
 
   before_save :calculate_total_price
 
@@ -29,6 +30,12 @@ class ServiceOrder < ApplicationRecord
   end
 
   private
+
+  def service_date_not_in_past
+    return if service_date.blank?
+
+    errors.add(:service_date, "не может быть в прошлом") if service_date < Date.current
+  end
 
   def calculate_total_price
     self.total_price = service.price.present? ? service.price * quantity : 0
