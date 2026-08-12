@@ -12,7 +12,7 @@ module Admin
         rooms_available: Room.where.not(id: booked_tonight_ids).where.not(id: unavailable_ids).count,
         rooms_occupied: occupied_room_ids.count,
         active_bookings: Booking.active.count,
-        upcoming_check_ins: Booking.upcoming.where(status: %i[pending confirmed]).limit(8),
+        upcoming_check_ins: Booking.upcoming.where(status: %i[pending confirmed]).includes(:guest, :room).limit(8),
         checked_in_now: checked_in_now.includes(:room, :guest),
         monthly_revenue: Booking.checked_out.where(check_out: today.beginning_of_month..today.end_of_month).sum(:total_price),
         occupancy_rate: occupancy_rate(today)
