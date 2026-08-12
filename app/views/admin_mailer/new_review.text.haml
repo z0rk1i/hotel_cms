@@ -1,0 +1,10 @@
+Новый отзыв
+
+Отзыв #{@review.user.full_name} ожидает модерации.
+
+Объект: #{reviewable_label(@review)}
+Оценка: #{@review.rating} / 5
+Текст:
+#{@review.body}
+
+Модерация отзывов: #{admin_reviews_url}

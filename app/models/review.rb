@@ -4,6 +4,8 @@ class Review < ApplicationRecord
   belongs_to :reviewable, polymorphic: true
   belongs_to :user
 
+  after_commit :notify_admins_of_new_review, on: :create
+
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected" }
 
   REVIEWABLE_TYPES = %w[Room Service].freeze
@@ -67,5 +69,9 @@ class Review < ApplicationRecord
     else
       false
     end
+  end
+
+  def notify_admins_of_new_review
+    AdminMailer.new_review(self).deliver_later if Administrator.exists?
   end
 end

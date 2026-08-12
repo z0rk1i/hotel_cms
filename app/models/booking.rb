@@ -38,6 +38,7 @@ class Booking < ApplicationRecord
 
   after_commit :deliver_created_email, on: :create
   after_update :deliver_status_email, if: -> { saved_change_to_status? }
+  after_commit :notify_admins_of_new_booking, on: :create
 
   scope :active, -> { where.not(status: :cancelled) }
   scope :occupying, -> { where(status: %i[confirmed checked_in]) }
@@ -136,6 +137,10 @@ class Booking < ApplicationRecord
 
   def email_deliverable?
     user&.email_deliverable?
+  end
+
+  def notify_admins_of_new_booking
+    AdminMailer.new_booking(self).deliver_later if Administrator.exists?
   end
 
   def notification_kind

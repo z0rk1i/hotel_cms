@@ -1,0 +1,13 @@
+Новая бронь №#{@booking.id}
+
+На сайте отеля создана новая бронь, ожидающая подтверждения.
+
+Гость: #{@booking.guest.full_name}
+Контакт: #{[ @booking.user&.email, @booking.guest.phone ].compact.join(", ")}
+Номер: №#{@booking.room.number} — #{@booking.room.category.name}
+Заезд: #{I18n.l(@booking.check_in, format: :long)}
+Выезд: #{I18n.l(@booking.check_out, format: :long)}
+Гостей: #{@booking.guests_count}
+Стоимость: #{number_to_currency(@booking.total_price, unit: "₽", precision: 0)}
+
+Открыть бронь в админке: #{admin_booking_url(@booking)}

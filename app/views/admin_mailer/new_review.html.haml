@@ -1,0 +1,16 @@
+%div{:style => "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #0f172a;"}
+  %h1{:style => "font-size: 20px; margin: 0 0 12px;"} Новый отзыв
+  %p{:style => "margin: 0 0 16px; font-size: 15px; line-height: 1.5;"}
+    Отзыв #{@review.user.full_name} ожидает модерации.
+  %table{:style => "width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 14px;"}
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Объект
+      %td{:style => "padding: 6px 0;"}= reviewable_label(@review)
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Оценка
+      %td{:style => "padding: 6px 0;"}= "#{@review.rating} / 5"
+    %tr
+      %td{:style => "padding: 6px 0; color: #64748b;"} Текст
+      %td{:style => "padding: 6px 0;"}= @review.body
+  %p{:style => "margin: 0 0 16px;"}
+    = link_to "Модерация отзывов", admin_reviews_url
