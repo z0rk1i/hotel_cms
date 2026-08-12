@@ -95,4 +95,31 @@ RSpec.describe Room, type: :model do
       expect(Room.available_now.count).to eq(1)
     end
   end
+
+  describe "maintenance/cleaning guard" do
+    it "rejects maintenance while a guest is checked in" do
+      room = create(:room)
+      create(:booking, :checked_in, room: room, check_in: Date.current, check_out: Date.current + 2)
+
+      room.status = :maintenance
+      expect(room).to be_invalid
+      expect(room.errors[:status]).to include("нельзя перевести в ремонт/уборку, пока в номере гости")
+    end
+
+    it "rejects cleaning while a guest is checked in today" do
+      room = create(:room)
+      create(:booking, :confirmed, room: room, check_in: Date.current, check_out: Date.current + 2)
+
+      room.status = :cleaning
+      expect(room).to be_invalid
+    end
+
+    it "allows maintenance when no guests are present today" do
+      room = create(:room)
+      create(:booking, :confirmed, room: room, check_in: Date.current + 3, check_out: Date.current + 5)
+
+      room.status = :maintenance
+      expect(room).to be_valid
+    end
+  end
 end

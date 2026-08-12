@@ -18,6 +18,7 @@ class Room < ApplicationRecord
 
   validate :photo_count_within_limit
   validate :photo_size_within_limit
+  validate :no_maintenance_while_guests_inside, on: :update, if: -> { status_changed? && (maintenance? || cleaning?) }
 
   scope :available_now, -> { where(status: :available) }
   scope :with_all_amenities, ->(ids) do
@@ -42,6 +43,12 @@ class Room < ApplicationRecord
   end
 
   private
+
+  def no_maintenance_while_guests_inside
+    return unless bookings.occupying_overlapping(Date.current, Date.current + 1).exists?
+
+    errors.add(:status, "нельзя перевести в ремонт/уборку, пока в номере гости")
+  end
 
   def photo_count_within_limit
     return if photos.count <= MAX_PHOTOS
