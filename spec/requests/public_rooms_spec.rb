@@ -49,8 +49,12 @@ RSpec.describe "Public room pages", type: :request do
 
     it "shows approved reviews and hides pending ones" do
       room = create(:room)
-      approved = create(:review, :approved, reviewable: room, body: "Отличный номер")
-      create(:review, reviewable: room, body: "Ожидает модерации")
+      approved_user = create(:user)
+      give_user_a_stay!(approved_user, room)
+      pending_user = create(:user)
+      give_user_a_stay!(pending_user, room)
+      approved = create(:review, :approved, reviewable: room, user: approved_user, body: "Отличный номер")
+      create(:review, reviewable: room, user: pending_user, body: "Ожидает модерации")
 
       get room_path(room)
       expect(response.body).to include("Отличный номер")
@@ -98,6 +102,7 @@ RSpec.describe "Public room pages", type: :request do
     it "creates a pending review for a room and redirects back" do
       user = create(:user)
       room = create(:room)
+      give_user_a_stay!(user, room)
       sign_in user
 
       expect do
@@ -116,6 +121,7 @@ RSpec.describe "Public room pages", type: :request do
     it "creates a pending review for a service" do
       user = create(:user)
       service = create(:service)
+      give_user_a_stay!(user, service)
       sign_in user
 
       expect do
@@ -128,9 +134,24 @@ RSpec.describe "Public room pages", type: :request do
       expect(response).to redirect_to(service_path(service))
     end
 
+    it "rejects a review without a completed stay" do
+      user = create(:user)
+      room = create(:room)
+      sign_in user
+
+      expect do
+        post reviews_path, params: {
+          review: { reviewable_type: "Room", reviewable_id: room.id, rating: 5, body: "Без проживания" }
+        }
+      end.not_to change(Review, :count)
+
+      expect(response).to redirect_to(room_path(room, anchor: "reviews"))
+    end
+
     it "rejects a review without rating or body" do
       user = create(:user)
       room = create(:room)
+      give_user_a_stay!(user, room)
       sign_in user
 
       expect do

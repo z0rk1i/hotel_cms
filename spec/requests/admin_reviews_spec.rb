@@ -5,9 +5,16 @@ RSpec.describe "Admin reviews", type: :request do
 
   before { sign_in admin }
 
+  def create_review(*traits, **overrides)
+    user = create(:user)
+    room = create(:room)
+    give_user_a_stay!(user, room)
+    create(:review, *traits, user: user, reviewable: room, **overrides)
+  end
+
   describe "GET /admin/reviews" do
     it "lists reviews with author and object" do
-      review = create(:review, body: "Шикарный номер")
+      review = create_review(body: "Шикарный номер")
 
       get admin_reviews_path
       expect(response).to have_http_status(:ok)
@@ -16,8 +23,8 @@ RSpec.describe "Admin reviews", type: :request do
     end
 
     it "filters by status" do
-      approved = create(:review, :approved, body: "Одобренный отзыв")
-      create(:review, body: "Ожидает")
+      approved = create_review(:approved, body: "Одобренный отзыв")
+      create_review(body: "Ожидает")
 
       get admin_reviews_path(status: "approved")
       expect(response.body).to include("Одобренный отзыв")
@@ -27,7 +34,7 @@ RSpec.describe "Admin reviews", type: :request do
 
   describe "PATCH /admin/reviews/:id/approve" do
     it "approves a pending review" do
-      review = create(:review)
+      review = create_review
       patch approve_admin_review_path(review)
       expect(review.reload).to be_approved
       expect(response).to redirect_to(admin_reviews_path)
@@ -36,7 +43,7 @@ RSpec.describe "Admin reviews", type: :request do
 
   describe "PATCH /admin/reviews/:id/reject" do
     it "rejects a pending review" do
-      review = create(:review)
+      review = create_review
       patch reject_admin_review_path(review)
       expect(review.reload).to be_rejected
     end
@@ -44,7 +51,7 @@ RSpec.describe "Admin reviews", type: :request do
 
   describe "DELETE /admin/reviews/:id" do
     it "deletes a review" do
-      review = create(:review)
+      review = create_review
       expect { delete admin_review_path(review) }.to change(Review, :count).by(-1)
       expect(response).to redirect_to(admin_reviews_path)
     end

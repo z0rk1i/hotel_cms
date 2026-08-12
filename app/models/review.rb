@@ -14,6 +14,7 @@ class Review < ApplicationRecord
   validates :body, presence: true, length: { maximum: 5000 }
   validate :reviewable_type_allowed
   validate :one_review_per_user
+  validate :reviewable_stayed
 
   scope :approved, -> { where(status: :approved) }
   scope :ordered, -> { order(created_at: :desc) }
@@ -48,5 +49,23 @@ class Review < ApplicationRecord
     duplicate = self.class.where(user_id: user_id, reviewable_type: reviewable_type, reviewable_id: reviewable_id)
                           .where.not(id: id)
     errors.add(:reviewable, "вы уже оставляли отзыв об этом объекте") if duplicate.exists?
+  end
+
+  def reviewable_stayed
+    return if user.blank? || reviewable.blank?
+    return if stayed_for_reviewable?
+
+    errors.add(:base, "оставить отзыв можно только после проживания или заказа услуги")
+  end
+
+  def stayed_for_reviewable?
+    case reviewable_type
+    when "Room"
+      user.bookings.where(room_id: reviewable_id, status: %i[checked_in checked_out]).exists?
+    when "Service"
+      user.service_orders.where(service_id: reviewable_id, status: :confirmed).exists?
+    else
+      false
+    end
   end
 end
