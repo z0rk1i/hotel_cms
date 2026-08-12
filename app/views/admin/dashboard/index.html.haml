@@ -26,13 +26,14 @@
         = link_to "Все брони", admin_bookings_path, class: "text-sm text-indigo-600 hover:text-indigo-800"
       %ul.divide-y.divide-slate-100.dark:divide-slate-800
         - @stats[:upcoming_check_ins].each do |booking|
-          %li.px-5.py-3.flex.items-center.justify-between
-            %div
-              .font-medium.text-slate-800.dark:text-slate-100= booking.guest.full_name
-              .text-sm.text-slate-500.dark:text-slate-400
-                = booking.room.label
-                · #{l(booking.check_in)} → #{l(booking.check_out)}
-            = content_tag :span, booking_status_label(booking.status), class: status_badge_class(booking.status)
+          %li
+            = link_to edit_admin_booking_path(booking), class: "px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors" do
+              %div
+                .font-medium.text-slate-800.dark:text-slate-100= booking.guest.full_name
+                .text-sm.text-slate-500.dark:text-slate-400
+                  = booking.room.label
+                  · #{l(booking.check_in)} → #{l(booking.check_out)}
+              = content_tag :span, booking_status_label(booking.status), class: status_badge_class(booking.status)
         - if @stats[:upcoming_check_ins].empty?
           %li.px-5.py-6.text-sm.text-slate-400.dark:text-slate-500.text-center Нет предстоящих заездов
     .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
