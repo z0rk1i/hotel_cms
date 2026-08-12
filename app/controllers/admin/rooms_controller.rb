@@ -52,10 +52,10 @@ module Admin
     end
 
     def destroy_photo
-      @room = Room.find(params[:id])
-      photo = @room.photos.find(params[:photo_id])
+      room = Room.find(params[:room_id])
+      photo = room.photos.find(params[:photo_id])
       photo.purge
-      redirect_to edit_admin_room_path(@room), notice: "Фото удалено."
+      redirect_to edit_admin_room_path(room), notice: "Фото удалено."
     end
 
     private

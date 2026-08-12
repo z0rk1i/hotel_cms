@@ -36,4 +36,18 @@ RSpec.describe "Admin rooms", type: :request do
       expect(response.body).not_to include("A")
     end
   end
+
+  describe "DELETE /admin/rooms/:room_id/photo/:photo_id" do
+    it "purges a photo of the room" do
+      room = create(:room)
+      room.photos.attach(io: File.open(Rails.root.join("spec/fixtures/files/pixel.png")), filename: "p.png", content_type: "image/png")
+      photo = room.photos.first
+
+      expect do
+        delete admin_room_photo_path(room, photo)
+      end.to change { room.photos.reload.count }.by(-1)
+
+      expect(response).to redirect_to(edit_admin_room_path(room))
+    end
+  end
 end

@@ -2,12 +2,44 @@
   <%= link_to "← Назад к номерам", root_path(anchor: "rooms"), class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" %>
 
   <div class="mt-6 grid lg:grid-cols-2 gap-8">
-    <div>
+    <div data-controller="photo-gallery">
       <% if @room.photos.any? %>
-        <%= image_tag @room.photos.first, class: "w-full h-64 object-cover rounded-xl" %>
+        <%= image_tag @room.photos.first, data: { action: "click->photo-gallery#open", photo_gallery_index_param: 0 },
+            class: "w-full h-64 object-cover rounded-xl cursor-zoom-in" %>
+        <% if @room.photos.count > 1 %>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <% @room.photos.drop(1).each_with_index do |photo, i| %>
+              <%= image_tag photo, data: { action: "click->photo-gallery#open", photo_gallery_index_param: i + 1 },
+                  class: "w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700 cursor-zoom-in" %>
+            <% end %>
+          </div>
+        <% end %>
       <% else %>
         <div class="w-full h-64 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center text-slate-300 text-sm">Нет фото</div>
       <% end %>
+
+      <div data-photo-gallery-target="overlay"
+          class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
+          data-action="click->photo-gallery#backdropClick">
+        <button data-photo-gallery-target="prevButton" data-action="click->photo-gallery#previous"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl flex items-center justify-center transition-colors" aria-label="Предыдущее фото">←</button>
+
+        <div class="relative w-full max-w-5xl px-20">
+          <% @room.photos.each_with_index do |photo, i| %>
+            <%= image_tag photo, data: { photo_gallery_target: "slide" },
+                class: "#{i.zero? ? '' : 'hidden'} w-full max-h-[85vh] object-contain rounded-lg" %>
+          <% end %>
+        </div>
+
+        <button data-photo-gallery-target="nextButton" data-action="click->photo-gallery#next"
+            class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl flex items-center justify-center transition-colors" aria-label="Следующее фото">→</button>
+
+        <button data-action="click->photo-gallery#close"
+            class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl flex items-center justify-center transition-colors" aria-label="Закрыть">✕</button>
+
+        <span data-photo-gallery-target="counter"
+            class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">1 / <%= @room.photos.count %></span>
+      </div>
     </div>
 
     <div>

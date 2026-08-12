@@ -56,12 +56,12 @@
       <%= field_label(form, :photos, "Фотографии номера") %>
       <%= form.file_field :photos, multiple: true, accept: "image/*",
           class: "block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 dark:file:bg-indigo-900/40 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/60" %>
-      <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">Можно выбрать несколько изображений</p>
+      <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">Можно выбрать до <%= Room::MAX_PHOTOS %> изображений, каждое до <%= Room::MAX_PHOTO_SIZE / 1.megabyte %> МБ (сейчас: <%= @room.photos.count %>)</p>
     </div>
 
     <% if @room.photos.any? %>
       <div class="mt-4 grid grid-cols-4 gap-3">
-        <% @room.photos.each do |photo| %>
+        <% @room.photos.select { |photo| photo.persisted? && photo.blob.persisted? }.each do |photo| %>
           <div class="relative">
             <%= image_tag photo, class: "w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700" %>
             <%= button_to "Удалить", admin_room_photo_path(@room, photo),

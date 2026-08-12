@@ -21,6 +21,39 @@ RSpec.describe Room, type: :model do
     end
   end
 
+  describe "photo limit" do
+    let(:room) { create(:room) }
+    let(:file) { fixture_file_upload(Rails.root.join("spec/fixtures/files/pixel.png"), "image/png") }
+
+    it "accepts up to 10 photos" do
+      10.times { room.photos.attach(file) }
+      expect(room).to be_valid
+    end
+
+    it "rejects more than 10 photos" do
+      11.times { room.photos.attach(file) }
+      expect(room).to be_invalid
+      expect(room.errors[:photos]).to include("не более 10 фотографий на номер")
+    end
+  end
+
+  describe "photo size limit" do
+    let(:room) { create(:room) }
+    let(:small_file) { fixture_file_upload(Rails.root.join("spec/fixtures/files/pixel.png"), "image/png") }
+    let(:large_file) { fixture_file_upload(Rails.root.join("spec/fixtures/files/large.png"), "image/png") }
+
+    it "accepts photos up to 10 MB" do
+      room.photos.attach(small_file)
+      expect(room).to be_valid
+    end
+
+    it "rejects photos larger than 10 MB" do
+      room.photos.attach(large_file)
+      expect(room).to be_invalid
+      expect(room.errors[:photos]).to include(/больше 10 МБ/)
+    end
+  end
+
   describe "#label" do
     it "combines number and category name" do
       room = build(:room, number: "101")

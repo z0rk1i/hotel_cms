@@ -14,7 +14,13 @@ class Room < ApplicationRecord
   validates :price_per_night, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :size_sqm, numericality: { greater_than: 0 }, allow_nil: true
 
+  validate :photo_count_within_limit
+  validate :photo_size_within_limit
+
   scope :available_now, -> { where(status: :available) }
+
+  MAX_PHOTOS = 10
+  MAX_PHOTO_SIZE = 10.megabytes
 
   def label
     "#{number} — #{category.name}"
@@ -22,5 +28,21 @@ class Room < ApplicationRecord
 
   def occupied_during?(start_date, end_date, exclude_booking: nil)
     bookings.active_overlapping(start_date, end_date).where.not(id: exclude_booking&.id).exists?
+  end
+
+  private
+
+  def photo_count_within_limit
+    return if photos.count <= MAX_PHOTOS
+
+    errors.add(:photos, "не более #{MAX_PHOTOS} фотографий на номер")
+  end
+
+  def photo_size_within_limit
+    photos.each do |photo|
+      next unless photo.blob&.byte_size.to_i > MAX_PHOTO_SIZE
+
+      errors.add(:photos, "фотография #{photo.filename} больше 10 МБ")
+    end
   end
 end
