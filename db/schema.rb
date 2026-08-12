@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_123103) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -134,6 +134,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_123103) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_pages_on_slug", unique: true
+  end
+
+  create_table "ratelimit_counters", force: :cascade do |t|
+    t.string "classification", null: false
+    t.integer "count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.bigint "epoch", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name", "classification", "epoch"], name: "index_ratelimit_counters_unique", unique: true
   end
 
   create_table "reviews", force: :cascade do |t|

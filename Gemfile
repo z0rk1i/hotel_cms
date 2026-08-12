@@ -93,3 +93,5 @@ group :test do
 end
 
 gem "dry-monads", "~> 1.10"
+
+gem "rack-ratelimit", "~> 1.2"
