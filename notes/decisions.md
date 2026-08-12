@@ -9,6 +9,16 @@ created: 2026-08-12
 
 Значимые решения проекта в хронологическом порядке. Новые записи — сверху.
 
+## 2026-08-12 — Рефакторинг: общий CRUD и декомпозиция Booking/главной
+
+- **Контекст:** 9 контроллеров и спек админки — копии одного и того же CRUD (index/new/create/edit/update/destroy была одинаковой), Booking разросся до 171 строки со смешанными обязанностями, главная фильтровала номера по категориям `select`-ом прямо во вьюхе.
+- **Решение:**
+  - `spec/support/shared_examples/admin_crud.rb` — общие примеры «admin CRUD resource» (список/форма/создание/правка/удаление + невалидные сценарии); на них переведены amenities, price_periods, gallery_images, а новый `admin_crud_resources_spec` впервые покрывает services/news/pages/room_categories. Важный нюанс shared-примера удаления: `change(model_class, :count)` снимает значение ДО выполнения блока, поэтому `record` создаётся вне `expect { }` (иначе создание и удаление внутри блока дают 0).
+  - Концерны Booking: `BookingPricing` (расчёт цены NightlyPricing), `RoomStatusSyncer` (sync_room_status + free_room), `BookingAudit` (BookingAuditLog), `BookingNotifier` (письма админу, after_commit). Booking: 171 → 123 строки. `cancel_pending_service_orders` остался в модели — маленькое доменное правило.
+  - `Admin::CrudController` — базовый класс CRUD-контроллеров: index (из `index_records`), new (из `new_record`), create/update/destroy + `set_resource`. Ivar выводится из имени контроллера (`@#{controller_name.singularize}`), поэтому вьюхи/формы не менялись; подкласс задаёт `model_class`, `resource_params`, `resource_index_path` и тексты notice. Базовый destroy сам отдаёт `redirect_back_or` с `alert` из `errors.full_messages` при неудачном удалении.
+  - Главная: `@rooms_by_category = @rooms.group_by(&:category_id)` вычисляется в контроллере после фильтрации; из вьюхи убран `select { |r| r.category_id == ... }`, guard «пустая категория» стал не нужен (категории уже ограничены id номеров).
+- **Статус:** ✅ реализовано (385 тестов, rubocop 0)
+
 ## 2026-08-12 — Ценовые периоды и коэффициент выходных (динамические цены)
 
 - **Контекст:** цена при бронировании была фиксированной (`nights × price_per_night`) — нельзя задать сезонные повышения и выходные надбавки; отель терял выручку в высокий сезон.

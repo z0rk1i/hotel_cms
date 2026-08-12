@@ -30,6 +30,7 @@ created: 2026-08-12
 - [x] Удалён неиспользуемый hello_controller.js
 - [x] Экспорт бронирований и гостей в CSV из админки (с учётом фильтров статуса и поиска)
 - [x] Ценовые периоды и коэффициент выходных: NightlyPricing по ночам, CRUD `/admin/price_periods`, поле weekend_multiplier у номера, разбивка по ночам на странице брони (351 тест)
+- [x] Рефакторинг: shared_examples «admin CRUD resource» для CRUD-спек, концерны Booking (pricing/room-sync/audit/notifier), базовый `Admin::CrudController`, группировка номеров по категориям в контроллере главной (385 тестов)
 
 ## Идеи на будущее
 
