@@ -14,6 +14,7 @@ class Room < ApplicationRecord
   validates :floor, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :capacity, presence: true, numericality: { greater_than: 0, only_integer: true }
   validates :price_per_night, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :weekend_multiplier, numericality: { greater_than: 0 }, allow_nil: true
   validates :size_sqm, numericality: { greater_than: 0 }, allow_nil: true
 
   validate :photo_count_within_limit

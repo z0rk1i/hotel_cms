@@ -39,9 +39,20 @@ rooms_data.each do |number, category, floor, size, capacity|
     room.size_sqm = size
     room.capacity = capacity
     room.price_per_night = category.base_price + 200
+    room.weekend_multiplier = 1.2
     room.status = :available
     room.description = "#{category.name} на #{floor} этаже. #{capacity} гостя, #{size} м²."
   end
+end
+
+# --- Price periods (dynamic pricing) ---
+current_year = Date.current.year
+price_periods = [
+  { name: "Высокий сезон", starts_on: Date.new(current_year, 7, 1), ends_on: Date.new(current_year, 8, 31), multiplier: 1.3 },
+  { name: "Новогодние праздники", starts_on: Date.new(current_year, 12, 25), ends_on: Date.new(current_year + 1, 1, 10), multiplier: 1.5 }
+]
+price_periods.each do |attrs|
+  PricePeriod.find_or_create_by!(name: attrs[:name]) { |period| period.assign_attributes(attrs.except(:name)) }
 end
 
 # --- Amenities ---

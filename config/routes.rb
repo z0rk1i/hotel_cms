@@ -32,6 +32,7 @@ Rails.application.routes.draw do
       delete "photo/:photo_id", to: "rooms#destroy_photo", as: :photo
     end
     resources :amenities
+    resources :price_periods
     resources :guests
     resources :bookings do
       collection do

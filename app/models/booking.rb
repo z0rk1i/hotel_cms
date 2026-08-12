@@ -106,7 +106,7 @@ class Booking < ApplicationRecord
   end
 
   def calculate_total_price
-    self.total_price = nights * room.price_per_night
+    self.total_price = NightlyPricing.new(room: room, check_in: check_in, check_out: check_out).total
   end
 
   def sync_room_status

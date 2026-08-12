@@ -32,6 +32,11 @@
         = number_input(form, :price_per_night, step: "0.01", min: 0)
         = field_errors(form, :price_per_night)
       %div
+        = field_label(form, :weekend_multiplier, "Коэффициент выходных")
+        = number_input(form, :weekend_multiplier, step: "0.01", min: 1)
+        %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 1.2 — пт/сб на 20% дороже
+        = field_errors(form, :weekend_multiplier)
+      %div
         = field_label(form, :status, "Статус")
         = select_input(form, :status, Room.statuses.keys.map { |s| [room_status_label(s), s] }, selected: @room.status)
         = field_errors(form, :status)

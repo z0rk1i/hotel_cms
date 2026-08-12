@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_160002) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_160004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -147,6 +147,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160002) do
     t.index ["slug"], name: "index_pages_on_slug", unique: true
   end
 
+  create_table "price_periods", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ends_on", null: false
+    t.decimal "multiplier", precision: 5, scale: 2, default: "1.0", null: false
+    t.string "name", null: false
+    t.date "starts_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["starts_on", "ends_on"], name: "index_price_periods_on_starts_on_and_ends_on"
+  end
+
   create_table "ratelimit_counters", force: :cascade do |t|
     t.string "classification", null: false
     t.integer "count", default: 0, null: false
@@ -203,6 +213,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160002) do
     t.date "unavailable_from"
     t.date "unavailable_until"
     t.datetime "updated_at", null: false
+    t.decimal "weekend_multiplier", precision: 5, scale: 2, default: "1.0", null: false
     t.index ["category_id"], name: "index_rooms_on_category_id"
     t.index ["number"], name: "index_rooms_on_number", unique: true
     t.index ["status"], name: "index_rooms_on_status"

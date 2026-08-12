@@ -36,6 +36,14 @@ class RoomAvailability
         .bookable_on(start_date, end_date)
         .order(:floor, :number)
         .includes(:category)
-        .map { |room| { id: room.id, label: room.label, price: room.price_per_night.to_f, capacity: room.capacity } }
+        .map do |room|
+          {
+            id: room.id,
+            label: room.label,
+            price: room.price_per_night.to_f,
+            total_price: NightlyPricing.new(room: room, check_in: start_date, check_out: end_date).total,
+            capacity: room.capacity
+          }
+        end
   end
 end

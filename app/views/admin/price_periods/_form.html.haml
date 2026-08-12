@@ -1,0 +1,29 @@
+= form_with model: [:admin, @price_period], class: "space-y-6" do |form|
+  - if @price_period.errors.any?
+    .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
+      %strong
+        = pluralize(@price_period.errors.count, "ошибка")
+        \:
+      = @price_period.errors.full_messages.to_sentence
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6.space-y-4
+    %div
+      = field_label(form, :name, "Название")
+      = text_input(form, :name, placeholder: "Напр. Высокий сезон, Новый год")
+      = field_errors(form, :name)
+    .grid.grid-cols-3.gap-4
+      %div
+        = field_label(form, :starts_on, "Дата начала")
+        = date_input(form, :starts_on)
+        = field_errors(form, :starts_on)
+      %div
+        = field_label(form, :ends_on, "Дата окончания")
+        = date_input(form, :ends_on)
+        = field_errors(form, :ends_on)
+      %div
+        = field_label(form, :multiplier, "Коэффициент")
+        = number_input(form, :multiplier, step: "0.01", min: 0.01)
+        %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 1.2 — на 20% дороже, 0.8 — дешевле
+        = field_errors(form, :multiplier)
+  .flex.items-center.gap-3
+    = form.submit @price_period.new_record? ? "Создать период" : "Сохранить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg"
+    = link_to "Отмена", admin_price_periods_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"
