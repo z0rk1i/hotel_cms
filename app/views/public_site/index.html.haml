@@ -15,7 +15,7 @@
         - category.rooms.each do |room|
           = link_to room_path(room), class: "group block rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all" do
             - if room.photos.any?
-              = image_tag room.photos.first, class: "w-full h-44 object-cover"
+              = image_tag image_thumb(room.photos.first), class: "w-full h-44 object-cover"
             - else
               .w-full.h-44.bg-slate-100.dark:bg-slate-700.flex.items-center.justify-center.text-slate-300.text-sm Нет фото
             .p-4
@@ -77,4 +77,4 @@
     .grid.grid-cols-2.md:grid-cols-4.gap-4
       - @gallery.each do |image|
         = link_to gallery_path, class: "block group" do
-          = image_tag image.image, alt: image.title, class: "w-full h-40 object-cover rounded-xl group-hover:opacity-90 transition-opacity"
+          = image_tag image_thumb(image.image), alt: image.title, class: "w-full h-40 object-cover rounded-xl group-hover:opacity-90 transition-opacity"

@@ -68,4 +68,8 @@ def service_order_status_label(status)
 
     user.bookings.active_for_service.exists?
   end
+
+  def image_thumb(attachment, size: [ 640, 400 ])
+    attachment.variant(resize_to_fill: size)
+  end
 end

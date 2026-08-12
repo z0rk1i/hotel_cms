@@ -5,7 +5,7 @@
   .grid.grid-cols-2.md:grid-cols-4.gap-4
     - @gallery_images.each do |image|
       .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
-        = image_tag image.image, class: "w-full h-40 object-cover"
+        = image_tag image_thumb(image.image), class: "w-full h-40 object-cover"
         .p-3.flex.items-center.justify-between.gap-2
           .text-sm.font-medium.text-slate-800.dark:text-slate-100.truncate= image.title
           .flex.items-center.gap-2.shrink-0

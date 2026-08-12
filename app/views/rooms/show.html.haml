@@ -8,8 +8,8 @@
         - if @room.photos.count > 1
           .mt-3.grid.grid-cols-3.gap-2
             - @room.photos.drop(1).each_with_index do |photo, i|
-              = image_tag photo, data: { action: "click->photo-gallery#open", photo_gallery_index_param: i + 1 },         |
-                class: "w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700 cursor-zoom-in" 
+              = image_tag image_thumb(photo, size: [ 320, 160 ]), data: { action: "click->photo-gallery#open", photo_gallery_index_param: i + 1 }, |
+                class: "w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700 cursor-zoom-in"                            
       - else
         .w-full.h-64.bg-slate-100.dark:bg-slate-700.rounded-xl.flex.items-center.justify-center.text-slate-300.text-sm Нет фото
       .hidden.fixed.inset-0.z-50.backdrop-blur-sm.flex.items-center.justify-center{:class => "bg-black/90", "data-action" => "click->photo-gallery#backdropClick", "data-photo-gallery-target" => "overlay"}
