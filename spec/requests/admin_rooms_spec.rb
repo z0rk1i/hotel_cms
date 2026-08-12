@@ -37,9 +37,10 @@ RSpec.describe "Admin rooms", type: :request do
       expect(body.map { |r| r["id"] }).to eq([ free_room.id ])
     end
 
-    it "returns an empty array for invalid dates" do
+    it "returns 422 for invalid dates" do
       get available_admin_rooms_path(check_in: "not-a-date", check_out: Date.current + 2)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)).to have_key("error")
     end
   end
 

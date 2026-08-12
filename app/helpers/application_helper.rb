@@ -101,11 +101,11 @@ def service_order_status_label(status)
   def format_search_dates
     return "" unless availability_search?
 
-    check_in = Date.parse(params[:check_in].to_s)
-    check_out = Date.parse(params[:check_out].to_s)
+    check_in = DateParams.parse(params[:check_in])
+    check_out = DateParams.parse(params[:check_out])
+    return "на выбранные даты" if check_in.nil? || check_out.nil?
+
     "на #{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}"
-  rescue ArgumentError
-    "на выбранные даты"
   end
 
   def search_guests_label

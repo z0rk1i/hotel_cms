@@ -16,15 +16,14 @@ class RoomAvailability
   def validate_dates(check_in, check_out)
     start_date = parse_date(check_in)
     end_date = parse_date(check_out)
-    return Failure(:invalid_dates) if start_date.nil? || end_date.nil? || end_date <= start_date
+    return Failure(:invalid_dates) if start_date.nil? || end_date.nil?
+    return Failure(:invalid_range) if end_date <= start_date
 
     Success([ start_date, end_date ])
   end
 
   def parse_date(value)
-    Date.parse(value.to_s)
-  rescue ArgumentError, TypeError
-    nil
+    DateParams.parse(value)
   end
 
   def available_rooms(start_date, end_date, exclude_room_id)

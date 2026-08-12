@@ -19,14 +19,14 @@ class BookingsController < ApplicationController
       user_attrs: (user_signed_in? ? {} : user_params)
     )
 
+    payload = result.value_or(result.failure)
+    @booking = payload.booking
+    @user = payload.user
+
     if result.success?
-      @booking = result.value!.booking
-      @user = result.value!.user
       sign_in(@user, scope: :user) unless user_signed_in?
       redirect_to account_path, notice: "Бронь создана! Ожидает подтверждения отеля."
     else
-      @booking = result.failure.booking
-      @user = result.failure.user
       render :new, status: :unprocessable_entity
     end
   end
@@ -46,7 +46,12 @@ class BookingsController < ApplicationController
 
   def available_rooms
     result = RoomAvailability.new.call(check_in: params[:check_in], check_out: params[:check_out])
-    render json: result.value_or([])
+
+    if result.success?
+      render json: result.value!
+    else
+      render json: { error: "Укажите корректные даты" }, status: :unprocessable_entity
+    end
   end
 
   private
@@ -56,9 +61,7 @@ class BookingsController < ApplicationController
   end
 
   def parse_date_param(value)
-    Date.parse(value.to_s)
-  rescue ArgumentError, TypeError
-    nil
+    DateParams.parse(value)
   end
 
   def booking_params

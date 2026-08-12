@@ -31,6 +31,9 @@ created: 2026-08-12
 - [x] Экспорт бронирований и гостей в CSV из админки (с учётом фильтров статуса и поиска)
 - [x] Ценовые периоды и коэффициент выходных: NightlyPricing по ночам, CRUD `/admin/price_periods`, поле weekend_multiplier у номера, разбивка по ночам на странице брони (351 тест)
 - [x] Рефакторинг: shared_examples «admin CRUD resource» для CRUD-спек, концерны Booking (pricing/room-sync/audit/notifier), базовый `Admin::CrudController`, группировка номеров по категориям в контроллере главной (385 тестов)
+- [x] dry-rb консолидация, фазы 0–1: characterization-спек `room_availability_spec.rb` (13 тестов), де-дуп парсинга дат через `DateParams.parse` (3 места) — 404 теста зелёные, rubocop 0
+- [x] dry-rb консолидация, фазы 2–3: фикс silent `200 []` на available_rooms/admin available (`Failure` дат = 422 + error JSON, пустой search = `200 []`), коллапс unpacking Result в BookingsController#create → `result.value_or(result.failure)`
+- [ ] Инструментальные сервисы публичного сайта на dry-monads (`room_availability_controller.js` уже guard-ит range — только спека)
 
 ## Идеи на будущее
 

@@ -209,13 +209,21 @@ RSpec.describe "Public bookings", type: :request do
       expect(json.map { |r| r["id"] }).not_to include(maintenance_room.id, cleaning_room.id)
     end
 
-    it "returns an empty array when the date range is invalid" do
+    it "returns 422 when the date range is invalid" do
       get available_rooms_bookings_path, params: {
         check_in: Date.current + 5,
         check_out: Date.current + 3
       }
 
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)).to have_key("error")
+
+      get available_rooms_bookings_path, params: {
+        check_in: "not-a-date",
+        check_out: Date.current + 3
+      }
+
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
 

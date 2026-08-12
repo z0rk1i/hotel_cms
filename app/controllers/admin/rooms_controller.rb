@@ -11,7 +11,12 @@ module Admin
         check_out: params[:check_out],
         exclude_room_id: params[:exclude]
       )
-      render json: result.value_or([])
+
+      if result.success?
+        render json: result.value!
+      else
+        render json: { error: "Укажите корректные даты" }, status: :unprocessable_entity
+      end
     end
 
     def destroy_photo

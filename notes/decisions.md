@@ -9,7 +9,22 @@ created: 2026-08-12
 
 Значимые решения проекта в хронологическом порядке. Новые записи — сверху.
 
-## 2026-08-12 — Рефакторинг: общий CRUD и декомпозиция Booking/главной
+## 2026-08-12 — dry-rb: консолидация, а не расширение (рефакторинг-план)
+
+- **Контекст:** запрос «refactor with dry-rb». Адверсариальный планинг (5 ролей × 3 раунда кросс-атак) на codebase hotel_cms.
+- **Решение:** новых dry-гемов НЕ добавляем. dry-monads 1.10 уже установлен и актуален; dry-system/dry-rails (спящий 0.7.0/2022), dry-container (заморожен), dry-transaction (официально deprecated → dry-operation), dry-validation поверх AR-валидаторов — отклонены. dry-statemachine/dry-states на rubygems НЕ существуют (проверено) — ручной `StatusTransitionable` остаётся.
+- **Объём:** (1) characterization-спек `room_availability_spec.rb` (покрытие было пустым); (2) де-дуп парсинга дат — `DateParams.parse` (3 места: bookings_controller, room_availability, application_helper); (3) фикс silent `200 []` — `value_or([])` на available_rooms/admin available → `Failure(:invalid_dates)` / `Failure(:invalid_range)` = 422, пустой результат = `200 []`; (4) коллапс симметричного распаковывания Result в BookingsController#create → `result.value_or(result.failure)`.
+- **Вне рамок:** типы денег (закреплены спеками: admin_bookings_spec `"4000.0"`, public_bookings_spec `eq(2500.0)`), колбэки/валидации AR, CSV-экспортёры, state machine, слаггер, constraint_guarded.
+- **Статус:** ✅ реализовано (404 теста, rubocop 0). Валидация дат разведена на `:invalid_dates` (непарсится) и `:invalid_range` (обратный диапазон) — оба дают 422 на JSON-эндпоинтах, пустой search — `200 []`.
+
+## 2026-08-12 — dry-rb: консолидация без новых гемов
+
+- **Контекст:** запрос «refactor with dry-rb». Адверсарный план-процесс (hyperplan, 5 ролей + cross-attack + defend) против кодовой базы, где dry-monads 1.10.0 уже стоит (BookingCreator, RoomAvailability), а остальных dry-гемов нет.
+- **Решение:**
+  - Новые dry-гемы НЕ добавляем: dry-system+dry-rails (dormant 0.7.0/2022), dry-container (frozen), dry-transaction (deprecated → dry-operation), dry-validation под AR-валидации — единогласное вето. dry-statemachine/dry-states на rubygems НЕ СУЩЕСТВУЮТ (проверено) — ручная `status_transitionable.rb` остаётся.
+  - Фазы (только существующий dry-monads + плоский Ruby): (0) characterization-спеки первыми — `spec/services/room_availability_spec.rb` (пробел в покрытии), (1) де-дуп 3 одинаковых `Date.parse rescue nil` (bookings_controller.rb:58-62, room_availability.rb:24-28, application_helper.rb:104-108), (2) починка двух silent `200 []` — `value_or([])` на available_rooms (bookings_controller.rb:49, admin/rooms_controller.rb:14): невалидные даты → 422, пустой результат → 200 []; `public_bookings_spec.rb:212-219` обновляется осознанно; JS уже guard-ит range клиентски, (3) коллапс симметричного unpacking Result в bookings_controller.rb:22-31.
+  - Не трогаем: AR-валидации/callback'и, BookingPricing, CSV-экспортёры, rate_limit_counter, state machine, money (`to_f`/decimal зафиксированы спеками admin_bookings_spec.rb:85 и public_bookings_spec.rb:193).
+- **Статус:** ⏳ план принят, реализация не начата
 
 - **Контекст:** 9 контроллеров и спек админки — копии одного и того же CRUD (index/new/create/edit/update/destroy была одинаковой), Booking разросся до 171 строки со смешанными обязанностями, главная фильтровала номера по категориям `select`-ом прямо во вьюхе.
 - **Решение:**
