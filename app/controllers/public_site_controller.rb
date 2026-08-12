@@ -3,7 +3,7 @@ class PublicSiteController < ApplicationController
 
   def index
     @amenities = Amenity.order(:name)
-    @rooms = Room.with_all_amenities(params[:amenities]).includes(:category, :approved_reviews).order(:floor, :number)
+    @rooms = Room.with_all_amenities(params[:amenities]).includes(:category, :amenities, :approved_reviews).order(:floor, :number)
     @categories = RoomCategory.where(id: @rooms.select(:category_id)).order(:name)
     @services = Service.includes(:approved_reviews).order(:name)
     @news = News.published.limit(3)
