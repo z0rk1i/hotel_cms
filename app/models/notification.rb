@@ -18,6 +18,9 @@ class Notification < ApplicationRecord
   private
 
   def deliver_email
-    NotificationMailer.status_changed(self).deliver_later if user.email_deliverable?
+    return if kind == "booking_status"
+    return unless user.email_deliverable?
+
+    NotificationMailer.status_changed(self).deliver_later
   end
 end

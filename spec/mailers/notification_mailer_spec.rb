@@ -29,7 +29,7 @@ RSpec.describe NotificationMailer, type: :mailer do
   describe Notification, type: :model do
     it "does not enqueue an email for placeholder OAuth addresses" do
       user = create(:user, provider: "vkontakte", uid: "123", email: "vkontakte-123@example.com")
-      notification = build(:notification, user: user)
+      notification = build(:notification, user: user, kind: "service_order_status")
 
       expect do
         notification.save!
@@ -37,11 +37,19 @@ RSpec.describe NotificationMailer, type: :mailer do
     end
 
     it "enqueues an email when the user has a deliverable address" do
-      notification = build(:notification, user: create(:user, email: "real@example.org"))
+      notification = build(:notification, user: create(:user, email: "real@example.org"), kind: "service_order_status")
 
       expect do
         notification.save!
       end.to change(enqueued_jobs, :count).by(1)
+    end
+
+    it "does not enqueue a notification email for booking status changes (BookingMailer covers it)" do
+      notification = build(:notification, user: create(:user, email: "real@example.org"))
+
+      expect do
+        notification.save!
+      end.not_to change(enqueued_jobs, :count)
     end
   end
 end

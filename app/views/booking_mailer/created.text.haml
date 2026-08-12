@@ -1,0 +1,13 @@
+Гостиница
+
+Здравствуйте, #{@user.full_name.presence || @user.email}!
+
+Ваша бронь №#{@booking.id} создана и ожидает подтверждения отеля.
+
+Номер: №#{@booking.room.number} — #{@booking.room.category.name}
+Заезд: #{I18n.l(@booking.check_in, format: :long)}
+Выезд: #{I18n.l(@booking.check_out, format: :long)}
+Гостей: #{@booking.guests_count}
+Стоимость: #{number_to_currency(@booking.total_price, unit: "₽", precision: 0)}
+
+Следить за статусом в личном кабинете: #{account_url}

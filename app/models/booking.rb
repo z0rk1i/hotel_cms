@@ -36,6 +36,9 @@ class Booking < ApplicationRecord
   after_save :cancel_pending_service_orders, if: -> { saved_change_to_status? && cancelled? }
   before_destroy :free_room, if: -> { checked_in? }
 
+  after_commit :deliver_created_email, on: :create
+  after_update :deliver_status_email, if: -> { saved_change_to_status? }
+
   scope :active, -> { where.not(status: :cancelled) }
   scope :occupying, -> { where(status: %i[confirmed checked_in]) }
   scope :active_for_service, -> { occupying.order(:check_in) }
@@ -114,6 +117,25 @@ class Booking < ApplicationRecord
 
   def cancel_pending_service_orders
     service_orders.pending.each { |order| order.transition_to(:cancelled) }
+  end
+
+  def deliver_created_email
+    return unless email_deliverable?
+
+    BookingMailer.created(self).deliver_later
+  end
+
+  def deliver_status_email
+    return unless email_deliverable?
+
+    case status
+    when "confirmed" then BookingMailer.confirmed(self).deliver_later
+    when "cancelled" then BookingMailer.cancelled(self).deliver_later
+    end
+  end
+
+  def email_deliverable?
+    user&.email_deliverable?
   end
 
   def notification_kind

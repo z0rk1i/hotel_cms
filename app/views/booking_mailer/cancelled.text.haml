@@ -1,0 +1,11 @@
+Гостиница
+
+Здравствуйте, #{@user.full_name.presence || @user.email}!
+
+Ваша бронь №#{@booking.id} отменена. Если это ошибка — свяжитесь с отелем.
+
+Номер: №#{@booking.room.number} — #{@booking.room.category.name}
+Заезд: #{I18n.l(@booking.check_in, format: :long)}
+Выезд: #{I18n.l(@booking.check_out, format: :long)}
+
+Забронировать снова: #{root_url}
