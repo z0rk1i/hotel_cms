@@ -10,6 +10,7 @@ class PublicSiteController < ApplicationController
     @gallery = GalleryImage.includes(:image_attachment).limit(8)
 
     apply_availability_filter
+    @rooms_by_category = @rooms.group_by(&:category_id)
   end
 
   def page

@@ -27,8 +27,7 @@
       - @amenities.each do |amenity|
         = amenity_filter_link(amenity)
   - @categories.each do |category|
-    - rooms = @rooms.select { |r| r.category_id == category.id }
-    - next if rooms.empty?
+    - rooms = @rooms_by_category.fetch(category.id, [])
     .mb-10
       .flex.items-baseline.justify-between.mb-4
         %h3.text-xl.font-medium.text-slate-900.dark:text-white= category.name

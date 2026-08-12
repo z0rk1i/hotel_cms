@@ -2,6 +2,21 @@ require "rails_helper"
 
 RSpec.describe "Public room pages", type: :request do
   describe "GET /" do
+    it "groups rooms under their categories" do
+      standard = create(:room_category, name: "Стандарт")
+      luxury = create(:room_category, name: "Люкс")
+      create(:room, number: "101", category: standard)
+      create(:room, number: "201", category: luxury)
+
+      get root_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Стандарт")
+      expect(response.body).to include("Люкс")
+      expect(response.body).to include("Номер 101")
+      expect(response.body).to include("Номер 201")
+    end
+
     it "renders amenity badges on room cards" do
       room = create(:room)
       room.amenities << create(:amenity, name: "Балкон")
