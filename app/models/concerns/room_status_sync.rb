@@ -10,13 +10,19 @@ module RoomStatusSync
 
   def sync_room_status
     if checked_in?
-      room.update_column(:status, :occupied) unless room.occupied?
+      record_room_status(:occupied) unless room.occupied?
     elsif status_before_last_save == "checked_in"
-      room.update_column(:status, :available) if room.occupied?
+      record_room_status(checked_out? ? :cleaning : :available) if room.occupied?
     end
   end
 
   def free_room
-    room.update_column(:status, :available) if room.occupied?
+    record_room_status(:available) if room.occupied?
+  end
+
+  def record_room_status(to)
+    from = room.status
+    room.update_column(:status, to)
+    RoomStatusLog.record!(room: room, from: from, to: to.to_s)
   end
 end

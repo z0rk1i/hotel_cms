@@ -19,7 +19,7 @@ RSpec.describe BookingSweeperJob, type: :job do
 
       described_class.perform_now
 
-      expect(room.reload).to be_available
+      expect(room.reload).to be_cleaning
     end
 
     it "cancels pending and confirmed bookings whose check_in day has passed" do

@@ -33,6 +33,10 @@ Rails.application.routes.draw do
     resources :room_categories
     resources :rooms do
       get :available, on: :collection
+      member do
+        get :status_history
+        patch :complete_cleaning
+      end
       delete "photo/:photo_id", to: "rooms#destroy_photo", as: :photo
     end
     resources :amenities

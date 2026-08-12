@@ -17,11 +17,11 @@ RSpec.describe "Admin bookings", type: :request do
       expect(booking.room.reload).to be_occupied
     end
 
-    it "checks out and frees the room" do
+    it "checks out and flags the room for cleaning" do
       booking = create(:booking, :checked_in)
       patch check_out_admin_booking_path(booking)
       expect(booking.reload).to be_checked_out
-      expect(booking.room.reload).to be_available
+      expect(booking.room.reload).to be_cleaning
     end
 
     it "cancels a booking" do

@@ -25,9 +25,15 @@
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= room.floor
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= room.capacity
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= money(room.price_per_night)
-            %td.px-5.py-3= content_tag :span, room_status_label(room.status), class: status_badge_class(room.status)
+            %td.px-5.py-3
+              = content_tag :span, room_status_label(room.status), class: status_badge_class(room.status)
+              - if room.cleaning?
+                %div.mt-1
+                  = button_to "Уборка завершена", complete_cleaning_admin_room_path(room), method: :patch,
+                    class: "text-xs text-emerald-700 dark:text-emerald-300 border border-emerald-500 px-2 py-1 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
             %td.px-5.py-3.text-right.whitespace-nowrap
-              = link_to "Редактировать", edit_admin_room_path(room), class: "text-indigo-600 hover:text-indigo-800"
+              = link_to "История", status_history_admin_room_path(room), class: "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              = link_to "Редактировать", edit_admin_room_path(room), class: "text-indigo-600 hover:text-indigo-800 ml-3"
               = button_to "Удалить", admin_room_path(room), method: :delete, |
                 data: { turbo_confirm: "Удалить номер #{room.number}?" },    |
                 class: "text-red-500 hover:text-red-700 ml-3"                

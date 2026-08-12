@@ -243,13 +243,35 @@ RSpec.describe Booking, type: :model do
       expect(booking).to be_cancelled
     end
 
-    it "marks the room occupied when checked in and frees it when checked out" do
+    it "marks the room occupied when checked in and cleaning when checked out" do
       room = create(:room)
       booking = create(:booking, :confirmed, room: room)
       booking.checked_in!
       expect(room.reload).to be_occupied
       booking.checked_out!
+      expect(room.reload).to be_cleaning
+    end
+
+    it "records room status changes in the journal" do
+      room = create(:room)
+      booking = create(:booking, :confirmed, room: room)
+      booking.checked_in!
+      booking.checked_out!
+
+      logs = room.status_logs.ordered.map { |log| [ log.from_status, log.to_status ] }
+      expect(logs).to eq([ [ "occupied", "cleaning" ], [ "available", "occupied" ] ])
+    end
+
+    it "frees the room back to available after cancellation" do
+      room = create(:room)
+      booking = create(:booking, :confirmed, room: room)
+      booking.checked_in!
+      booking.cancelled!
+
       expect(room.reload).to be_available
+      last_log = room.status_logs.ordered.first
+      expect(last_log.from_status).to eq("occupied")
+      expect(last_log.to_status).to eq("available")
     end
 
     it "frees the room when a checked-in booking is cancelled" do

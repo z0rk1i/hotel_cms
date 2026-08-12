@@ -26,6 +26,17 @@ module Admin
       redirect_to edit_admin_room_path(room), notice: "Фото удалено."
     end
 
+    def status_history
+      @room = Room.find(params[:id])
+      @logs = @room.status_logs.ordered.limit(200)
+    end
+
+    def complete_cleaning
+      room = Room.find(params[:id])
+      room.update!(status: :available)
+      redirect_back fallback_location: admin_rooms_path, notice: "Уборка завершена."
+    end
+
     private
 
     def model_class

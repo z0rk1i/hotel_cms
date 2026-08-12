@@ -54,6 +54,33 @@ RSpec.describe "Admin rooms", type: :request do
     end
   end
 
+  describe "PATCH /admin/rooms/:id/complete_cleaning" do
+    it "marks a cleaning room available and logs the change" do
+      room = create(:room, status: :cleaning)
+
+      patch complete_cleaning_admin_room_path(room)
+
+      expect(room.reload).to be_available
+      expect(room.status_logs.ordered.first.from_status).to eq("cleaning")
+      expect(room.status_logs.ordered.first.to_status).to eq("available")
+      expect(response).to redirect_to(admin_rooms_path)
+    end
+  end
+
+  describe "GET /admin/rooms/:id/status_history" do
+    it "renders the room status journal" do
+      room = create(:room, status: :cleaning)
+      patch complete_cleaning_admin_room_path(room)
+
+      get status_history_admin_room_path(room)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("История статусов")
+      expect(response.body).to include("Уборка")
+      expect(response.body).to include("Свободен")
+    end
+  end
+
   describe "DELETE /admin/rooms/:room_id/photo/:photo_id" do
     it "purges a photo of the room" do
       room = create(:room)

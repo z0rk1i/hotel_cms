@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_183452) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_183910) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -246,6 +246,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_183452) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "room_status_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "from_status", null: false
+    t.bigint "room_id", null: false
+    t.string "to_status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["room_id"], name: "index_room_status_logs_on_room_id"
+  end
+
   create_table "rooms", force: :cascade do |t|
     t.integer "capacity", default: 1, null: false
     t.bigint "category_id", null: false
@@ -322,6 +331,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_183452) do
   add_foreign_key "reviews", "users"
   add_foreign_key "room_amenities", "amenities"
   add_foreign_key "room_amenities", "rooms"
+  add_foreign_key "room_status_logs", "rooms"
   add_foreign_key "rooms", "room_categories", column: "category_id"
   add_foreign_key "service_orders", "bookings"
   add_foreign_key "service_orders", "services"

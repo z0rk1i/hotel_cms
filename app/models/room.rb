@@ -7,8 +7,11 @@ class Room < ApplicationRecord
   has_many_attached :photos
   has_many :room_amenities, dependent: :destroy
   has_many :amenities, through: :room_amenities
+  has_many :status_logs, class_name: "RoomStatusLog", dependent: :destroy
 
   enum :status, { available: "available", occupied: "occupied", maintenance: "maintenance", cleaning: "cleaning" }
+
+  after_update :log_status_change, if: -> { saved_change_to_status? }
 
   validates :number, presence: true, uniqueness: true
   validates :floor, presence: true, numericality: { greater_than_or_equal_to: 0 }
@@ -57,6 +60,11 @@ class Room < ApplicationRecord
   end
 
   private
+
+  def log_status_change
+    from, to = saved_change_to_status
+    RoomStatusLog.record!(room: self, from: from, to: to)
+  end
 
   def unavailability_window_valid
     return if unavailable_from.blank? || unavailable_until.blank?

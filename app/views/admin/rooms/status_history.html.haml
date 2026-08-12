@@ -1,0 +1,24 @@
+.space-y-6
+  .flex.items-center.justify-between
+    %div
+      %h1.text-2xl.font-semibold.text-slate-900.dark:text-white История статусов · номер #{@room.number}
+      %p.text-sm.text-slate-500.dark:text-slate-400.mt-1= "#{@room.category.name} · #{@room.floor} этаж · #{@room.capacity} чел."
+    = link_to "← К номерам", admin_rooms_path, class: "text-sm text-indigo-600 hover:text-indigo-800"
+
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+    %table.w-full.text-sm
+      %thead.bg-slate-50.text-slate-500.dark:text-slate-400.text-left{:class => "dark:bg-slate-800/60"}
+        %tr
+          %th.px-5.py-3.font-medium Когда
+          %th.px-5.py-3.font-medium Было
+          %th.px-5.py-3.font-medium Стало
+      %tbody.divide-y.divide-slate-100.dark:divide-slate-800
+        - @logs.each do |log|
+          %tr.hover:bg-slate-50{:class => "dark:hover:bg-slate-700/40"}
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= l(log.created_at, format: :long)
+            %td.px-5.py-3.text-slate-500.dark:text-slate-400= room_status_label(log.from_status)
+            %td.px-5.py-3
+              = content_tag :span, room_status_label(log.to_status), class: status_badge_class(log.to_status)
+        - if @logs.empty?
+          %tr
+            %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "3"} История пуста
