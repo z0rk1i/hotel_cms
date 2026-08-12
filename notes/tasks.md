@@ -16,6 +16,7 @@ created: 2026-08-12
 - [x] Exclusion constraint на брони (btree_gist) — защита от гонок
 - [x] Unique index на отзывы (user, reviewable) + валидация
 - [x] Валидация service_date не в прошлом
+- [x] Полный CRUD галереи в админке (edit/update) + публичная страница `/gallery` с лайтбоксом
 
 ## Идеи на будущее
 

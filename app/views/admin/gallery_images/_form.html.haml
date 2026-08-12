@@ -1,0 +1,24 @@
+= form_with model: [:admin, @gallery_image], class: "space-y-6" do |form|
+  - if @gallery_image.errors.any?
+    .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
+      %strong
+        = pluralize(@gallery_image.errors.count, "ошибка")
+        \:
+      = @gallery_image.errors.full_messages.to_sentence
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6.space-y-4
+    - if @gallery_image.image.attached?
+      %div
+        = field_label(form, :image, "Текущее изображение")
+        = image_tag @gallery_image.image, class: "w-full max-w-xs h-40 object-cover rounded-xl"
+    %div
+      = field_label(form, :title, "Подпись")
+      = text_input(form, :title, placeholder: "Напр. Вид на озеро")
+      = field_errors(form, :title)
+    %div
+      = field_label(form, :image, @gallery_image.image.attached? ? "Заменить изображение (необязательно)" : "Изображение")
+      = form.file_field :image, accept: "image/*",                                                                                                                                                                                                                 |
+        class: "block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 dark:file:bg-indigo-900/40 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/60" 
+      = field_errors(form, :image)
+  .flex.items-center.gap-3
+    = form.submit @gallery_image.persisted? ? "Сохранить" : "Загрузить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg"
+    = link_to "Отмена", admin_gallery_images_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"

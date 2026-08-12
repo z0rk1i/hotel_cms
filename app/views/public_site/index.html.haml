@@ -71,7 +71,10 @@
           %span.mt-3.inline-block.text-sm.font-medium.text-indigo-600.dark:text-indigo-400 Читать далее
 - if @gallery.any?
   %section#gallery.max-w-6xl.mx-auto.px-6.py-16
-    %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Галерея
+    .flex.items-center.justify-between.mb-8
+      %h2.text-2xl.font-semibold.text-slate-900.dark:text-white Галерея
+      = link_to "Смотреть все", gallery_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
     .grid.grid-cols-2.md:grid-cols-4.gap-4
       - @gallery.each do |image|
-        = image_tag image.image, alt: image.title, class: "w-full h-40 object-cover rounded-xl"
+        = link_to gallery_path, class: "block group" do
+          = image_tag image.image, alt: image.title, class: "w-full h-40 object-cover rounded-xl group-hover:opacity-90 transition-opacity"

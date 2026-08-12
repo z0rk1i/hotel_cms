@@ -21,6 +21,7 @@ Rails.application.routes.draw do
     post :mark_all_read, on: :collection
   end
   get "account", to: "account#show"
+  get "gallery", to: "public_site#gallery"
 
   namespace :admin do
     root to: "dashboard#index"
@@ -50,7 +51,7 @@ Rails.application.routes.draw do
         patch :cancel
       end
     end
-    resources :gallery_images, only: %i[index new create destroy]
+    resources :gallery_images, only: %i[index new create edit update destroy]
     resources :reviews, only: %i[index destroy] do
       member do
         patch :approve

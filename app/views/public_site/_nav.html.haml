@@ -6,7 +6,7 @@
         = link_to "Номера", root_path(anchor: "rooms"), class: "hover:text-slate-900 dark:hover:text-white"
         = link_to "Услуги", root_path(anchor: "services"), class: "hover:text-slate-900 dark:hover:text-white"
         = link_to "Новости", root_path(anchor: "news"), class: "hover:text-slate-900 dark:hover:text-white"
-        = link_to "Галерея", root_path(anchor: "gallery"), class: "hover:text-slate-900 dark:hover:text-white"
+        = link_to "Галерея", gallery_path, class: "hover:text-slate-900 dark:hover:text-white"
         - Page.order(:title).limit(4).each do |page|
           = link_to page.title, public_page_path(page.slug), class: "hover:text-slate-900 dark:hover:text-white"
         %button.ml-2.inline-flex.items-center.justify-center.w-8.h-8.rounded-lg.bg-slate-100.dark:bg-slate-800.text-slate-600.dark:text-slate-300.hover:bg-slate-200.dark:hover:bg-slate-700.transition-colors{"aria-label" => "Переключить тему", "data-action" => "click->theme#toggle", "data-controller" => "theme", "data-theme-target" => "icon", :type => "button"}

@@ -1,0 +1,23 @@
+.max-w-6xl.mx-auto.px-6.py-12
+  = link_to "← На главную", root_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+  %h1.mt-6.text-3xl.font-semibold.text-slate-900.dark:text-white Галерея
+  - if @gallery_images.any?
+    %div{"data-controller" => "photo-gallery"}
+      .mt-8.grid.grid-cols-2.md:grid-cols-3.lg:grid-cols-4.gap-4
+        - @gallery_images.each_with_index do |image, i|
+          = image_tag image.image, alt: image.title,                                               |
+            data: { action: "click->photo-gallery#open", photo_gallery_index_param: i },          |
+            class: "w-full h-48 object-cover rounded-xl cursor-zoom-in hover:opacity-90 transition-opacity"
+      .hidden.fixed.inset-0.z-50.backdrop-blur-sm.flex.items-center.justify-center{:class => "bg-black/90", "data-action" => "click->photo-gallery#backdropClick", "data-photo-gallery-target" => "overlay"}
+        %button.absolute.left-4.w-12.h-12.rounded-full.text-white.text-2xl.flex.items-center.justify-center.transition-colors{"aria-label" => "Предыдущее фото", :class => "top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20", "data-action" => "click->photo-gallery#previous", "data-photo-gallery-target" => "prevButton"} ←
+        .relative.w-full.max-w-5xl.px-20
+          - @gallery_images.each_with_index do |image, i|
+            = image_tag image.image, alt: image.title, data: { photo_gallery_target: "slide" },  |
+              class: "#{i.zero? ? '' : 'hidden'} w-full max-h-[85vh] object-contain rounded-lg"   |
+        %button.absolute.right-4.w-12.h-12.rounded-full.text-white.text-2xl.flex.items-center.justify-center.transition-colors{"aria-label" => "Следующее фото", :class => "top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20", "data-action" => "click->photo-gallery#next", "data-photo-gallery-target" => "nextButton"} →
+        %button.absolute.top-4.right-4.w-10.h-10.rounded-full.text-white.text-xl.flex.items-center.justify-center.transition-colors{"aria-label" => "Закрыть", :class => "bg-white/10 hover:bg-white/20", "data-action" => "click->photo-gallery#close"} ✕
+        %span.absolute.bottom-6.text-white.text-sm.font-medium.px-3.py-1.rounded-full{:class => "left-1/2 -translate-x-1/2 bg-black/50", "data-photo-gallery-target" => "counter"}
+          1 / #{@gallery_images.count}
+  - else
+    .mt-8.bg-slate-50.rounded-xl.py-16.text-center.text-slate-400.dark:text-slate-500.text-sm{:class => "dark:bg-slate-800/60"}
+      Фотографии появятся скоро

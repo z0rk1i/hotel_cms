@@ -13,6 +13,10 @@ class PublicSiteController < ApplicationController
     @page = Page.find_by!(slug: params[:slug])
   end
 
+  def gallery
+    @gallery_images = GalleryImage.includes(:image_attachment).order(created_at: :desc)
+  end
+
   def news
     @news = News.published.find_by!(slug: params[:slug])
   end

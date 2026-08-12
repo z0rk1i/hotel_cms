@@ -6,11 +6,13 @@
     - @gallery_images.each do |image|
       .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
         = image_tag image.image, class: "w-full h-40 object-cover"
-        .p-3.flex.items-center.justify-between
+        .p-3.flex.items-center.justify-between.gap-2
           .text-sm.font-medium.text-slate-800.dark:text-slate-100.truncate= image.title
-          = button_to "Удалить", admin_gallery_image_path(image), method: :delete, |
-            data: { turbo_confirm: "Удалить фото?" },                              |
-            class: "text-red-500 hover:text-red-700 text-xs shrink-0 ml-2"         
+          .flex.items-center.gap-2.shrink-0
+            = link_to "Редактировать", edit_admin_gallery_image_path(image), class: "text-indigo-500 hover:text-indigo-700 text-xs"
+            = button_to "Удалить", admin_gallery_image_path(image), method: :delete, |
+              data: { turbo_confirm: "Удалить фото?" },                              |
+              class: "text-red-500 hover:text-red-700 text-xs"                       
     - if @gallery_images.empty?
       .col-span-full.bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.py-10.text-center.text-slate-400.dark:text-slate-500.text-sm
         Фотографий пока нет
