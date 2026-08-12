@@ -52,7 +52,7 @@ class RoomAvailability
             id: room.id,
             label: room.label,
             price: room.price_per_night.to_f,
-            total_price: NightlyPricing.new(room: room, check_in: start_date, check_out: end_date).total,
+            total_price: NightlyPricing.new(room: room, check_in: start_date, check_out: end_date).total.to_f,
             capacity: room.capacity
           }
         end

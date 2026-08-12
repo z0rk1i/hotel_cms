@@ -28,6 +28,12 @@ RSpec.describe "Public bookings", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Политика обработки персональных данных")
     end
+
+    it "renders the price summary target and a room select that updates it" do
+      get new_booking_path
+      expect(response.body).to include('data-booking-form-target="summary"')
+      expect(response.body).to include("change-&gt;booking-form#updateTotal")
+    end
   end
 
   describe "POST /bookings" do
@@ -281,6 +287,7 @@ RSpec.describe "Public bookings", type: :request do
       room_json = JSON.parse(response.body).find { |r| r["id"] == room.id }
       expect(room_json["label"]).to include(room.number)
       expect(room_json["price"]).to eq(2500.0)
+      expect(room_json["total_price"]).to eq(5000.0)
       expect(room_json["capacity"]).to eq(3)
     end
 
