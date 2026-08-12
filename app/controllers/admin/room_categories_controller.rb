@@ -1,51 +1,33 @@
 module Admin
-  class RoomCategoriesController < BaseController
-    before_action :set_room_category, only: %i[edit update destroy]
-
-    def index
-      @room_categories = RoomCategory.order(:name)
-    end
-
-    def new
-      @room_category = RoomCategory.new
-    end
-
-    def create
-      @room_category = RoomCategory.new(room_category_params)
-
-      if @room_category.save
-        redirect_to_previous admin_room_categories_path, notice: "Категория создана."
-      else
-        render :new, status: :unprocessable_entity
-      end
-    end
-
-    def edit; end
-
-    def update
-      if @room_category.update(room_category_params)
-        redirect_to_previous admin_room_categories_path, notice: "Категория обновлена."
-      else
-        render :edit, status: :unprocessable_entity
-      end
-    end
-
-    def destroy
-      if @room_category.destroy
-        redirect_back_or admin_room_categories_path, notice: "Категория удалена."
-      else
-        redirect_back_or admin_room_categories_path, alert: @room_category.errors.full_messages.to_sentence
-      end
-    end
-
+  class RoomCategoriesController < CrudController
     private
 
-    def set_room_category
-      @room_category = RoomCategory.find(params[:id])
+    def index_records
+      RoomCategory.order(:name)
     end
 
-    def room_category_params
+    def model_class
+      RoomCategory
+    end
+
+    def resource_params
       params.require(:room_category).permit(:name, :description, :base_price)
+    end
+
+    def resource_index_path
+      admin_room_categories_path
+    end
+
+    def created_notice
+      "Категория создана."
+    end
+
+    def updated_notice
+      "Категория обновлена."
+    end
+
+    def destroyed_notice
+      "Категория удалена."
     end
   end
 end
