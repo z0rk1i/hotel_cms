@@ -1,7 +1,7 @@
 class BookingsController < ApplicationController
   layout "public"
 
-  before_action :authenticate_user!, only: %i[show]
+  before_action :authenticate_user!, only: %i[show cancel]
 
   def new
     @booking = Booking.new
@@ -33,6 +33,15 @@ class BookingsController < ApplicationController
 
   def show
     @booking = current_user.bookings.includes(:room, :guest).find(params[:id])
+  end
+
+  def cancel
+    @booking = current_user.bookings.find(params[:id])
+    if %w[pending confirmed].include?(@booking.status) && @booking.transition_to(:cancelled)
+      redirect_to account_path, notice: "Бронь отменена."
+    else
+      redirect_to account_path, alert: "Эту бронь нельзя отменить в текущем статусе."
+    end
   end
 
   def available_rooms

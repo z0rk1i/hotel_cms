@@ -35,6 +35,10 @@
       .grid.grid-cols-3.gap-4.px-6.py-3
         %dt.text-slate-500.dark:text-slate-400 Стоимость
         %dd.col-span-2.font-medium.text-slate-900.dark:text-white= number_to_currency(@booking.total_price, unit: "₽", precision: 0)
-  .mt-6.flex.items-center.gap-4
+  .mt-6.flex.flex-wrap.items-center.gap-4
     = link_to "Личный кабинет", account_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
     = link_to "На главную", root_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+    - if %w[pending confirmed].include?(@booking.status)
+      = button_to "Отменить бронь", cancel_booking_path(@booking), method: :post, |
+        data: { turbo_confirm: "Отменить бронь №#{@booking.id}? Действие необратимо." },        |
+        class: "ml-auto text-sm font-medium text-red-500 hover:text-red-700"                    |

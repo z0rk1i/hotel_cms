@@ -8,6 +8,7 @@ Rails.application.routes.draw do
 
   resources :bookings, only: %i[new create show] do
     get :available_rooms, on: :collection
+    post :cancel, on: :member
   end
   get "bookings", to: redirect("/account"), as: :bookings_redirect
   resources :rooms, only: %i[show]

@@ -197,5 +197,66 @@ RSpec.describe "Public bookings", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Бронь №#{booking.id}")
     end
+
+    it "shows the cancel button for a pending booking" do
+      user = create(:user)
+      booking = create(:booking, :pending, user: user)
+
+      sign_in user
+      get booking_path(booking)
+
+      expect(response.body).to include("Отменить бронь")
+    end
+  end
+
+  describe "POST /bookings/:id/cancel" do
+    it "lets the owner cancel a pending booking" do
+      user = create(:user)
+      booking = create(:booking, :pending, user: user)
+      sign_in user
+
+      expect { post cancel_booking_path(booking) }.to change { booking.reload.status }
+        .from("pending").to("cancelled")
+
+      expect(response).to redirect_to(account_path)
+      expect(flash[:notice]).to eq("Бронь отменена.")
+    end
+
+    it "lets the owner cancel a confirmed booking" do
+      user = create(:user)
+      booking = create(:booking, :confirmed, user: user)
+      sign_in user
+
+      post cancel_booking_path(booking)
+
+      expect(booking.reload).to be_cancelled
+    end
+
+    it "does not cancel a checked-in booking" do
+      user = create(:user)
+      booking = create(:booking, :checked_in, user: user)
+      sign_in user
+
+      post cancel_booking_path(booking)
+
+      expect(booking.reload).to be_checked_in
+      expect(flash[:alert]).to be_present
+    end
+
+    it "does not allow cancelling someone else's booking" do
+      booking = create(:booking, user: create(:user))
+      sign_in create(:user)
+
+      post cancel_booking_path(booking)
+
+      expect(response).to have_http_status(:not_found)
+      expect(booking.reload).to be_pending
+    end
+
+    it "requires authentication" do
+      booking = create(:booking)
+      post cancel_booking_path(booking)
+      expect(response).to redirect_to(new_user_session_path)
+    end
   end
 end
