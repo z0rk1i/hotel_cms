@@ -38,6 +38,21 @@
         .grid.grid-cols-3.gap-4.px-6.py-3
           %dt.text-slate-500.dark:text-slate-400 Создал
           %dd.col-span-2.text-slate-900.dark:text-white= @booking.user.full_name
+  - if @booking.audit_logs.any?
+    .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+      .border-b.border-slate-200.dark:border-slate-700.px-6.py-4
+        %h2.font-medium.text-slate-900.dark:text-white История изменений
+      %ul.divide-y.divide-slate-100.dark:divide-slate-700.text-sm
+        - @booking.audit_logs.ordered.each do |log|
+          %li.flex.items-center.justify-between.gap-4.px-6.py-3
+            .flex.items-center.gap-2
+              %span.text-slate-500.dark:text-slate-400
+                = booking_status_label(log.from_status || log.to_status)
+              %span.text-slate-400.dark:text-slate-600 →
+              %span.font-medium.text-slate-900.dark:text-white= booking_status_label(log.to_status)
+              %span.text-xs.text-slate-400.dark:text-slate-500
+                = log.administrator ? log.administrator.email : "автоматически"
+            %span.text-xs.text-slate-400.dark:text-slate-500= l(log.created_at, format: :short)
   .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6
     %h3.font-medium.text-slate-900.dark:text-white.mb-4 Действия
     .flex.flex-wrap.items-center.gap-3

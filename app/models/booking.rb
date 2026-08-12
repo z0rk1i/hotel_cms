@@ -10,6 +10,7 @@ class Booking < ApplicationRecord
   belongs_to :user, optional: true
 
   has_many :service_orders, dependent: :restrict_with_error
+  has_many :audit_logs, class_name: "BookingAuditLog", dependent: :destroy
 
   enum :status, { pending: "pending", confirmed: "confirmed", checked_in: "checked_in", checked_out: "checked_out", cancelled: "cancelled" }
 
@@ -34,6 +35,7 @@ class Booking < ApplicationRecord
 
   after_save :sync_room_status, if: -> { saved_change_to_status? }
   after_save :cancel_pending_service_orders, if: -> { saved_change_to_status? && cancelled? }
+  after_save :audit_status_change, if: -> { saved_change_to_status? }
   before_destroy :free_room, if: -> { checked_in? }
 
   after_commit :deliver_created_email, on: :create
@@ -121,6 +123,15 @@ class Booking < ApplicationRecord
 
   def cancel_pending_service_orders
     service_orders.pending.each { |order| order.transition_to(:cancelled) }
+  end
+
+  def audit_status_change
+    BookingAuditLog.create(
+      booking: self,
+      administrator: Thread.current[:current_administrator],
+      from_status: status_before_last_save,
+      to_status: status
+    )
   end
 
   def deliver_created_email

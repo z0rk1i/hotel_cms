@@ -4,10 +4,20 @@ module Admin
 
     before_action :authenticate_administrator!
     before_action :store_return_to
+    before_action :track_current_administrator
+    after_action :clear_current_administrator
 
     include Pagy::Backend
 
     private
+
+    def track_current_administrator
+      Thread.current[:current_administrator] = current_administrator
+    end
+
+    def clear_current_administrator
+      Thread.current[:current_administrator] = nil
+    end
 
     def redirect_back_or(default, **options)
       redirect_to safe_referer || default, **options

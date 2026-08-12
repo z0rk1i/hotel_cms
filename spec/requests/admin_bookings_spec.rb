@@ -46,9 +46,31 @@ RSpec.describe "Admin bookings", type: :request do
     end
   end
 
+  describe "audit trail" do
+    it "records the acting administrator on admin transitions" do
+      admin = Administrator.last
+      booking = create(:booking)
+      patch confirm_admin_booking_path(booking)
+
+      log = booking.audit_logs.last
+      expect(log.administrator).to eq(admin)
+      expect(log.from_status).to eq("pending")
+      expect(log.to_status).to eq("confirmed")
+    end
+
+    it "shows the history on the booking page" do
+      booking = create(:booking)
+      patch confirm_admin_booking_path(booking)
+
+      get admin_booking_path(booking)
+      expect(response.body).to include("История изменений")
+      expect(response.body).to include(Administrator.last.email)
+    end
+  end
+
   describe "CSV export" do
     it "exports all bookings as CSV" do
-      room = create(:room, price_per_night: 2000)
+      room = create(:room, price_per_night: 2000, capacity: 2)
       create(:booking, :confirmed, guests_count: 2, room: room)
       create(:booking, :cancelled)
 

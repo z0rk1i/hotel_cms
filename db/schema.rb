@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_160001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_160002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -60,6 +60,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160001) do
     t.string "icon", default: "star", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "booking_audit_logs", force: :cascade do |t|
+    t.bigint "administrator_id"
+    t.bigint "booking_id", null: false
+    t.datetime "created_at", null: false
+    t.string "from_status"
+    t.string "to_status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["administrator_id"], name: "index_booking_audit_logs_on_administrator_id"
+    t.index ["booking_id"], name: "index_booking_audit_logs_on_booking_id"
   end
 
   create_table "bookings", force: :cascade do |t|
@@ -242,6 +253,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160001) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "booking_audit_logs", "administrators"
+  add_foreign_key "booking_audit_logs", "bookings"
   add_foreign_key "bookings", "guests"
   add_foreign_key "bookings", "rooms"
   add_foreign_key "bookings", "users"
