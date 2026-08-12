@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_183910) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_190311) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -89,6 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_183910) do
     t.datetime "created_at", null: false
     t.bigint "guest_id", null: false
     t.integer "guests_count", default: 1, null: false
+    t.decimal "no_show_fee", precision: 10, scale: 2
     t.text "notes"
     t.date "price_frozen_on"
     t.bigint "room_id", null: false

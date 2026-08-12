@@ -42,6 +42,16 @@ RSpec.describe BookingSweeperJob, type: :job do
       expect(today.reload).to be_confirmed
     end
 
+    it "applies a no-show fee equal to the first night's price" do
+      booking = create(:booking, :confirmed, room: create(:room, price_per_night: 2000),
+                                             check_in: Date.current - 1, check_out: Date.current + 2)
+
+      described_class.perform_now
+
+      expect(booking.reload).to be_cancelled
+      expect(booking.no_show_fee).to eq(booking.nightly_prices.find_by(date: Date.current - 1).amount)
+    end
+
     it "enqueues a reminder email for confirmed bookings checking in tomorrow" do
       user = create(:user, email: "guest@example.org")
       create(:booking, :confirmed, user: user, check_in: Date.current + 1, check_out: Date.current + 3)

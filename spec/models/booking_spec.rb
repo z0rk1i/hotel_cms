@@ -162,6 +162,14 @@ RSpec.describe Booking, type: :model do
       expect { booking.destroy }.not_to change(Booking, :count)
       expect(booking.errors[:base]).to be_present
     end
+
+    it "includes a no-show fee in the due amount" do
+      booking = create(:booking)
+      booking.update!(total_price: 3000, no_show_fee: 1000)
+      create(:payment, booking: booking, amount: 500)
+
+      expect(booking.due_amount).to eq(3500)
+    end
   end
 
   describe "scopes" do

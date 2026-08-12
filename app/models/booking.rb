@@ -64,7 +64,7 @@ class Booking < ApplicationRecord
   end
 
   def due_amount
-    total_price - paid_amount
+    total_price + no_show_fee.to_d - paid_amount
   end
 
   def self.status_labels

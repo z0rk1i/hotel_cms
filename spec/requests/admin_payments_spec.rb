@@ -72,5 +72,14 @@ RSpec.describe "Admin payments", type: :request do
       expect(response.body).to include("Стоимость по ночам")
       expect(response.body).to include("зафиксирована по тарифу")
     end
+
+    it "shows the no-show fee on the booking page" do
+      booking.update!(no_show_fee: 1500)
+
+      get admin_booking_path(booking)
+
+      expect(response.body).to include("Штраф за неявку")
+      expect(response.body).to include("₽1 500")
+    end
   end
 end
