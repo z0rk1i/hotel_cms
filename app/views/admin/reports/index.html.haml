@@ -1,0 +1,79 @@
+.space-y-6
+  .flex.items-center.justify-between
+    %h1.text-2xl.font-semibold.text-slate-900.dark:text-white Отчёты
+    = link_to "← Дашборд", admin_root_path, class: "text-sm text-indigo-600 hover:text-indigo-800"
+
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
+    = form_with url: admin_reports_path, method: :get, class: "flex flex-wrap items-end gap-4" do |f|
+      .flex.flex-col
+        %label.text-sm.font-medium.text-slate-700.dark:text-slate-300 C
+        = f.date_field :from, value: @report.from, class: "mt-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
+      .flex.flex-col
+        %label.text-sm.font-medium.text-slate-700.dark:text-slate-300 По
+        = f.date_field :to, value: @report.to, class: "mt-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
+      = f.submit "Показать", class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
+      = link_to "Экспорт CSV", admin_reports_export_path(from: @report.from.iso8601, to: @report.to.iso8601), class: "text-sm font-medium px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+
+  - ttl = @report.summary
+  .grid.grid-cols-3.gap-4
+    .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
+      .text-sm.text-slate-500.dark:text-slate-400 Принято денег (факт)
+      .text-3xl.font-semibold.text-slate-900.dark:text-white.mt-1= money(ttl[:fact])
+      .text-xs.text-slate-400.dark:text-slate-500.mt-1 за период
+    .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
+      .text-sm.text-slate-500.dark:text-slate-400 По тарифу (план)
+      .text-3xl.font-semibold.text-slate-900.dark:text-white.mt-1= money(ttl[:plan])
+      .text-xs.text-slate-400.dark:text-slate-500.mt-1 сверх факта не принято
+    .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
+      .text-sm.text-slate-500.dark:text-slate-400 Средняя загрузка
+      .text-3xl.font-semibold.text-slate-900.dark:text-white.mt-1= "#{ttl[:occupancy]}%"
+      .text-xs.text-slate-400.dark:text-slate-500.mt-1 за период
+
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+    .px-5.py-4.border-b.border-slate-200.dark:border-slate-700
+      %h2.font-medium.text-slate-800.dark:text-slate-100 Загрузка по категориям номеров
+    %table.w-full.text-sm
+      %thead.bg-slate-50.text-slate-500.dark:text-slate-400.text-left{:class => "dark:bg-slate-800/60"}
+        %tr
+          %th.px-5.py-3.font-medium Категория
+          %th.px-5.py-3.font-medium Номеров
+          %th.px-5.py-3.font-medium Ночёвок возможно
+          %th.px-5.py-3.font-medium Продано ночёвок
+          %th.px-5.py-3.font-medium Загрузка
+      %tbody.divide-y.divide-slate-100.dark:divide-slate-800
+        - @report.category_rows.each do |row|
+          %tr
+            %td.px-5.py-3.font-medium.text-slate-900.dark:text-white= row[:category].name
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= row[:rooms]
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= row[:capacity_nights]
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= row[:sold_nights]
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= "#{row[:occupancy]}%"
+        - if @report.category_rows.empty?
+          %tr
+            %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "5"} Категорий нет
+
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+    .px-5.py-4.border-b.border-slate-200.dark:border-slate-700
+      %h2.font-medium.text-slate-800.dark:text-slate-100 Ночная загрузка
+    .overflow-x-auto
+      %table.w-full.text-sm
+        %thead.bg-slate-50.text-slate-500.dark:text-slate-400.text-left{:class => "dark:bg-slate-800/60"}
+          %tr
+            %th.px-5.py-3.font-medium Дата
+            %th.px-5.py-3.font-medium План, ₽
+            %th.px-5.py-3.font-medium Факт, ₽
+            %th.px-5.py-3.font-medium Занято номеров
+            %th.px-5.py-3.font-medium Всего номеров
+            %th.px-5.py-3.font-medium Загрузка
+        %tbody.divide-y.divide-slate-100.dark:divide-slate-800
+          - @report.night_rows.each do |row|
+            %tr
+              %td.px-5.py-3.font-medium.text-slate-900.dark:text-white= l(row[:date], format: :short)
+              %td.px-5.py-3.text-slate-600.dark:text-slate-300= money(row[:plan])
+              %td.px-5.py-3.text-slate-600.dark:text-slate-300= money(row[:fact])
+              %td.px-5.py-3.text-slate-600.dark:text-slate-300= row[:sold]
+              %td.px-5.py-3.text-slate-600.dark:text-slate-300= row[:total]
+              %td.px-5.py-3.text-slate-600.dark:text-slate-300= "#{row[:occupancy]}%"
+          - if @report.night_rows.empty?
+            %tr
+              %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "6"} Нет данных за период

@@ -42,6 +42,8 @@ Rails.application.routes.draw do
     resources :amenities
     resources :price_periods
     resources :closed_dates
+    get "reports", to: "reports#index", as: :reports
+    get "reports/export", to: "reports#export", as: :reports_export
     resources :guests do
       member do
         post :merge
