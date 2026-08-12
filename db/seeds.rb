@@ -63,6 +63,27 @@ Room.order(:number).each_with_index do |room, i|
   room.amenities = amenity_records.sample(count) if room.amenities.empty?
 end
 
+# --- Room photos (Lorem Picsum, deterministic per room) ---
+require "open-uri"
+
+room_photo_scenes = [ [ "bedroom", 800, 600 ], [ "desk", 800, 600 ], [ "bath", 800, 600 ], [ "view", 1024, 768 ] ]
+rooms_with_photos = 0
+
+Room.order(:number).each do |room|
+  next if room.photos.any?
+
+  room_photo_scenes.each do |scene, width, height|
+    url = "https://picsum.photos/seed/hotel-#{room.number}-#{scene}/#{width}/#{height}"
+    begin
+      room.photos.attach(io: URI.open(url), filename: "#{room.number}-#{scene}.jpg", content_type: "image/jpeg")
+    rescue OpenURI::HTTPError, SocketError, Errno::ECONNREFUSED, Timeout::Error, URI::InvalidURIError
+      warn "Не удалось загрузить фото номера: #{url}"
+    end
+  end
+  rooms_with_photos += 1 if room.photos.any?
+end
+puts "Attached photos to #{rooms_with_photos} rooms."
+
 # --- Guests ---
 guests = [
   [ "Анна Смирнова", "+7 900 111-22-33", "anna@example.com" ],
