@@ -8,6 +8,9 @@ class RoomAvailability
     return result if result.failure?
 
     start_date, end_date = result.value!
+    availability = validate_stay(start_date, end_date)
+    return availability if availability.failure?
+
     Success(available_rooms(start_date, end_date, exclude_room_id))
   end
 
@@ -18,6 +21,15 @@ class RoomAvailability
     end_date = parse_date(check_out)
     return Failure(:invalid_dates) if start_date.nil? || end_date.nil?
     return Failure(:invalid_range) if end_date <= start_date
+
+    Success([ start_date, end_date ])
+  end
+
+  def validate_stay(start_date, end_date)
+    return Failure("Отель закрыт на выбранные даты") if StayRules.closed_in?(check_in: start_date, check_out: end_date)
+
+    min_nights = StayRules.min_nights_between(check_in: start_date, check_out: end_date)
+    return Failure(StayRules.min_stay_message(min_nights)) if min_nights > (end_date - start_date)
 
     Success([ start_date, end_date ])
   end

@@ -35,6 +35,7 @@ created: 2026-08-12
 - [x] dry-rb консолидация, фазы 2–3: фикс silent `200 []` на available_rooms/admin available (`Failure` дат = 422 + error JSON, пустой search = `200 []`), коллапс unpacking Result в BookingsController#create → `result.value_or(result.failure)`
 - [x] Оплаты по брони: модель `Payment` (amount, method cash/card/transfer, paid_at, note), CRUD в админке на карточке брони, колонка «Оплачено» в списке, баланс paid/due, выручка дашборда — реальные оплаты за месяц + «по тарифу», колонки «Оплачено/Долг» в CSV
 - [x] Снимок цены: ночная раскладка в `booking_nightly_prices` (unique [booking_id, date]), `price_frozen_on` на брони, разбивка на странице — из снимка с пометкой «цена зафиксирована по тарифу» (426 тестов, rubocop 0)
+- [x] Закрытые даты и минимальный срок: `ClosedDate` (unique date + reason) с CRUD `/admin/closed_dates`, `PricePeriod#min_nights` в форме/списке, проверки `StayRules` в `RoomAvailability` (виджет, 422 с текстом) и `BookingCreator` (публичная форма), админ может бронировать вручную (457 тестов, rubocop 0)
 - [ ] Инструментальные сервисы публичного сайта на dry-monads (`room_availability_controller.js` уже guard-ит range — только спека)
 
 ## Идеи на будущее

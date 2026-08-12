@@ -11,7 +11,7 @@ module Admin
     end
 
     def resource_params
-      params.require(:price_period).permit(:name, :starts_on, :ends_on, :multiplier)
+      params.require(:price_period).permit(:name, :starts_on, :ends_on, :multiplier, :min_nights)
     end
 
     def resource_index_path

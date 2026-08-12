@@ -50,7 +50,7 @@ class BookingsController < ApplicationController
     if result.success?
       render json: result.value!
     else
-      render json: { error: "Укажите корректные даты" }, status: :unprocessable_entity
+      render json: { error: availability_error_message(result.failure) }, status: :unprocessable_entity
     end
   end
 
@@ -62,6 +62,12 @@ class BookingsController < ApplicationController
 
   def parse_date_param(value)
     DateParams.parse(value)
+  end
+
+  def availability_error_message(failure)
+    return failure if failure.is_a?(String)
+
+    "Укажите корректные даты"
   end
 
   def booking_params

@@ -126,5 +126,41 @@ RSpec.describe RoomAvailability do
       expect(result).to be_success
       expect(result.value!.map { |r| r[:id] }).to eq([ room.id ])
     end
+
+    it "fails with a message when a closed date falls within the stay" do
+      create(:closed_date, date: Date.current + 4)
+
+      result = described_class.new.call(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(result).to be_failure
+      expect(result.failure).to eq("Отель закрыт на выбранные даты")
+    end
+
+    it "ignores a closed date on the check_out day" do
+      create(:closed_date, date: Date.current + 5)
+      create(:room)
+
+      result = described_class.new.call(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(result).to be_success
+    end
+
+    it "fails with a message when the stay is shorter than the period minimum" do
+      create(:price_period, starts_on: Date.current + 3, ends_on: Date.current + 9, min_nights: 3)
+
+      result = described_class.new.call(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(result).to be_failure
+      expect(result.failure).to eq("Минимальный срок проживания — 3 ночи")
+    end
+
+    it "succeeds when the stay meets the period minimum" do
+      create(:price_period, starts_on: Date.current + 3, ends_on: Date.current + 9, min_nights: 3)
+      create(:room)
+
+      result = described_class.new.call(check_in: Date.current + 3, check_out: Date.current + 7)
+
+      expect(result).to be_success
+    end
   end
 end

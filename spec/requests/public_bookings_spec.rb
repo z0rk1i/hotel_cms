@@ -164,6 +164,56 @@ RSpec.describe "Public bookings", type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "rejects a booking over a closed date" do
+      room = create(:room)
+      create(:closed_date, date: Date.current + 4)
+
+      expect do
+        post bookings_path, params: {
+          booking: {
+            room_id: room.id,
+            check_in: Date.current + 3,
+            check_out: Date.current + 5,
+            guests_count: 1
+          },
+          user: {
+            full_name: "Закрыто",
+            email: "closeddate@example.com",
+            phone: "+7 900 666-66-66",
+            password: "password123"
+          }
+        }
+      end.not_to change(Booking, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("отель закрыт на выбранные даты")
+    end
+
+    it "rejects a booking shorter than the period minimum" do
+      room = create(:room)
+      create(:price_period, starts_on: Date.current + 3, ends_on: Date.current + 9, min_nights: 3)
+
+      expect do
+        post bookings_path, params: {
+          booking: {
+            room_id: room.id,
+            check_in: Date.current + 3,
+            check_out: Date.current + 5,
+            guests_count: 1
+          },
+          user: {
+            full_name: "Коротко",
+            email: "shortstay@example.com",
+            phone: "+7 900 777-77-77",
+            password: "password123"
+          }
+        }
+      end.not_to change(Booking, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("минимальный срок проживания составляет 3 ночи")
+    end
   end
 
   describe "GET /bookings/available_rooms" do
@@ -224,6 +274,30 @@ RSpec.describe "Public bookings", type: :request do
       }
 
       expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it "returns 422 with a message when the stay overlaps a closed date" do
+      create(:closed_date, date: Date.current + 4)
+
+      get available_rooms_bookings_path, params: {
+        check_in: Date.current + 3,
+        check_out: Date.current + 5
+      }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to eq("Отель закрыт на выбранные даты")
+    end
+
+    it "returns 422 with a message when the stay is shorter than the period minimum" do
+      create(:price_period, starts_on: Date.current + 3, ends_on: Date.current + 9, min_nights: 3)
+
+      get available_rooms_bookings_path, params: {
+        check_in: Date.current + 3,
+        check_out: Date.current + 5
+      }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to eq("Минимальный срок проживания — 3 ночи")
     end
   end
 

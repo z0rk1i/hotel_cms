@@ -2,6 +2,8 @@ class PricePeriod < ApplicationRecord
   validates :name, presence: true
   validates :starts_on, :ends_on, presence: true
   validates :multiplier, numericality: { greater_than: 0 }
+  validates :min_nights, numericality: { only_integer: true, greater_than: 0 },
+                         allow_nil: true
   validate :ends_after_starts
   validate :no_overlap
 

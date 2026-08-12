@@ -16,7 +16,7 @@ class BookingCreator
   private
 
   def valid?(user, guest, booking)
-    user.valid? && guest.valid? && booking.valid? && check_in_not_in_past(booking)
+    user.valid? && guest.valid? && booking.valid? && check_in_not_in_past(booking) && stay_supported?(booking)
   end
 
   def check_in_not_in_past(booking)
@@ -24,6 +24,22 @@ class BookingCreator
 
     booking.errors.add(:check_in, "не может быть в прошлом")
     false
+  end
+
+  def stay_supported?(booking)
+    return true if booking.check_in.blank? || booking.check_out.blank?
+
+    before = booking.errors.size
+
+    closed = StayRules.closed_dates_between(check_in: booking.check_in, check_out: booking.check_out)
+    booking.errors.add(:check_in, "— отель закрыт на выбранные даты") if closed.any?
+
+    min_nights = StayRules.min_nights_between(check_in: booking.check_in, check_out: booking.check_out)
+    if min_nights > (booking.check_out - booking.check_in)
+      booking.errors.add(:check_out, "— минимальный срок проживания составляет #{min_nights} #{StayRules.nights_word(min_nights)}")
+    end
+
+    booking.errors.size == before
   end
 
   def find_or_build_guest(user)

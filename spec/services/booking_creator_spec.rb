@@ -68,5 +68,75 @@ RSpec.describe BookingCreator do
 
       expect(result).to be_success
     end
+
+    it "rejects a booking that overlaps a closed date" do
+      create(:closed_date, date: Date.current + 4)
+
+      result = described_class.new.call(
+        current_user: nil,
+        booking_attrs: {
+          room_id: room.id,
+          check_in: Date.current + 3,
+          check_out: Date.current + 5,
+          guests_count: 1
+        },
+        user_attrs: {
+          full_name: "Закрыто",
+          email: "closed@example.com",
+          phone: "+7 900 333-33-33",
+          password: "password123"
+        }
+      )
+
+      expect(result).to be_failure
+      expect(result.failure.booking.errors[:check_in]).to include("— отель закрыт на выбранные даты")
+      expect(Booking).not_to exist
+    end
+
+    it "rejects a booking shorter than the period minimum" do
+      create(:price_period, starts_on: Date.current + 3, ends_on: Date.current + 9, min_nights: 3)
+
+      result = described_class.new.call(
+        current_user: nil,
+        booking_attrs: {
+          room_id: room.id,
+          check_in: Date.current + 3,
+          check_out: Date.current + 5,
+          guests_count: 1
+        },
+        user_attrs: {
+          full_name: "Коротко",
+          email: "short@example.com",
+          phone: "+7 900 444-44-44",
+          password: "password123"
+        }
+      )
+
+      expect(result).to be_failure
+      expect(result.failure.booking.errors[:check_out]).to include("— минимальный срок проживания составляет 3 ночи")
+      expect(Booking).not_to exist
+    end
+
+    it "accepts a booking that meets the period minimum" do
+      create(:price_period, starts_on: Date.current + 3, ends_on: Date.current + 9, min_nights: 3)
+
+      result = described_class.new.call(
+        current_user: nil,
+        booking_attrs: {
+          room_id: room.id,
+          check_in: Date.current + 3,
+          check_out: Date.current + 7,
+          guests_count: 1
+        },
+        user_attrs: {
+          full_name: "Нормально",
+          email: "long@example.com",
+          phone: "+7 900 555-55-55",
+          password: "password123"
+        }
+      )
+
+      expect(result).to be_success
+    end
   end
 end

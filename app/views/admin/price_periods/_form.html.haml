@@ -10,7 +10,7 @@
       = field_label(form, :name, "Название")
       = text_input(form, :name, placeholder: "Напр. Высокий сезон, Новый год")
       = field_errors(form, :name)
-    .grid.grid-cols-3.gap-4
+    .grid.grid-cols-2.gap-4{:class => "lg:grid-cols-4"}
       %div
         = field_label(form, :starts_on, "Дата начала")
         = date_input(form, :starts_on)
@@ -24,6 +24,11 @@
         = number_input(form, :multiplier, step: "0.01", min: 0.01)
         %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 1.2 — на 20% дороже, 0.8 — дешевле
         = field_errors(form, :multiplier)
+      %div
+        = field_label(form, :min_nights, "Мин. ночей")
+        = number_input(form, :min_nights, min: 1)
+        %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 Минимальный срок проживания для броней, попадающих в период. Пусто — без ограничения.
+        = field_errors(form, :min_nights)
   .flex.items-center.gap-3
     = form.submit @price_period.new_record? ? "Создать период" : "Сохранить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg"
     = link_to "Отмена", admin_price_periods_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"

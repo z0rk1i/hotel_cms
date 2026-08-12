@@ -33,6 +33,7 @@ Rails.application.routes.draw do
     end
     resources :amenities
     resources :price_periods
+    resources :closed_dates
     resources :guests
     resources :bookings do
       collection do
