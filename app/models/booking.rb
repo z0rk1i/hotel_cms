@@ -15,6 +15,8 @@ class Booking < ApplicationRecord
 
   has_many :service_orders, dependent: :restrict_with_error
   has_many :audit_logs, class_name: "BookingAuditLog", dependent: :destroy
+  has_many :payments, dependent: :restrict_with_error
+  has_many :nightly_prices, class_name: "BookingNightlyPrice", dependent: :destroy
 
   enum :status, { pending: "pending", confirmed: "confirmed", checked_in: "checked_in", checked_out: "checked_out", cancelled: "cancelled" }
 
@@ -55,6 +57,14 @@ class Booking < ApplicationRecord
 
   def booking_option_label
     "№#{id} · номер #{room.number} · #{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}"
+  end
+
+  def paid_amount
+    payments.sum(:amount)
+  end
+
+  def due_amount
+    total_price - paid_amount
   end
 
   def self.status_labels

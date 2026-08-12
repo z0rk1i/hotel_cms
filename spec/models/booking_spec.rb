@@ -97,6 +97,73 @@ RSpec.describe Booking, type: :model do
     end
   end
 
+  describe "price snapshot" do
+    it "freezes the nightly breakdown on create" do
+      room = create(:room, price_per_night: 1000)
+      booking = create(:booking, room: room, check_in: Date.current + 1, check_out: Date.current + 4)
+
+      expect(booking.nightly_prices.map(&:amount)).to eq([ 1000, 1000, 1000 ])
+      expect(booking.nightly_prices.map(&:date)).to eq([ Date.current + 1, Date.current + 2, Date.current + 3 ])
+      expect(booking.price_frozen_on).to eq(Date.current)
+    end
+
+    it "does not change the price when the tariff changes later" do
+      room = create(:room, price_per_night: 1000)
+      booking = create(:booking, room: room, check_in: Date.current + 10, check_out: Date.current + 12)
+      expect(booking.total_price).to eq(2000)
+
+      room.update!(price_per_night: 5000)
+      create(:price_period, starts_on: Date.current + 10, ends_on: Date.current + 12, multiplier: 3)
+
+      expect(booking.reload.total_price).to eq(2000)
+      expect(booking.nightly_prices.map(&:amount)).to eq([ 1000, 1000 ])
+    end
+
+    it "updates the snapshot when dates change" do
+      room = create(:room, price_per_night: 1000)
+      booking = create(:booking, room: room, check_in: Date.current + 1, check_out: Date.current + 2)
+      booking.update!(check_out: Date.current + 5)
+
+      expect(booking.reload.total_price).to eq(4000)
+      expect(booking.nightly_prices.count).to eq(4)
+    end
+
+    it "keeps the snapshot on unrelated updates" do
+      room = create(:room, price_per_night: 1000)
+      booking = create(:booking, room: room, check_in: Date.current + 1, check_out: Date.current + 2)
+      booking.update!(notes: "Квитанция")
+
+      expect(booking.total_price).to eq(1000)
+      expect(booking.nightly_prices.count).to eq(1)
+      expect(booking.price_frozen_on).to eq(Date.current)
+    end
+  end
+
+  describe "payments" do
+    it "computes paid and due amounts" do
+      room = create(:room, price_per_night: 2500)
+      booking = create(:booking, room: room, check_in: Date.current + 1, check_out: Date.current + 4)
+
+      expect(booking.total_price).to eq(7500)
+      expect(booking.paid_amount).to eq(0)
+      expect(booking.due_amount).to eq(7500)
+
+      create(:payment, booking: booking, amount: 1500)
+      create(:payment, booking: booking, amount: 2500)
+
+      expect(booking.paid_amount).to eq(4000)
+      expect(booking.due_amount).to eq(3500)
+    end
+
+    it "does not destroy a booking that has payments" do
+      booking = create(:booking)
+      create(:payment, booking: booking)
+
+      expect { booking.destroy }.not_to change(Booking, :count)
+      expect(booking.errors[:base]).to be_present
+    end
+  end
+
   describe "scopes" do
     it "excludes cancelled from active" do
       create(:booking)

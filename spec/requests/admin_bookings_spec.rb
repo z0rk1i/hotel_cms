@@ -81,9 +81,21 @@ RSpec.describe "Admin bookings", type: :request do
 
       rows = CSV.parse(response.body)
       expect(rows.length).to eq(3)
-      expect(rows.first).to include("Гость", "Статус")
+      expect(rows.first).to include("Гость", "Статус", "Оплачено, ₽", "Долг, ₽")
       expect(rows.map { |r| r[9] }).to include("4000.0")
-      expect(rows.map { |r| r[10] }).to include("подтверждена", "отменена")
+      expect(rows.map { |r| r[12] }).to include("подтверждена", "отменена")
+    end
+
+    it "exports paid and due amounts" do
+      booking = create(:booking, :confirmed)
+      create(:payment, booking: booking, amount: 500)
+
+      get admin_bookings_path(format: :csv)
+
+      rows = CSV.parse(response.body)
+      expect(rows.last[9]).to eq(booking.total_price.to_s)
+      expect(rows.last[10]).to eq("500.0")
+      expect(rows.last[11]).to eq((booking.total_price - 500).to_s)
     end
 
     it "respects the status filter" do
@@ -94,7 +106,7 @@ RSpec.describe "Admin bookings", type: :request do
 
       rows = CSV.parse(response.body)
       expect(rows.length).to eq(2)
-      expect(rows.last[10]).to eq("подтверждена")
+      expect(rows.last[12]).to eq("подтверждена")
     end
   end
 

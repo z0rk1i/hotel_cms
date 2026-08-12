@@ -9,6 +9,9 @@ module BookingPricing
   private
 
   def calculate_total_price
-    self.total_price = NightlyPricing.new(room: room, check_in: check_in, check_out: check_out).total
+    pricing = NightlyPricing.new(room: room, check_in: check_in, check_out: check_out)
+    self.total_price = pricing.total
+    self.nightly_prices = pricing.entries.map { |entry| BookingNightlyPrice.new(date: entry.date, amount: entry.amount) }
+    self.price_frozen_on = Date.current
   end
 end

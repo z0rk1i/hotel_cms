@@ -44,6 +44,7 @@ Rails.application.routes.draw do
         patch :check_out
         patch :cancel
       end
+      resources :payments, only: %i[new create destroy]
     end
     resources :pages
     resources :news, only: %i[index new create edit update destroy]

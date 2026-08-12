@@ -18,7 +18,7 @@
     .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
       .text-sm.text-slate-500.dark:text-slate-400 Выручка за месяц
       .text-3xl.font-semibold.text-slate-900.dark:text-white.mt-1= money(@stats[:monthly_revenue])
-      .text-xs.text-slate-400.dark:text-slate-500.mt-1 по выехавшим
+      .text-xs.text-slate-400.dark:text-slate-500.mt-1= "принято в этом месяце · по тарифу #{money(@stats[:monthly_booked_revenue])}"
   .grid.grid-cols-1.lg:grid-cols-2.gap-6
     .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
       .px-5.py-4.border-b.border-slate-200.dark:border-slate-700.flex.items-center.justify-between

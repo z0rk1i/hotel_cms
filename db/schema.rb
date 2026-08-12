@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_160004) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_175411) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -73,6 +73,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160004) do
     t.index ["booking_id"], name: "index_booking_audit_logs_on_booking_id"
   end
 
+  create_table "booking_nightly_prices", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.bigint "booking_id", null: false
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.datetime "updated_at", null: false
+    t.index ["booking_id", "date"], name: "index_booking_nightly_prices_on_booking_id_and_date", unique: true
+    t.index ["booking_id"], name: "index_booking_nightly_prices_on_booking_id"
+  end
+
   create_table "bookings", force: :cascade do |t|
     t.date "check_in", null: false
     t.date "check_out", null: false
@@ -80,6 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160004) do
     t.bigint "guest_id", null: false
     t.integer "guests_count", default: 1, null: false
     t.text "notes"
+    t.date "price_frozen_on"
     t.bigint "room_id", null: false
     t.string "status", default: "pending", null: false
     t.decimal "total_price", precision: 12, scale: 2, default: "0.0", null: false
@@ -145,6 +156,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160004) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_pages_on_slug", unique: true
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.bigint "booking_id", null: false
+    t.datetime "created_at", null: false
+    t.string "method", default: "cash", null: false
+    t.text "note"
+    t.datetime "paid_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["booking_id", "paid_at"], name: "index_payments_on_booking_id_and_paid_at"
+    t.index ["booking_id"], name: "index_payments_on_booking_id"
+    t.index ["paid_at"], name: "index_payments_on_paid_at"
   end
 
   create_table "price_periods", force: :cascade do |t|
@@ -266,10 +290,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160004) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "booking_audit_logs", "administrators"
   add_foreign_key "booking_audit_logs", "bookings"
+  add_foreign_key "booking_nightly_prices", "bookings"
   add_foreign_key "bookings", "guests"
   add_foreign_key "bookings", "rooms"
   add_foreign_key "bookings", "users"
   add_foreign_key "notifications", "users"
+  add_foreign_key "payments", "bookings"
   add_foreign_key "reviews", "users"
   add_foreign_key "room_amenities", "amenities"
   add_foreign_key "room_amenities", "rooms"

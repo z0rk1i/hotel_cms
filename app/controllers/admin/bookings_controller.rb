@@ -3,7 +3,7 @@ module Admin
     before_action :set_booking, only: %i[show edit update destroy confirm check_in check_out cancel]
 
     def index
-      @bookings = Booking.includes(:guest, :room)
+      @bookings = Booking.includes(:guest, :room, :payments)
       @bookings = @bookings.where(status: params[:status]) if params[:status].present?
       @bookings = @bookings.order(check_in: :desc)
 

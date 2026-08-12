@@ -34,19 +34,51 @@
       .grid.grid-cols-3.gap-4.px-6.py-3
         %dt.text-slate-500.dark:text-slate-400 Стоимость
         %dd.col-span-2.font-medium.text-slate-900.dark:text-white= money(@booking.total_price)
-      - if @booking.room
-        - pricing = NightlyPricing.new(room: @booking.room, check_in: @booking.check_in, check_out: @booking.check_out)
+      - if @booking.nightly_prices.any?
         .grid.grid-cols-3.gap-4.px-6.py-3
           %dt.text-slate-500.dark:text-slate-400 Стоимость по ночам
           %dd.col-span-2.text-slate-900.dark:text-white
-            - pricing.entries.each do |entry|
+            - @booking.nightly_prices.ordered.each do |entry|
               .flex.justify-between.gap-4
                 %span= l(entry.date, format: :short)
                 %span.text-slate-500.dark:text-slate-400= money(entry.amount)
+            - if @booking.price_frozen_on
+              %p.mt-2.text-xs.text-slate-400.dark:text-slate-500
+                Цена зафиксирована по тарифу на #{l(@booking.price_frozen_on, format: :long)} и не меняется при изменении тарифов.
       - if @booking.user
         .grid.grid-cols-3.gap-4.px-6.py-3
           %dt.text-slate-500.dark:text-slate-400 Создал
           %dd.col-span-2.text-slate-900.dark:text-white= @booking.user.full_name
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+    .border-b.border-slate-200.dark:border-slate-700.px-6.py-4.flex.items-center.justify-between
+      %h2.font-medium.text-slate-900.dark:text-white Оплаты
+      = link_to "+ Добавить оплату", new_admin_booking_payment_path(@booking), class: "text-sm text-indigo-600 hover:text-indigo-800"
+    .px-6.py-3.flex.flex-wrap.gap-6.text-sm.border-b.border-slate-100.dark:border-slate-700
+      %span.text-slate-500.dark:text-slate-400
+        Оплачено:
+        %strong.text-slate-900.dark:text-white= money(@booking.paid_amount)
+      %span.text-slate-500.dark:text-slate-400
+        Долг:
+        %strong.text-slate-900.dark:text-white= money(@booking.due_amount)
+      %span.text-slate-500.dark:text-slate-400
+        Итого:
+        %strong.text-slate-900.dark:text-white= money(@booking.total_price)
+    - if @booking.payments.any?
+      %ul.divide-y.divide-slate-100.dark:divide-slate-700.text-sm
+        - @booking.payments.ordered.each do |payment|
+          %li.flex.items-center.justify-between.gap-4.px-6.py-3
+            .flex.items-center.flex-wrap.gap-3
+              %span.font-medium.text-slate-900.dark:text-white= money(payment.amount)
+              %span.text-xs.text-slate-500.dark:text-slate-400
+                = Payment.method_labels.fetch(payment.method, payment.method)
+              %span.text-xs.text-slate-400.dark:text-slate-500= l(payment.paid_at, format: :long)
+              - if payment.note.present?
+                %span.text-xs.text-slate-400.dark:text-slate-500= payment.note
+            = button_to "Удалить", admin_booking_payment_path(@booking, payment), method: :delete, |
+              data: { turbo_confirm: "Удалить оплату?" },                                             |
+              class: "text-xs text-red-500 hover:text-red-700"
+    - else
+      .px-6.py-4.text-sm.text-slate-400.dark:text-slate-500 Оплат нет
   - if @booking.audit_logs.any?
     .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
       .border-b.border-slate-200.dark:border-slate-700.px-6.py-4
