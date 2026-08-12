@@ -46,6 +46,36 @@ RSpec.describe "Admin bookings", type: :request do
     end
   end
 
+  describe "CSV export" do
+    it "exports all bookings as CSV" do
+      room = create(:room, price_per_night: 2000)
+      create(:booking, :confirmed, guests_count: 2, room: room)
+      create(:booking, :cancelled)
+
+      get admin_bookings_path(format: :csv)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.headers["Content-Type"]).to include("text/csv")
+
+      rows = CSV.parse(response.body)
+      expect(rows.length).to eq(3)
+      expect(rows.first).to include("Гость", "Статус")
+      expect(rows.map { |r| r[9] }).to include("4000.0")
+      expect(rows.map { |r| r[10] }).to include("подтверждена", "отменена")
+    end
+
+    it "respects the status filter" do
+      create(:booking, :confirmed)
+      create(:booking, :cancelled)
+
+      get admin_bookings_path(format: :csv, status: "confirmed")
+
+      rows = CSV.parse(response.body)
+      expect(rows.length).to eq(2)
+      expect(rows.last[10]).to eq("подтверждена")
+    end
+  end
+
   describe "booking creation" do
     it "rejects a booking for an already occupied room" do
       existing = create(:booking, check_in: Date.current + 3, check_out: Date.current + 5)

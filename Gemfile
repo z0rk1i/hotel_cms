@@ -47,6 +47,9 @@ gem "omniauth-rails_csrf_protection"
 # Pagination
 gem "pagy", "~> 9.0"
 
+# CSV export (removed from default gems in Ruby 3.4)
+gem "csv"
+
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
 

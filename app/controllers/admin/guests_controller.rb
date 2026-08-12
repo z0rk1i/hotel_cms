@@ -5,7 +5,13 @@ module Admin
     def index
       @guests = Guest.order(:full_name)
       @guests = @guests.search(params[:query]) if params[:query].present?
-      @guests = paginate(@guests)
+
+      respond_to do |format|
+        format.html { @guests = paginate(@guests) }
+        format.csv do
+          send_data GuestsCsvExporter.export(@guests), filename: "guests-#{Date.current}.csv", type: "text/csv"
+        end
+      end
     end
 
     def new

@@ -6,7 +6,13 @@ module Admin
       @bookings = Booking.includes(:guest, :room)
       @bookings = @bookings.where(status: params[:status]) if params[:status].present?
       @bookings = @bookings.order(check_in: :desc)
-      @bookings = paginate(@bookings)
+
+      respond_to do |format|
+        format.html { @bookings = paginate(@bookings) }
+        format.csv do
+          send_data BookingsCsvExporter.export(@bookings), filename: "bookings-#{Date.current}.csv", type: "text/csv"
+        end
+      end
     end
 
     def calendar
