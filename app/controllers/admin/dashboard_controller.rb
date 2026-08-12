@@ -2,7 +2,7 @@ module Admin
   class DashboardController < BaseController
     def index
       today = Date.current
-      checked_in_now = Booking.checked_in_now.where("check_in <= ? AND check_out > ?", today, today)
+      checked_in_now = Booking.checked_in_now
       occupied_room_ids = checked_in_now.select(:room_id).distinct
       booked_tonight_ids = Booking.occupying_overlapping(today, today + 1).select(:room_id)
       unavailable_ids = Room.where(status: %i[maintenance cleaning]).select(:id)

@@ -46,14 +46,13 @@ RSpec.describe "Admin dashboard", type: :request do
       expect(response.body).to include("1 номеров занято")
     end
 
-    it "ignores checked-in bookings whose dates do not include today" do
+    it "counts checked-in bookings regardless of their reserved dates" do
       room = create(:room)
       create(:booking, room: room, status: :checked_in,
                        check_in: Date.current + 5, check_out: Date.current + 7)
 
       get "/admin"
-      expect(response.body).to include("0 номеров занято")
-      expect(response.body).to include("Сейчас никто не заселён")
+      expect(response.body).to include("1 номеров занято")
     end
 
     it "counts monthly revenue by check_out date" do
