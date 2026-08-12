@@ -5,8 +5,8 @@ class BookingsController < ApplicationController
 
   def new
     @booking = Booking.new
-    @booking.check_in = Date.current + 1
-    @booking.check_out = Date.current + 2
+    @booking.check_in = parse_date_param(params[:check_in]) || Date.current + 1
+    @booking.check_out = parse_date_param(params[:check_out]) || Date.current + 2
     @booking.guests_count = 1
     @booking.room_id = params[:room_id] if params[:room_id].present?
     @user = current_user || User.new
@@ -53,6 +53,12 @@ class BookingsController < ApplicationController
 
   def user_params
     params.require(:user).permit(:full_name, :email, :phone, :password, :password_confirmation)
+  end
+
+  def parse_date_param(value)
+    Date.parse(value.to_s)
+  rescue ArgumentError, TypeError
+    nil
   end
 
   def booking_params

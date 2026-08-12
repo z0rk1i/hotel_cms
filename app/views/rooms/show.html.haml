@@ -42,8 +42,26 @@
       - if @room.description.present?
         .mt-5.text-slate-700.dark:text-slate-300.leading-relaxed
           = simple_format(@room.description)
+      .mt-6.rounded-xl.border.border-slate-200.dark:border-slate-700.bg-white.dark:bg-slate-800.p-5{"data-controller" => "room-availability", "data-room-availability-url-value" => available_rooms_bookings_path, "data-room-availability-room-id-value" => @room.id}
+        %h3.text-sm.font-medium.text-slate-900.dark:text-white Проверить доступность
+        .mt-3.flex.flex-wrap.items-center.gap-3
+          %label.block
+            %span.block.text-xs.text-slate-500.dark:text-slate-400.mb-1 Заезд
+            %input{"data-room-availability-target" => "checkIn", :type => "date", :class => "rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm", :value => Date.current + 1}
+          %label.block
+            %span.block.text-xs.text-slate-500.dark:text-slate-400.mb-1 Выезд
+            %input{"data-room-availability-target" => "checkOut", :type => "date", :class => "rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm", :value => Date.current + 2}
+          %button{"data-action" => "click->room-availability#check", :class => "bg-slate-900 hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg"}
+            Проверить
+        %p.mt-3{"data-room-availability-target" => "status", :class => "text-sm text-slate-500 dark:text-slate-400"}
+          Проверьте доступность
+        .mt-3.flex.gap-3
+          = link_to "Забронировать на эти даты", new_booking_path(room_id: @room.id), |
+            class: "hidden bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg",
+            data: { room_availability_target: "bookLink", base_url: new_booking_path(room_id: @room.id) }
+          = link_to "Забронировать", new_booking_path(room_id: @room.id), |
+            class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors",
+            data: { room_availability_target: "bookButton" }
       .mt-6.flex.flex-wrap.gap-3
-        = link_to "Забронировать", new_booking_path(room_id: @room.id),                                              |
-          class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors" 
         = link_to "Оставить отзыв", anchor: "review-form", class: "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium px-6 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
   = render "reviews/list", reviewable: @room, review: @review

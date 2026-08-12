@@ -22,6 +22,14 @@ RSpec.describe "Public room pages", type: :request do
       expect(response.body).to include(approved.rating.to_s)
     end
 
+    it "renders the availability widget with prefilled dates" do
+      room = create(:room)
+      get room_path(room)
+      expect(response.body).to include("Проверить доступность")
+      expect(response.body).to include("data-room-availability-room-id-value=\"#{room.id}\"")
+      expect(response.body).to include((Date.current + 1).to_s)
+    end
+
     it "returns 404 for an unknown room" do
       get room_path(9999)
       expect(response).to have_http_status(:not_found)

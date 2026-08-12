@@ -8,6 +8,13 @@ RSpec.describe "Public bookings", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Бронирование номера")
     end
+
+    it "prefills the dates from the query params" do
+      room = create(:room)
+      get new_booking_path(room_id: room.id, check_in: Date.current + 7, check_out: Date.current + 9)
+      expect(response.body).to include((Date.current + 7).to_s)
+      expect(response.body).to include((Date.current + 9).to_s)
+    end
   end
 
   describe "POST /bookings" do
