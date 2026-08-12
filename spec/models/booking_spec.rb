@@ -139,6 +139,21 @@ RSpec.describe Booking, type: :model do
     end
   end
 
+  describe "room unavailability window" do
+    it "rejects a booking overlapping the room's unavailability window" do
+      room = create(:room, unavailable_from: Date.current + 1, unavailable_until: Date.current + 10)
+      booking = build(:booking, room: room, check_in: Date.current + 5, check_out: Date.current + 7)
+      expect(booking).to be_invalid
+      expect(booking.errors[:room]).to include("недоступен для бронирования на выбранные даты")
+    end
+
+    it "allows a booking outside the unavailability window" do
+      room = create(:room, unavailable_from: Date.current + 1, unavailable_until: Date.current + 5)
+      booking = build(:booking, room: room, check_in: Date.current + 6, check_out: Date.current + 8)
+      expect(booking).to be_valid
+    end
+  end
+
   describe "status transitions" do
     it "allows legal transitions" do
       booking = create(:booking)

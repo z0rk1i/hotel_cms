@@ -122,4 +122,40 @@ RSpec.describe Room, type: :model do
       expect(room).to be_valid
     end
   end
+
+  describe "unavailability window" do
+    it "requires unavailable_until after unavailable_from" do
+      room = build(:room, unavailable_from: Date.current + 5, unavailable_until: Date.current + 5)
+      expect(room).to be_invalid
+      expect(room.errors[:unavailable_until]).to include("должна быть позже даты начала")
+    end
+
+    it "is valid without a window" do
+      expect(build(:room)).to be_valid
+    end
+
+    it "reports unavailability overlapping the range" do
+      room = build(:room, unavailable_from: Date.current + 1, unavailable_until: Date.current + 10)
+      expect(room.unavailable_during?(Date.current + 5, Date.current + 7)).to be(true)
+      expect(room.unavailable_during?(Date.current + 11, Date.current + 13)).to be(false)
+    end
+
+    it "ignores a window when only one bound is set" do
+      room = build(:room, unavailable_from: Date.current + 1, unavailable_until: nil)
+      expect(room.unavailable_during?(Date.current + 5, Date.current + 7)).to be(false)
+    end
+
+    describe "bookable_on scope" do
+      it "excludes rooms whose window overlaps the range" do
+        create(:room, unavailable_from: Date.current + 1, unavailable_until: Date.current + 10)
+        free = create(:room)
+        expect(Room.bookable_on(Date.current + 5, Date.current + 7).pluck(:id)).to eq([ free.id ])
+      end
+
+      it "keeps rooms whose window is outside the range" do
+        room = create(:room, unavailable_from: Date.current + 1, unavailable_until: Date.current + 5)
+        expect(Room.bookable_on(Date.current + 6, Date.current + 8).pluck(:id)).to eq([ room.id ])
+      end
+    end
+  end
 end

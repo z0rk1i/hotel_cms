@@ -19,8 +19,16 @@ class Room < ApplicationRecord
   validate :photo_count_within_limit
   validate :photo_size_within_limit
   validate :no_maintenance_while_guests_inside, on: :update, if: -> { status_changed? && (maintenance? || cleaning?) }
+  validate :unavailability_window_valid
 
   scope :available_now, -> { where(status: :available) }
+  scope :in_unavailability_window, ->(start_date, end_date) do
+    where("unavailable_from IS NOT NULL AND unavailable_until IS NOT NULL " \
+          "AND unavailable_from < ? AND unavailable_until > ?", end_date, start_date)
+  end
+  scope :bookable_on, ->(start_date, end_date) do
+    where.not(id: in_unavailability_window(start_date, end_date).select(:id))
+  end
   scope :with_all_amenities, ->(ids) do
     ids = Array(ids).map(&:to_i).reject(&:zero?)
     next all if ids.empty?
@@ -42,7 +50,18 @@ class Room < ApplicationRecord
     bookings.active_overlapping(start_date, end_date).where.not(id: exclude_booking&.id).exists?
   end
 
+  def unavailable_during?(start_date, end_date)
+    unavailable_from.present? && unavailable_until.present? &&
+      unavailable_from < end_date && unavailable_until > start_date
+  end
+
   private
+
+  def unavailability_window_valid
+    return if unavailable_from.blank? || unavailable_until.blank?
+
+    errors.add(:unavailable_until, "должна быть позже даты начала") if unavailable_until <= unavailable_from
+  end
 
   def no_maintenance_while_guests_inside
     return unless bookings.occupying_overlapping(Date.current, Date.current + 1).exists?

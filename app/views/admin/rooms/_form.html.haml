@@ -35,6 +35,17 @@
         = field_label(form, :status, "Статус")
         = select_input(form, :status, Room.statuses.keys.map { |s| [room_status_label(s), s] }, selected: @room.status)
         = field_errors(form, :status)
+    .grid.grid-cols-2.gap-4
+      %div
+        = field_label(form, :unavailable_from, "Недоступен с (дата)")
+        = date_input(form, :unavailable_from)
+        = field_errors(form, :unavailable_from)
+      %div
+        = field_label(form, :unavailable_until, "Недоступен по (дата)")
+        = date_input(form, :unavailable_until)
+        = field_errors(form, :unavailable_until)
+    %p.text-xs.text-slate-400.dark:text-slate-500
+      На эти даты номер не будет предлагаться к бронированию (плановый ремонт, закрытие на сезон).
     %div
       = field_label(form, :description, "Описание")
       = text_area(form, :description, rows: 4, placeholder: "Удобства, вид из окна, оснащение…")

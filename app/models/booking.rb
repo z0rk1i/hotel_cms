@@ -98,6 +98,9 @@ class Booking < ApplicationRecord
     return if room.blank?
 
     errors.add(:room, "недоступен для бронирования") if room.maintenance? || room.cleaning?
+    return if check_in.blank? || check_out.blank?
+
+    errors.add(:room, "недоступен для бронирования на выбранные даты") if room.unavailable_during?(check_in, check_out)
   end
 
   def calculate_total_price

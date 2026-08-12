@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_160001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -189,6 +189,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_160000) do
     t.decimal "price_per_night", precision: 10, scale: 2, default: "0.0", null: false
     t.integer "size_sqm"
     t.string "status", default: "available", null: false
+    t.date "unavailable_from"
+    t.date "unavailable_until"
     t.datetime "updated_at", null: false
     t.index ["category_id"], name: "index_rooms_on_category_id"
     t.index ["number"], name: "index_rooms_on_number", unique: true

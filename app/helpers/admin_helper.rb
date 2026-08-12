@@ -73,6 +73,11 @@ module AdminHelper
     form.number_field(field, **opts, class: classes)
   end
 
+  def date_input(form, field, **opts)
+    classes = input_classes(form, field)
+    form.date_field(field, **opts, class: classes)
+  end
+
   def text_area(form, field, **opts)
     classes = input_classes(form, field)
     form.text_area(field, **opts, class: classes)

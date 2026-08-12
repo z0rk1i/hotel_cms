@@ -6,6 +6,7 @@ module Admin
       occupied_room_ids = checked_in_now.select(:room_id).distinct
       booked_tonight_ids = Booking.occupying_overlapping(today, today + 1).select(:room_id)
       unavailable_ids = Room.where(status: %i[maintenance cleaning]).select(:id)
+      unavailable_ids = unavailable_ids.or(Room.in_unavailability_window(today, today + 1).select(:id))
 
       @stats = {
         rooms_total: Room.count,
