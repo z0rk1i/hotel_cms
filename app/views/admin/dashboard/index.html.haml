@@ -41,11 +41,12 @@
         %h2.font-medium.text-slate-800.dark:text-slate-100 Гости в отеле
       %ul.divide-y.divide-slate-100.dark:divide-slate-800
         - @stats[:checked_in_now].each do |booking|
-          %li.px-5.py-3.flex.items-center.justify-between
-            %div
-              .font-medium.text-slate-800.dark:text-slate-100= booking.guest.full_name
-              .text-sm.text-slate-500.dark:text-slate-400= booking.room.label
-            %span.text-sm.text-slate-400.dark:text-slate-500
-              до #{l(booking.check_out)}
+          %li
+            = link_to edit_admin_booking_path(booking), class: "px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors" do
+              %div
+                .font-medium.text-slate-800.dark:text-slate-100= booking.guest.full_name
+                .text-sm.text-slate-500.dark:text-slate-400= booking.room.label
+              %span.text-sm.text-slate-400.dark:text-slate-500
+                до #{l(booking.check_out)}
         - if @stats[:checked_in_now].empty?
           %li.px-5.py-6.text-sm.text-slate-400.dark:text-slate-500.text-center Сейчас никто не заселён
