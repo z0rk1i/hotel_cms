@@ -93,4 +93,24 @@ def service_order_status_label(status)
       "#{base} bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-indigo-400"
     end
   end
+
+  def availability_search?
+    params[:check_in].present? || params[:check_out].present?
+  end
+
+  def format_search_dates
+    return "" unless availability_search?
+
+    check_in = Date.parse(params[:check_in].to_s)
+    check_out = Date.parse(params[:check_out].to_s)
+    "на #{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}"
+  rescue ArgumentError
+    "на выбранные даты"
+  end
+
+  def search_guests_label
+    return "" unless params[:guests_count].to_i.positive?
+
+    "для #{params[:guests_count].to_i} #{russian_pluralize(params[:guests_count].to_i, "гостя", "гостей", "гостей")}"
+  end
 end

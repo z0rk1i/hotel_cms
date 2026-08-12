@@ -2,9 +2,25 @@
   .max-w-6xl.mx-auto.px-6.py-24.text-center
     %h1.text-4xl.md:text-5xl.font-semibold.tracking-tight Добро пожаловать в гостиницу
     %p.mt-4.text-lg.text-slate-300.max-w-2xl.mx-auto Уютные номера, завтраки и внимательный персонал. Бронируйте напрямую — без посредников и комиссий.
-    %a.mt-8.inline-block.bg-indigo-500.hover:bg-indigo-400.text-white.font-medium.px-8.py-3.rounded-lg.transition-colors{:href => "#rooms"} Смотреть номера
+    = form_tag root_path, method: :get, class: "mt-10 mx-auto max-w-2xl bg-white/10 backdrop-blur rounded-2xl p-5 flex flex-wrap items-end justify-center gap-3" do
+      %label.block.text-left
+        %span.block.text-xs.text-slate-300.mb-1 Заезд
+        %input{:type => "date", :name => "check_in", :value => params[:check_in], :class => "rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"}
+      %label.block.text-left
+        %span.block.text-xs.text-slate-300.mb-1 Выезд
+        %input{:type => "date", :name => "check_out", :value => params[:check_out], :class => "rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"}
+      %label.block.text-left
+        %span.block.text-xs.text-slate-300.mb-1 Гостей
+        %input{:type => "number", :name => "guests_count", :value => params[:guests_count], :min => 1, :placeholder => "1", :class => "w-20 rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white"}
+      %button.bg-indigo-500.hover:bg-indigo-400.text-white.font-medium.px-6.py-2.rounded-lg.transition-colors Найти номера
+    %a.mt-6.inline-block.text-slate-300.hover:text-white.text-sm.transition-colors{:href => "#rooms"} или просто смотреть номера
 %section#rooms.max-w-6xl.mx-auto.px-6.py-16
   %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-4 Наши номера
+  - if availability_search?
+    .mb-6.flex.items-center.justify-between.rounded-xl.border.border-indigo-200.bg-indigo-50.px-4.py-3{:class => "dark:border-indigo-800 dark:bg-indigo-900/30"}
+      %p.text-sm.text-indigo-800.dark:text-indigo-200
+        = "Свободные номера #{format_search_dates} #{search_guests_label}" .strip
+      = link_to "Сбросить", root_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400"
   - if @amenities.any?
     .mb-8.flex.flex-wrap.items-center.gap-2
       = link_to "Все номера", root_path, class: amenity_chip_class(selected_amenity_ids.empty?)
@@ -50,7 +66,11 @@
                 %p.mt-2.text-sm.text-slate-500.dark:text-slate-400.line-clamp-2= room.description
               %span.mt-4.inline-block.w-full.text-center.bg-slate-900.hover:bg-slate-700.text-white.text-sm.font-medium.py-2.rounded-lg.transition-colors.dark:bg-indigo-600.dark:hover:bg-indigo-500 Забронировать
   - if @categories.empty?
-    %p.text-slate-400.dark:text-slate-500.text-center.py-10 Номера появятся скоро
+    %p.text-slate-400.dark:text-slate-500.text-center.py-10
+      - if availability_search?
+        На выбранные даты свободных номеров нет — попробуйте другие даты.
+      - else
+        Номера появятся скоро
 %section#services.bg-slate-50.border-y.border-slate-100{:class => "dark:bg-slate-800/60"}
   .max-w-6xl.mx-auto.px-6.py-16
     %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Услуги

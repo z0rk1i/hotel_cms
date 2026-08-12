@@ -37,6 +37,57 @@ RSpec.describe "Public room pages", type: :request do
     end
   end
 
+  describe "GET / with availability search" do
+    it "hides rooms already booked for the selected dates" do
+      free_room = create(:room, number: "101")
+      taken_room = create(:room, number: "102")
+      create(:booking, :confirmed, room: taken_room,
+             check_in: Date.current + 3, check_out: Date.current + 5)
+
+      get root_path(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(response.body).to include("Номер 101")
+      expect(response.body).not_to include("Номер 102")
+    end
+
+    it "hides rooms under maintenance or cleaning" do
+      maintenance_room = create(:room, number: "101", status: :maintenance)
+      free_room = create(:room, number: "102")
+
+      get root_path(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(response.body).to include("Номер 102")
+      expect(response.body).not_to include("Номер 101")
+    end
+
+    it "filters rooms by guest capacity" do
+      small_room = create(:room, number: "101", capacity: 1)
+      big_room = create(:room, number: "102", capacity: 3)
+
+      get root_path(check_in: Date.current + 3, check_out: Date.current + 5, guests_count: 3)
+
+      expect(response.body).to include("Номер 102")
+      expect(response.body).not_to include("Номер 101")
+    end
+
+    it "shows the search banner and an empty state when nothing is free" do
+      create(:room, number: "101")
+      create(:booking, :confirmed, room: Room.find_by(number: "101"),
+             check_in: Date.current + 3, check_out: Date.current + 5)
+
+      get root_path(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(response.body).to include("Свободные номера")
+      expect(response.body).to include("На выбранные даты свободных номеров нет")
+    end
+
+    it "ignores an invalid date range and shows all rooms" do
+      create(:room, number: "101")
+      get root_path(check_in: Date.current + 5, check_out: Date.current + 3)
+      expect(response.body).to include("Номер 101")
+    end
+  end
+
   describe "GET /rooms/:id" do
     it "renders the room details page" do
       room = create(:room, description: "Просторный номер с видом на горы")
