@@ -1,0 +1,9 @@
+{
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "notes/attachments",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "notes",
+  "useMarkdownLinks": false,
+  "showLineNumber": false,
+  "readableLineLength": true
+}
