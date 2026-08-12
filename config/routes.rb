@@ -34,7 +34,11 @@ Rails.application.routes.draw do
     resources :amenities
     resources :price_periods
     resources :closed_dates
-    resources :guests
+    resources :guests do
+      member do
+        post :merge
+      end
+    end
     resources :bookings do
       collection do
         get :calendar

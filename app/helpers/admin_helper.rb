@@ -88,6 +88,13 @@ module AdminHelper
     form.select(field, collection, { include_blank: true }, **opts, class: classes)
   end
 
+  def check_box_input(form, field, label)
+    content_tag :label, class: "flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer" do
+      form.check_box(field, class: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500") +
+        content_tag(:span, label)
+    end
+  end
+
   private
 
   def input_classes(form, field)

@@ -20,11 +20,15 @@
       %tbody.divide-y.divide-slate-100.dark:divide-slate-800
         - @guests.each do |guest|
           %tr.hover:bg-slate-50{:class => "dark:hover:bg-slate-700/40"}
-            %td.px-5.py-3.font-medium.text-slate-900.dark:text-white= guest.full_name
+            %td.px-5.py-3.font-medium.text-slate-900.dark:text-white
+              = link_to guest.full_name, admin_guest_path(guest), class: "text-indigo-600 hover:text-indigo-800"
+              - if guest.is_vip
+                %span.text-xs.font-semibold.text-amber-800.bg-amber-100.rounded-full.px-2.py-0.5.ml-2{:class => "dark:bg-amber-900/40 dark:text-amber-200"} VIP
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= guest.phone.presence || "—"
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= guest.email.presence || "—"
             %td.px-5.py-3.text-slate-600.dark:text-slate-300= guest.passport_number.presence || "—"
             %td.px-5.py-3.text-right.whitespace-nowrap
+              = link_to "Карточка", admin_guest_path(guest), class: "text-indigo-600 hover:text-indigo-800 mr-3"
               = link_to "Редактировать", edit_admin_guest_path(guest), class: "text-indigo-600 hover:text-indigo-800"
               = button_to "Удалить", admin_guest_path(guest), method: :delete, |
                 data: { turbo_confirm: "Удалить гостя #{guest.full_name}?" },  |

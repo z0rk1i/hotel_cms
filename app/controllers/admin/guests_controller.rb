@@ -12,6 +12,29 @@ module Admin
       end
     end
 
+    def show
+      @guest = Guest.find(params[:id])
+      @bookings = @guest.bookings.includes(:room, :payments).order(check_in: :desc)
+      @duplicates = @guest.possible_duplicates
+    end
+
+    def merge
+      @guest = Guest.find(params[:id])
+      duplicate = Guest.find(params[:duplicate_id])
+
+      if duplicate.nil? || duplicate.id == @guest.id
+        redirect_to admin_guest_path(@guest), alert: "Нельзя объединить гостя с самим собой."
+        return
+      end
+
+      duplicate.merge_into!(@guest)
+      if duplicate.destroyed?
+        redirect_to admin_guest_path(@guest), notice: "Гость «#{duplicate.full_name}» объединён — его брони перенесены."
+      else
+        redirect_to admin_guest_path(@guest), alert: duplicate.errors.full_messages.to_sentence
+      end
+    end
+
     private
 
     def model_class
@@ -19,7 +42,7 @@ module Admin
     end
 
     def resource_params
-      params.require(:guest).permit(:full_name, :email, :phone, :passport_number, :notes)
+      params.require(:guest).permit(:full_name, :email, :phone, :passport_number, :notes, :is_vip, :preferences)
     end
 
     def resource_index_path
