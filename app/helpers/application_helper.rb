@@ -94,6 +94,27 @@ def service_order_status_label(status)
     end
   end
 
+  def selected_category_id
+    params[:category_id].to_i
+  end
+
+  def rooms_search_path(overrides)
+    query = params.slice(:check_in, :check_out, :guests_count, :amenities, :category_id, :sort)
+                  .to_unsafe_h
+                  .merge(overrides)
+                  .reject { |_, value| value.blank? || value == [] || value == [ "" ] }
+    root_path(query)
+  end
+
+  def sort_link_class(value)
+    base = "px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+    if params[:sort] == value
+      "#{base} bg-slate-900 text-white border-slate-900 dark:bg-indigo-600 dark:border-indigo-600"
+    else
+      "#{base} bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-indigo-400"
+    end
+  end
+
   def availability_search?
     params[:check_in].present? || params[:check_out].present?
   end

@@ -50,6 +50,36 @@ RSpec.describe "Public room pages", type: :request do
       expect(response.body).to include("Номер 101")
       expect(response.body).not_to include("Номер 102")
     end
+
+    it "renders category and sorting controls" do
+      create(:room)
+      get root_path
+      expect(response.body).to include("Все типы")
+      expect(response.body).to include("по цене ↑")
+      expect(response.body).to include("по цене ↓")
+    end
+
+    it "filters rooms by category" do
+      standard = create(:room_category, name: "Стандарт")
+      luxury = create(:room_category, name: "Люкс")
+      create(:room, number: "101", category: standard)
+      create(:room, number: "201", category: luxury)
+
+      get root_path(category_id: standard.id)
+
+      expect(response.body).to include("Номер 101")
+      expect(response.body).not_to include("Номер 201")
+    end
+
+    it "sorts rooms by price when requested" do
+      category = create(:room_category)
+      create(:room, number: "101", category: category, price_per_night: 1500)
+      create(:room, number: "201", category: category, price_per_night: 9000)
+
+      get root_path(sort: "price_asc")
+
+      expect(response.body.index("Номер 101")).to be < response.body.index("Номер 201")
+    end
   end
 
   describe "GET / with availability search" do
@@ -141,6 +171,13 @@ RSpec.describe "Public room pages", type: :request do
       expect(response.body).to include("Проверить доступность")
       expect(response.body).to include("data-room-availability-room-id-value=\"#{room.id}\"")
       expect(response.body).to include((Date.current + 1).to_s)
+    end
+
+    it "shows the next free dates for a free room" do
+      room = create(:room)
+      get room_path(room)
+      expect(response.body).to include("Ближайшие свободные даты")
+      expect(response.body).to include(I18n.l(Date.current + 59, format: :long))
     end
 
     it "returns 404 for an unknown room" do

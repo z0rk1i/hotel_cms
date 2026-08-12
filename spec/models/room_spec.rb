@@ -1,6 +1,33 @@
 require 'rails_helper'
 
 RSpec.describe Room, type: :model do
+  describe "#next_free_window" do
+    it "returns the whole horizon when the room is fully free" do
+      room = create(:room)
+
+      expect(room.next_free_window(from: Date.current)).to eq([ Date.current, Date.current + 59 ])
+    end
+
+    it "returns the window until the first booked night" do
+      room = create(:room)
+      create(:booking, :confirmed, room: room,
+             check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(room.next_free_window(from: Date.current)).to eq([ Date.current, Date.current + 2 ])
+    end
+
+    it "skips booked nights and returns the next free window after them" do
+      room = create(:room)
+      create(:booking, :confirmed, room: room,
+             check_in: Date.current, check_out: Date.current + 2)
+
+      result = room.next_free_window(from: Date.current)
+
+      expect(result.first).to eq(Date.current + 2)
+      expect(result.last).to eq(Date.current + 59)
+    end
+  end
+
   describe "validations" do
     it "is valid with valid attributes" do
       expect(build(:room)).to be_valid

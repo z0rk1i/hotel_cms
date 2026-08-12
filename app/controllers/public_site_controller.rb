@@ -10,6 +10,9 @@ class PublicSiteController < ApplicationController
     @gallery = GalleryImage.includes(:image_attachment).limit(8)
 
     apply_availability_filter
+    apply_category_filter
+    apply_sort
+    @filter_categories = RoomCategory.order(:name)
     @rooms_by_category = @rooms.group_by(&:category_id)
   end
 
@@ -43,7 +46,20 @@ class PublicSiteController < ApplicationController
     @categories = RoomCategory.where(id: @rooms.select(:category_id)).order(:name)
   end
 
+  def apply_category_filter
+    @rooms = @rooms.where(category_id: params[:category_id]) if params[:category_id].present?
+  end
+
+  def apply_sort
+    case params[:sort]
+    when "price_asc"
+      @rooms = @rooms.reorder(price_per_night: :asc)
+    when "price_desc"
+      @rooms = @rooms.reorder(price_per_night: :desc)
+    end
+  end
+
   def search_params
-    params.permit(:check_in, :check_out, :guests_count)
+    params.permit(:check_in, :check_out, :guests_count, :category_id, :sort)
   end
 end

@@ -59,6 +59,24 @@ class Room < ApplicationRecord
       unavailable_from < end_date && unavailable_until > start_date
   end
 
+  def next_free_window(from: Date.current, horizon: 60)
+    busy = bookings.where.not(status: :cancelled)
+                   .where("check_out > ?", from)
+                   .where("check_in < ?", from + horizon)
+                   .flat_map { |booking| (booking.check_in...booking.check_out).map(&:to_date) }
+
+    return [ from, from + horizon - 1 ] if busy.empty?
+
+    busy = busy.to_set
+    first_free = from
+    first_free += 1 while busy.include?(first_free)
+    return nil if first_free > from + horizon - 1
+
+    last_free = first_free
+    last_free += 1 while !busy.include?(last_free) && last_free <= from + horizon - 1
+    [ first_free, last_free - 1 ]
+  end
+
   private
 
   def log_status_change
