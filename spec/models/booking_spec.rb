@@ -78,6 +78,23 @@ RSpec.describe Booking, type: :model do
       booking.update!(check_out: Date.current + 5)
       expect(booking.total_price).to eq(4000)
     end
+
+    it "recalculates price when the room changes" do
+      room = create(:room, price_per_night: 1000)
+      expensive = create(:room, price_per_night: 2000)
+      booking = create(:booking, room: room, check_in: Date.current + 1, check_out: Date.current + 2)
+      booking.update!(room: expensive)
+      expect(booking.reload.total_price).to eq(2000)
+    end
+
+    it "preserves a manually adjusted total price on unrelated updates" do
+      room = create(:room, price_per_night: 1000)
+      booking = create(:booking, room: room, check_in: Date.current + 1, check_out: Date.current + 2)
+      booking.update!(total_price: 500)
+      booking.update!(notes: "Скидка")
+
+      expect(booking.reload.total_price).to eq(500)
+    end
   end
 
   describe "scopes" do

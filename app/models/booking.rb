@@ -30,7 +30,7 @@ class Booking < ApplicationRecord
   validate :room_bookable
 
   before_validation :set_defaults, on: :create
-  before_save :calculate_total_price, if: -> { room && check_in && check_out }
+  before_save :calculate_total_price, if: -> { room && check_in && check_out && (new_record? || room_id_changed? || check_in_changed? || check_out_changed?) }
 
   after_save :sync_room_status, if: -> { saved_change_to_status? }
   after_save :cancel_pending_service_orders, if: -> { saved_change_to_status? && cancelled? }
