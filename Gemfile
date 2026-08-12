@@ -36,6 +36,9 @@ gem "bootsnap", require: false
 # Authentication for the admin area
 gem "devise"
 
+# HAML templates
+gem "haml-rails"
+
 # OAuth authentication for public users (VK.ru, Yandex)
 gem "omniauth"
 gem "omniauth-oauth2"
@@ -70,6 +73,9 @@ group :development, :test do
   gem "rspec-rails", "~> 8.0"
   gem "factory_bot_rails"
   gem "faker"
+
+  # Convert ERB templates to HAML
+  gem "html2haml"
 end
 
 group :development do

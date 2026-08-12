@@ -1,0 +1,12 @@
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=utf-8", "http-equiv" => "Content-Type"}/
+  %body
+    %div{:style => "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #0f172a;"}
+      %h1{:style => "font-size: 20px; margin: 0 0 12px;"} Гостиница
+      %p{:style => "margin: 0 0 16px;"}
+        Здравствуйте, #{@user.full_name.presence || @user.email}!
+      %p{:style => "margin: 0 0 16px; font-size: 15px; line-height: 1.5;"}= @notification.body
+      %p{:style => "margin: 0;"}
+        = link_to "Открыть личный кабинет", account_url

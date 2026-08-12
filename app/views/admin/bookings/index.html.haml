@@ -1,0 +1,49 @@
+.space-y-6
+  .flex.items-center.justify-between
+    %h1.text-2xl.font-semibold.text-slate-900.dark:text-white Бронирования
+    = link_to "+ Новая бронь", new_admin_booking_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
+  .flex.flex-wrap.gap-2
+    = link_to "Все", admin_bookings_path, class: filter_link_class(params[:status].blank?)
+    - Booking.statuses.each_key do |status|
+      = link_to booking_status_label(status), admin_bookings_path(status: status), class: filter_link_class(params[:status] == status)
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+    %table.w-full.text-sm
+      %thead.bg-slate-50.text-slate-500.dark:text-slate-400.text-left{:class => "dark:bg-slate-800/60"}
+        %tr
+          %th.px-5.py-3.font-medium Гость
+          %th.px-5.py-3.font-medium Номер
+          %th.px-5.py-3.font-medium Даты
+          %th.px-5.py-3.font-medium Ночей
+          %th.px-5.py-3.font-medium Сумма
+          %th.px-5.py-3.font-medium Статус
+          %th.px-5.py-3.font-medium.text-right Действия
+      %tbody.divide-y.divide-slate-100.dark:divide-slate-800
+        - @bookings.each do |booking|
+          %tr.hover:bg-slate-50{:class => "dark:hover:bg-slate-700/40"}
+            %td.px-5.py-3.font-medium.text-slate-900.dark:text-white= booking.guest.full_name
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= booking.room.label
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300.whitespace-nowrap
+              = l(booking.check_in)
+              → #{l(booking.check_out)}
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= booking.nights
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= money(booking.total_price)
+            %td.px-5.py-3= content_tag :span, booking_status_label(booking.status), class: status_badge_class(booking.status)
+            %td.px-5.py-3.text-right.whitespace-nowrap.space-x-2
+              - if booking.pending?
+                = button_to "Подтвердить", confirm_admin_booking_path(booking), method: :patch, |
+                  class: "text-blue-600 hover:text-blue-800 text-xs"                            
+              - if booking.confirmed?
+                = button_to "Заселить", check_in_admin_booking_path(booking), method: :patch, |
+                  class: "text-emerald-600 hover:text-emerald-800 text-xs"                    
+              - if booking.checked_in?
+                = button_to "Выселить", check_out_admin_booking_path(booking), method: :patch, |
+                  class: "text-amber-600 hover:text-amber-800 text-xs"                         
+              - unless booking.checked_out? || booking.cancelled?
+                = button_to "Отменить", cancel_admin_booking_path(booking), method: :patch, |
+                  data: { turbo_confirm: "Отменить бронь?" },                               |
+                  class: "text-red-500 hover:text-red-700 text-xs"                          
+              = link_to "Изменить", edit_admin_booking_path(booking), class: "text-indigo-600 hover:text-indigo-800 text-xs"
+        - if @bookings.empty?
+          %tr
+            %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "7"} Броней не найдено
+  = render "layouts/admin/pagination", pagy: @pagy if @pagy

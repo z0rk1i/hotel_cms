@@ -1,0 +1,41 @@
+%section#reviews.mt-12
+  %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-6 Отзывы
+  - if reviewable.approved_reviews.any?
+    .space-y-4
+      - reviewable.approved_reviews.each do |item|
+        .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
+          .flex.items-center.justify-between.gap-4
+            .flex.items-center.gap-3
+              .w-9.h-9.rounded-full.bg-indigo-100.text-indigo-700.dark:text-indigo-300.flex.items-center.justify-center.text-sm.font-medium{:class => "dark:bg-indigo-900/50"}
+                = item.user.full_name.presence&.first&.upcase || "Г"
+              %div
+                %p.text-sm.font-medium.text-slate-900.dark:text-white= item.user.full_name.presence || item.user.email
+                %p.text-xs.text-slate-400.dark:text-slate-500= l(item.created_at, format: :long)
+            %span.flex.items-center{:class => "gap-0.5"}
+              - 5.times do |i|
+                %svg{:class => "w-4 h-4 #{i < item.rating ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
+                  %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
+          %p.mt-3.text-slate-700.dark:text-slate-300.text-sm.leading-relaxed.whitespace-pre-wrap= item.body
+  - else
+    %p.text-slate-500.dark:text-slate-400 Отзывов пока нет — станьте первым!
+  #review-form.mt-8
+    - if user_signed_in?
+      .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6
+        %h3.font-medium.text-slate-900.dark:text-white.mb-4 Оставить отзыв
+        = form_with model: review, url: reviews_path, class: "space-y-4" do |form|
+          = form.hidden_field :reviewable_type, value: reviewable.class.name
+          = form.hidden_field :reviewable_id, value: reviewable.id
+          %div
+            = form.label :rating, "Оценка", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+            = form.select :rating, Review::RATING_LABELS, { prompt: "Выберите оценку" },                                                                |
+              class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600" |
+          %div
+            = form.label :body, "Ваш отзыв", class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+            = form.text_area :body, rows: 4, placeholder: "Поделитесь впечатлениями…",                                                                  |
+              class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600" 
+          = form.submit "Отправить отзыв", class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg"
+    - else
+      %p.text-sm.text-slate-500.dark:text-slate-400
+        = link_to "Войдите", new_user_session_path, class: "text-indigo-600 dark:text-indigo-400 font-medium"
+        ,
+        чтобы оставить отзыв.

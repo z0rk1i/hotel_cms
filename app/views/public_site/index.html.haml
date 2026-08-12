@@ -1,0 +1,77 @@
+.bg-slate-900.text-white
+  .max-w-6xl.mx-auto.px-6.py-24.text-center
+    %h1.text-4xl.md:text-5xl.font-semibold.tracking-tight Добро пожаловать в гостиницу
+    %p.mt-4.text-lg.text-slate-300.max-w-2xl.mx-auto Уютные номера, завтраки и внимательный персонал. Бронируйте напрямую — без посредников и комиссий.
+    %a.mt-8.inline-block.bg-indigo-500.hover:bg-indigo-400.text-white.font-medium.px-8.py-3.rounded-lg.transition-colors{:href => "#rooms"} Смотреть номера
+%section#rooms.max-w-6xl.mx-auto.px-6.py-16
+  %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Наши номера
+  - @categories.each do |category|
+    .mb-10
+      .flex.items-baseline.justify-between.mb-4
+        %h3.text-xl.font-medium.text-slate-900.dark:text-white= category.name
+        %span.text-sm.text-slate-500.dark:text-slate-400
+          от #{number_to_currency(category.base_price, unit: "₽", precision: 0)} / ночь
+      .grid.grid-cols-1.md:grid-cols-2.lg:grid-cols-3.gap-6
+        - category.rooms.each do |room|
+          = link_to room_path(room), class: "group block rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all" do
+            - if room.photos.any?
+              = image_tag room.photos.first, class: "w-full h-44 object-cover"
+            - else
+              .w-full.h-44.bg-slate-100.dark:bg-slate-700.flex.items-center.justify-center.text-slate-300.text-sm Нет фото
+            .p-4
+              .flex.items-center.justify-between
+                %span.font-medium.text-slate-900.dark:text-white.group-hover:text-indigo-600.dark:group-hover:text-indigo-400.transition-colors
+                  Номер #{room.number}
+                %span.text-indigo-600.font-medium
+                  = number_to_currency(room.price_per_night, unit: "₽", precision: 0)
+                  \/ночь
+              .mt-2.text-sm.text-slate-500.dark:text-slate-400
+                = room.capacity
+                чел. · #{room.size_sqm ? "#{room.size_sqm} м²" : "—"} · этаж #{room.floor}
+              - if room.approved_reviews.any?
+                .mt-2.flex.items-center.gap-1.text-xs.text-amber-500
+                  - 5.times do |i|
+                    %svg{:class => "w-3.5 h-3.5 #{i < average_rating(room) ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
+                      %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
+                  %span.font-medium.text-slate-600.dark:text-slate-400= average_rating(room)
+              - if room.description.present?
+                %p.mt-2.text-sm.text-slate-500.dark:text-slate-400.line-clamp-2= room.description
+              %span.mt-4.inline-block.w-full.text-center.bg-slate-900.hover:bg-slate-700.text-white.text-sm.font-medium.py-2.rounded-lg.transition-colors.dark:bg-indigo-600.dark:hover:bg-indigo-500 Забронировать
+  - if @categories.empty?
+    %p.text-slate-400.dark:text-slate-500.text-center.py-10 Номера появятся скоро
+%section#services.bg-slate-50.border-y.border-slate-100{:class => "dark:bg-slate-800/60"}
+  .max-w-6xl.mx-auto.px-6.py-16
+    %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Услуги
+    .grid.grid-cols-1.md:grid-cols-3.gap-6
+      - @services.each do |service|
+        = link_to service_path(service), class: "group block bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all" do
+          .flex.items-center.justify-between
+            %h3.font-medium.text-slate-900.dark:text-white.group-hover:text-indigo-600.dark:group-hover:text-indigo-400.transition-colors= service.name
+            - if service.price && service.price.positive?
+              %span.text-sm.font-medium.text-indigo-600= number_to_currency(service.price, unit: "₽", precision: 0)
+          - if service.approved_reviews.any?
+            .mt-2.flex.items-center.gap-1.text-xs.text-amber-500
+              - 5.times do |i|
+                %svg{:class => "w-3.5 h-3.5 #{i < average_rating(service) ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
+                  %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
+              %span.font-medium.text-slate-600.dark:text-slate-400= average_rating(service)
+          - if service.description.present?
+            %p.mt-2.text-sm.text-slate-500.dark:text-slate-400= service.description
+          %span.mt-4.inline-block.w-full.text-center.bg-indigo-600.hover:bg-indigo-700.text-white.text-sm.font-medium.py-2.rounded-lg.transition-colors Заказать
+- if @news.any?
+  %section#news.max-w-6xl.mx-auto.px-6.py-16
+    %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Новости
+    .grid.grid-cols-1.md:grid-cols-3.gap-6
+      - @news.each do |item|
+        = link_to public_news_path(item.slug), class: "block rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-colors" do
+          %time.text-xs.text-slate-400.dark:text-slate-500= l(item.published_at, format: :long)
+          %h3.mt-1.font-medium.text-slate-900.dark:text-white= item.title
+          - if item.body.present?
+            %p.mt-2.text-sm.text-slate-500.dark:text-slate-400.line-clamp-3= item.body
+          %span.mt-3.inline-block.text-sm.font-medium.text-indigo-600.dark:text-indigo-400 Читать далее
+- if @gallery.any?
+  %section#gallery.max-w-6xl.mx-auto.px-6.py-16
+    %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Галерея
+    .grid.grid-cols-2.md:grid-cols-4.gap-4
+      - @gallery.each do |image|
+        = image_tag image.image, alt: image.title, class: "w-full h-40 object-cover rounded-xl"

@@ -1,0 +1,13 @@
+- if pagy.pages > 1
+  %nav.flex.items-center.justify-center.gap-1.mt-6{"aria-label" => "Пагинация"}
+    - if pagy.prev
+      = link_to "← Назад", pagy_url_for(pagy, pagy.prev), class: "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+    - pagy.series.each do |item|
+      - if item == :gap
+        %span.px-2.text-slate-400.dark:text-slate-500 …
+      - elsif item == pagy.page
+        %span.px-3.rounded-lg.bg-slate-900.text-white.text-sm.font-medium{:class => "py-1.5"}= item
+      - else
+        = link_to item, pagy_url_for(pagy, item), class: "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+    - if pagy.next
+      = link_to "Вперёд →", pagy_url_for(pagy, pagy.next), class: "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/40"

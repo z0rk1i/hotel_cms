@@ -125,6 +125,7 @@ GEM
     ed25519 (1.4.0)
     erb (6.0.7)
     erubi (1.13.1)
+    erubis (2.7.0)
     et-orbi (1.4.1)
       tzinfo
     factory_bot (6.6.0)
@@ -152,8 +153,23 @@ GEM
       raabro (~> 1.4)
     globalid (1.4.0)
       activesupport (>= 6.1)
+    haml (7.3.0)
+      prism (>= 1.1.0)
+      temple (>= 0.8.2)
+      thor
+      tilt
+    haml-rails (3.1.0)
+      actionpack (>= 5.1)
+      activesupport (>= 5.1)
+      haml (>= 4.0.6)
+      railties (>= 5.1)
     hashie (5.1.0)
       logger
+    html2haml (2.3.0)
+      erubis (~> 2.7.0)
+      haml (>= 4.0)
+      nokogiri (>= 1.6.0)
+      ruby_parser (~> 3.5)
     i18n (1.15.2)
       concurrent-ruby (~> 1.0)
     image_processing (1.14.0)
@@ -402,6 +418,9 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
+    ruby_parser (3.22.0)
+      racc (~> 1.5)
+      sexp_processor (~> 4.16)
     rubyzip (3.4.1)
     securerandom (0.4.1)
     selenium-webdriver (4.47.0)
@@ -410,6 +429,7 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    sexp_processor (4.17.5)
     snaky_hash (2.0.7)
       hashie (>= 0.1.0, < 6)
       version_gem (~> 1.1, >= 1.1.14)
@@ -447,11 +467,13 @@ GEM
     tailwindcss-ruby (4.3.3-arm64-darwin)
     tailwindcss-ruby (4.3.3-x86_64-linux-gnu)
     tailwindcss-ruby (4.3.3-x86_64-linux-musl)
+    temple (0.10.6)
     thor (1.5.0)
     thruster (0.1.25)
     thruster (0.1.25-aarch64-linux)
     thruster (0.1.25-arm64-darwin)
     thruster (0.1.25-x86_64-linux)
+    tilt (2.8.0)
     timeout (0.6.1)
     tsort (0.2.0)
     turbo-rails (2.0.23)
@@ -500,6 +522,8 @@ DEPENDENCIES
   devise
   factory_bot_rails
   faker
+  haml-rails
+  html2haml
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

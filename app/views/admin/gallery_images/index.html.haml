@@ -1,0 +1,16 @@
+.space-y-6
+  .flex.items-center.justify-between
+    %h1.text-2xl.font-semibold.text-slate-900.dark:text-white Галерея
+    = link_to "+ Добавить фото", new_admin_gallery_image_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
+  .grid.grid-cols-2.md:grid-cols-4.gap-4
+    - @gallery_images.each do |image|
+      .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+        = image_tag image.image, class: "w-full h-40 object-cover"
+        .p-3.flex.items-center.justify-between
+          .text-sm.font-medium.text-slate-800.dark:text-slate-100.truncate= image.title
+          = button_to "Удалить", admin_gallery_image_path(image), method: :delete, |
+            data: { turbo_confirm: "Удалить фото?" },                              |
+            class: "text-red-500 hover:text-red-700 text-xs shrink-0 ml-2"         
+    - if @gallery_images.empty?
+      .col-span-full.bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.py-10.text-center.text-slate-400.dark:text-slate-500.text-sm
+        Фотографий пока нет

@@ -1,0 +1,31 @@
+%aside.w-60.bg-slate-900.text-slate-300.flex.flex-col.shrink-0.dark:bg-slate-950.dark:border-r.dark:border-slate-800
+  .px-5.py-5.border-b.border-slate-800
+    %h1.text-white.font-semibold.text-lg.tracking-tight Hotel CMS
+    %p.text-xs.text-slate-500{:class => "mt-0.5"} Панель управления
+  %nav.flex-1.px-3.py-4.space-y-1.text-sm
+    = link_to admin_root_path, class: nav_link_class(admin_root_path) do
+      %span Дашборд
+    = link_to admin_bookings_path, class: nav_link_class(admin_bookings_path) do
+      %span Бронирования
+    = link_to calendar_admin_bookings_path, class: nav_link_class(calendar_admin_bookings_path) do
+      %span Календарь
+    = link_to admin_rooms_path, class: nav_link_class(admin_rooms_path) do
+      %span Номера
+    = link_to admin_room_categories_path, class: nav_link_class(admin_room_categories_path) do
+      %span Категории номеров
+    = link_to admin_guests_path, class: nav_link_class(admin_guests_path) do
+      %span Гости
+    = link_to admin_pages_path, class: nav_link_class(admin_pages_path) do
+      %span Страницы
+    = link_to admin_news_index_path, class: nav_link_class(admin_news_index_path) do
+      %span Новости
+    = link_to admin_reviews_path, class: nav_link_class(admin_reviews_path) do
+      %span Отзывы
+    = link_to admin_services_path, class: nav_link_class(admin_services_path) do
+      %span Услуги
+    = link_to admin_service_orders_path, class: nav_link_class(admin_service_orders_path) do
+      %span Заказы услуг
+    = link_to admin_gallery_images_path, class: nav_link_class(admin_gallery_images_path) do
+      %span Галерея
+  .px-5.py-4.border-t.border-slate-800.text-xs.text-slate-500
+    Версия #{Rails.version} / Ruby #{RUBY_VERSION}
