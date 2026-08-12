@@ -26,6 +26,10 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root to: "dashboard#index"
+    resources :notifications, only: %i[index] do
+      member { patch :read }
+      collection { post :mark_all_read }
+    end
     resources :room_categories
     resources :rooms do
       get :available, on: :collection

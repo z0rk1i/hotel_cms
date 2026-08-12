@@ -32,6 +32,7 @@ RSpec.describe "Public bookings", type: :request do
 
   describe "POST /bookings" do
     it "creates a user, guest and booking, then signs in the user" do
+      create(:administrator)
       room = create(:room, price_per_night: 2000)
 
       expect do
@@ -50,7 +51,7 @@ RSpec.describe "Public bookings", type: :request do
           },
           consent_given: "1"
         }
-      end.to change(User, :count).by(1).and change(Guest, :count).by(1).and change(Booking, :count).by(1).and change(ConsentLog, :count).by(1)
+      end.to change(User, :count).by(1).and change(Guest, :count).by(1).and change(Booking, :count).by(1).and change(ConsentLog, :count).by(1).and change(Notification.for_admin, :count).by(1)
 
       booking = Booking.last
       expect(response).to redirect_to(account_path)

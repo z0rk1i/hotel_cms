@@ -5,6 +5,7 @@ module Admin
     before_action :authenticate_administrator!
     before_action :store_return_to
     before_action :track_current_administrator
+    before_action :inject_admin_unread_count
     after_action :clear_current_administrator
 
     include Pagy::Backend
@@ -17,6 +18,10 @@ module Admin
 
     def clear_current_administrator
       Thread.current[:current_administrator] = nil
+    end
+
+    def inject_admin_unread_count
+      @admin_unread_count = Notification.for_admin.unread.count
     end
 
     def redirect_back_or(default, **options)

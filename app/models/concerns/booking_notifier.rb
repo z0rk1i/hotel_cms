@@ -29,6 +29,17 @@ module BookingNotifier
   end
 
   def notify_admins_of_new_booking
-    AdminMailer.new_booking(self).deliver_later if Administrator.exists?
+    return unless Administrator.exists?
+
+    AdminMailer.new_booking(self).deliver_later
+    return if Thread.current[:current_administrator].present?
+
+    Notification.create!(
+      to_admin: true,
+      notifiable: self,
+      kind: "new_booking",
+      title: "Новая бронь №#{id}",
+      body: "#{guest.full_name} · №#{room.number} · #{I18n.l(check_in, format: :long)} — #{I18n.l(check_out, format: :long)}"
+    )
   end
 end

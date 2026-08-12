@@ -20,6 +20,17 @@ module AdminHelper
     }.fetch(status.to_s, status.to_s)
   end
 
+  def notification_target_path(notification)
+    case notification.notifiable
+    when Booking
+      admin_booking_path(notification.notifiable)
+    when Review
+      admin_reviews_path
+    else
+      admin_notifications_path
+    end
+  end
+
   def calendar_booking_class(status)
     colors = {
       "pending" => "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600",

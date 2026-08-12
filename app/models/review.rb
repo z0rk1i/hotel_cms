@@ -72,6 +72,15 @@ class Review < ApplicationRecord
   end
 
   def notify_admins_of_new_review
-    AdminMailer.new_review(self).deliver_later if Administrator.exists?
+    return unless Administrator.exists?
+
+    AdminMailer.new_review(self).deliver_later
+    Notification.create!(
+      to_admin: true,
+      notifiable: self,
+      kind: "new_review",
+      title: "Новый отзыв",
+      body: "#{rating}★ · #{body.to_s.truncate(80)}"
+    )
   end
 end

@@ -142,5 +142,22 @@ RSpec.describe "Admin bookings", type: :request do
       }.to change(Booking, :count).by(1)
       expect(Booking.last.total_price).to eq(4000)
     end
+
+    it "does not create an admin bell notification for an admin-created booking" do
+      room = create(:room)
+      guest = create(:guest)
+      expect do
+        post admin_bookings_path, params: {
+          booking: {
+            guest_id: guest.id,
+            room_id: room.id,
+            check_in: Date.current + 5,
+            check_out: Date.current + 7,
+            guests_count: 1
+          }
+        }
+      end.to change(Booking, :count).by(1)
+      expect(Notification.for_admin).to be_empty
+    end
   end
 end
