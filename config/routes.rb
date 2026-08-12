@@ -70,6 +70,7 @@ Rails.application.routes.draw do
   end
 
   get "pages/:slug", to: "public_site#page", as: :public_page
+    get "privacy", to: "public_site#privacy", as: :privacy
   get "news/:slug", to: "public_site#news", as: :public_news
   root to: "public_site#index"
 

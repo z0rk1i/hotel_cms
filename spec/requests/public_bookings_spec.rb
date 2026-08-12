@@ -15,6 +15,19 @@ RSpec.describe "Public bookings", type: :request do
       expect(response.body).to include((Date.current + 7).to_s)
       expect(response.body).to include((Date.current + 9).to_s)
     end
+
+    it "renders the personal data consent checkbox and policy link" do
+      room = create(:room)
+      get new_booking_path(room_id: room.id)
+      expect(response.body).to include("Я согласен на обработку персональных данных")
+      expect(response.body).to include("политике обработки персональных данных")
+    end
+
+    it "renders the personal data policy page" do
+      get privacy_path
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Политика обработки персональных данных")
+    end
   end
 
   describe "POST /bookings" do
@@ -34,9 +47,10 @@ RSpec.describe "Public bookings", type: :request do
             email: "ivan@example.com",
             phone: "+7 900 000-00-00",
             password: "password123"
-          }
+          },
+          consent_given: "1"
         }
-      end.to change(User, :count).by(1).and change(Guest, :count).by(1).and change(Booking, :count).by(1)
+      end.to change(User, :count).by(1).and change(Guest, :count).by(1).and change(Booking, :count).by(1).and change(ConsentLog, :count).by(1)
 
       booking = Booking.last
       expect(response).to redirect_to(account_path)
@@ -112,10 +126,35 @@ RSpec.describe "Public bookings", type: :request do
           email: "phone@example.com",
           phone: "+7 900 333-33-33",
           password: "password123"
-        }
+        },
+        consent_given: "1"
       }
 
       expect(Booking.last.guest.phone).to eq("+7 900 333-33-33")
+    end
+
+    it "rejects a booking without personal data consent" do
+      room = create(:room)
+
+      expect do
+        post bookings_path, params: {
+          booking: {
+            room_id: room.id,
+            check_in: Date.current + 3,
+            check_out: Date.current + 5,
+            guests_count: 1
+          },
+          user: {
+            full_name: "Без Согласия",
+            email: "noconsent@example.com",
+            phone: "+7 900 888-88-88",
+            password: "password123"
+          }
+        }
+      end.not_to change(Booking, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("Необходимо согласие на обработку персональных данных")
     end
 
     it "does not create a user or guest when the booking fails" do

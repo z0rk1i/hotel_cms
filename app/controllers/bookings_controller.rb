@@ -16,7 +16,8 @@ class BookingsController < ApplicationController
     result = BookingCreator.new.call(
       current_user: current_user,
       booking_attrs: booking_params,
-      user_attrs: (user_signed_in? ? {} : user_params)
+      user_attrs: (user_signed_in? ? {} : user_params),
+      consent_given: params[:consent_given] == "1"
     )
 
     payload = result.value_or(result.failure)

@@ -40,6 +40,9 @@
         %dt.text-slate-500.dark:text-slate-400 Гость с
         %dd.text-slate-900.dark:text-white= l(@guest.created_at.to_date, format: :long)
       %div
+        %dt.text-slate-500.dark:text-slate-400 Согласий на обработку ПДн
+        %dd.text-slate-900.dark:text-white= @guest.consent_count
+      %div
         %dt.text-slate-500.dark:text-slate-400 Заметки
         %dd.text-slate-900.dark:text-white.whitespace-pre-wrap= @guest.notes.presence || "—"
 

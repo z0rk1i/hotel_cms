@@ -18,7 +18,8 @@ RSpec.describe BookingCreator do
           email: "ivan@example.com",
           phone: "+7 900 000-00-00",
           password: "password123"
-        }
+        },
+        consent_given: true
       )
 
       expect(result).to be_success
@@ -63,7 +64,8 @@ RSpec.describe BookingCreator do
           email: "today@example.com",
           phone: "+7 900 222-22-22",
           password: "password123"
-        }
+        },
+        consent_given: true
       )
 
       expect(result).to be_success
@@ -133,10 +135,57 @@ RSpec.describe BookingCreator do
           email: "long@example.com",
           phone: "+7 900 555-55-55",
           password: "password123"
-        }
+        },
+        consent_given: true
       )
 
       expect(result).to be_success
+    end
+
+    it "rejects a booking without personal data consent" do
+      result = described_class.new.call(
+        current_user: nil,
+        booking_attrs: {
+          room_id: room.id,
+          check_in: Date.current + 3,
+          check_out: Date.current + 5,
+          guests_count: 1
+        },
+        user_attrs: {
+          full_name: "Без согласия",
+          email: "noconsent@example.com",
+          phone: "+7 900 666-66-66",
+          password: "password123"
+        }
+      )
+
+      expect(result).to be_failure
+      expect(result.failure.booking.errors[:base]).to include("Необходимо согласие на обработку персональных данных")
+      expect(Booking).not_to exist
+    end
+
+    it "records a consent log when consent is given" do
+      result = described_class.new.call(
+        current_user: nil,
+        booking_attrs: {
+          room_id: room.id,
+          check_in: Date.current + 3,
+          check_out: Date.current + 5,
+          guests_count: 1
+        },
+        user_attrs: {
+          full_name: "С согласием",
+          email: "consent@example.com",
+          phone: "+7 900 777-77-77",
+          password: "password123"
+        },
+        consent_given: true
+      )
+
+      expect(result).to be_success
+      guest = result.value!.guest
+      expect(guest.consent_logs.count).to eq(1)
+      expect(guest.consent_count).to eq(1)
     end
   end
 end

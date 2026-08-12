@@ -1,6 +1,7 @@
 class Guest < ApplicationRecord
   has_many :bookings, dependent: :restrict_with_error
   has_many :payments, through: :bookings
+  has_many :consent_logs, dependent: :destroy
 
   validates :full_name, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
@@ -20,6 +21,10 @@ class Guest < ApplicationRecord
 
   def completed_stays
     bookings.checked_out.count
+  end
+
+  def consent_count
+    consent_logs.count
   end
 
   def possible_duplicates

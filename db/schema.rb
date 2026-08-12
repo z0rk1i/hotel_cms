@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_180353) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_181004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -111,6 +111,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_180353) do
     t.string "reason"
     t.datetime "updated_at", null: false
     t.index ["date"], name: "index_closed_dates_on_date", unique: true
+  end
+
+  create_table "consent_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "guest_id", null: false
+    t.datetime "signed_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["guest_id"], name: "index_consent_logs_on_guest_id"
+    t.index ["signed_at"], name: "index_consent_logs_on_signed_at"
   end
 
   create_table "gallery_images", force: :cascade do |t|
@@ -305,6 +314,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_180353) do
   add_foreign_key "bookings", "guests"
   add_foreign_key "bookings", "rooms"
   add_foreign_key "bookings", "users"
+  add_foreign_key "consent_logs", "guests"
   add_foreign_key "notifications", "users"
   add_foreign_key "payments", "bookings"
   add_foreign_key "reviews", "users"

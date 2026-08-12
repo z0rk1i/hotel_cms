@@ -21,6 +21,8 @@ class PublicSiteController < ApplicationController
     @gallery_images = GalleryImage.includes(:image_attachment).order(created_at: :desc)
   end
 
+  def privacy; end
+
   def news
     @news = News.published.find_by!(slug: params[:slug])
   end

@@ -3,20 +3,21 @@ class BookingCreator
 
   Result = Struct.new(:user, :guest, :booking, keyword_init: true)
 
-  def call(current_user:, booking_attrs:, user_attrs: {})
+  def call(current_user:, booking_attrs:, user_attrs: {}, consent_given: nil)
     user = current_user || User.new(user_attrs)
     guest = find_or_build_guest(user)
     booking = Booking.new(booking_attrs.merge(user: user, guest: guest, status: :pending))
 
-    return Failure(Result.new(user: user, guest: guest, booking: booking)) unless valid?(user, guest, booking)
+    return Failure(Result.new(user: user, guest: guest, booking: booking)) unless valid?(user, guest, booking, consent_given)
 
-    persist_all(user, guest, booking)
+    persist_all(user, guest, booking, consent_given)
   end
 
   private
 
-  def valid?(user, guest, booking)
-    user.valid? && guest.valid? && booking.valid? && check_in_not_in_past(booking) && stay_supported?(booking)
+  def valid?(user, guest, booking, consent_given)
+    user.valid? && guest.valid? && booking.valid? && check_in_not_in_past(booking) &&
+      stay_supported?(booking) && consent_given?(booking, consent_given)
   end
 
   def check_in_not_in_past(booking)
@@ -42,6 +43,13 @@ class BookingCreator
     booking.errors.size == before
   end
 
+  def consent_given?(booking, consent_given)
+    return true if consent_given == true
+
+    booking.errors.add(:base, "Необходимо согласие на обработку персональных данных")
+    false
+  end
+
   def find_or_build_guest(user)
     guest = Guest.find_or_initialize_by(email: user.email)
     guest.full_name = user.full_name if guest.full_name.blank?
@@ -49,10 +57,11 @@ class BookingCreator
     guest
   end
 
-  def persist_all(user, guest, booking)
+  def persist_all(user, guest, booking, consent_given)
     ActiveRecord::Base.transaction do
       user.save!
       guest.save!
+      guest.consent_logs.create!(signed_at: Time.current) if consent_given
       booking.save!
     end
 
