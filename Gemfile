@@ -40,7 +40,7 @@ gem "devise"
 gem "haml-rails"
 
 # Pagination
-gem "pagy", "~> 9.0"
+gem "pagy", "~> 43.6"
 
 # CSV export (removed from default gems in Ruby 3.4)
 gem "csv"
