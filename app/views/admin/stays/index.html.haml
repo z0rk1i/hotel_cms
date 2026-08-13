@@ -1,0 +1,51 @@
+.space-y-6
+  .flex.items-center.justify-between
+    %h1.text-2xl.font-semibold.text-slate-900.dark:text-white Бронирования
+    = link_to "+ Новая бронь", new_admin_stay_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
+  .flex.flex-wrap.gap-2
+    = link_to "Все", admin_stays_path, class: filter_link_class(params[:status].blank?)
+    - %w[pending confirmed checked_in checked_out cancelled].each do |status|
+      = link_to stay_status_label(status), admin_stays_path(status: status), class: filter_link_class(params[:status] == status)
+  = form_with url: admin_stays_path, method: :get, class: "flex flex-wrap gap-2" do
+    = text_field_tag :query, params[:query], placeholder: "Поиск по имени или телефону…", class: "flex-1 max-w-sm rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+    = date_field_tag :from, params[:from], class: "rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+    = date_field_tag :to, params[:to], class: "rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+    = submit_tag "Фильтровать", class: "bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg"
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.overflow-hidden
+    %table.w-full.text-sm
+      %thead.bg-slate-50.text-slate-500.dark:text-slate-400.text-left{:class => "dark:bg-slate-800/60"}
+        %tr
+          %th.px-5.py-3.font-medium Гость
+          %th.px-5.py-3.font-medium Номер
+          %th.px-5.py-3.font-medium Даты
+          %th.px-5.py-3.font-medium Ночей
+          %th.px-5.py-3.font-medium Сумма
+          %th.px-5.py-3.font-medium Оплачено
+          %th.px-5.py-3.font-medium Статус
+          %th.px-5.py-3.font-medium.text-right Действия
+      %tbody.divide-y.divide-slate-100.dark:divide-slate-800
+        - @stays.each do |stay|
+          %tr.hover:bg-slate-50{:class => "dark:hover:bg-slate-700/40"}
+            %td.px-5.py-3.font-medium.text-slate-900.dark:text-white= stay.user.full_name
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= stay.room.number
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300.whitespace-nowrap
+              = l(stay.check_in)
+              → #{l(stay.check_out)}
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= stay.nights_count
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= money(stay.total_price)
+            %td.px-5.py-3.text-slate-600.dark:text-slate-300= money(stay.paid_amount)
+            %td.px-5.py-3= content_tag :span, stay_status_label(stay.status), class: status_badge_class(stay.status)
+            %td.px-5.py-3.text-right.whitespace-nowrap
+              = link_to "Карточка", admin_stay_path(stay), class: "text-indigo-600 hover:text-indigo-800 mr-3"
+              - if stay.pending?
+                = button_to "Подтвердить", confirm_admin_stay_path(stay), method: :patch, class: "text-blue-600 hover:text-blue-800 text-xs mr-3"
+              - if stay.confirmed?
+                = button_to "Заселить", check_in_admin_stay_path(stay), method: :patch, class: "text-emerald-600 hover:text-emerald-800 text-xs mr-3"
+              - if stay.checked_in?
+                = button_to "Выселить", check_out_admin_stay_path(stay), method: :patch, class: "text-amber-600 hover:text-amber-800 text-xs mr-3"
+              - unless stay.checked_out? || stay.cancelled?
+                = button_to "Отменить", cancel_admin_stay_path(stay), method: :patch, data: { turbo_confirm: "Отменить бронь?" }, class: "text-red-500 hover:text-red-700 text-xs mr-3"
+              = link_to "Изменить", edit_admin_stay_path(stay), class: "text-indigo-600 hover:text-indigo-800"
+        - if @stays.empty?
+          %tr
+            %td.px-5.py-8.text-center.text-slate-400.dark:text-slate-500{:colspan => "8"} Броней не найдено

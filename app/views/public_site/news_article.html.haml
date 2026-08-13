@@ -1,0 +1,10 @@
+.max-w-3xl.mx-auto.px-6.py-12
+  = link_to "← Назад к новостям", news_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+  - if @article
+    %time.text-sm.text-slate-400.dark:text-slate-500.mt-6.block= l(Date.parse(@article["date"]), format: :long)
+    %h1.mt-2.text-3xl.font-semibold.text-slate-900.dark:text-white= @article["title"]
+    - if @article["body"].present?
+      .mt-8.prose.prose-slate.dark:prose-invert.max-w-none.text-slate-700.dark:text-slate-300
+        = simple_format(@article["body"])
+  - else
+    .mt-10.text-center.py-16.text-slate-400.dark:text-slate-500.text-sm Новость не найдена

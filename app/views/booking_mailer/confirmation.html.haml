@@ -1,0 +1,28 @@
+%h1 Бронь №#{@stay.id} создана и ожидает подтверждения
+%p Здравствуйте, #{@user.full_name}!
+%p Мы получили вашу заявку на бронирование и скоро подтвердим её.
+%table{:border => "1", :cellpadding => "8", :cellspacing => "0", :style => "border-collapse: collapse;"}
+  %tr
+    %td Номер
+    %td= @stay.room.number
+  %tr
+    %td Категория
+    %td= @stay.room.category
+  %tr
+    %td Заезд
+    %td= l(@stay.check_in, format: :long)
+  %tr
+    %td Выезд
+    %td= l(@stay.check_out, format: :long)
+  %tr
+    %td Ночей
+    %td= @stay.nights_count
+  %tr
+    %td Гостей
+    %td= @stay.guests_count
+  %tr
+    %td Стоимость
+    %td= number_to_currency(@stay.total_price, unit: "₽", precision: 0, format: "%u%n")
+%p
+  Следить за статусом можно в личном кабинете:
+  = link_to account_url(phone: @user.phone.to_s), account_url(phone: @user.phone.to_s)

@@ -3,81 +3,34 @@
     .mb-6.rounded-lg.bg-emerald-50.border.border-emerald-200.text-emerald-800.dark:text-emerald-200.px-4.py-3.text-sm{:class => "dark:bg-emerald-900/40 dark:border-emerald-700/50"}= notice
   - if alert.present?
     .mb-6.rounded-lg.bg-red-50.border.border-red-200.text-red-800.dark:text-red-200.px-4.py-3.text-sm{:class => "dark:bg-red-900/40 dark:border-red-700/50"}= alert
-  .mb-8.flex.flex-wrap.items-center.justify-between.gap-4
-    %div
-      %h1.text-2xl.font-semibold.text-slate-900.dark:text-white
-        Здравствуйте, #{current_user.full_name.presence || current_user.email}!
-      %p.mt-1.text-sm.text-slate-500.dark:text-slate-400 Личный кабинет: ваши брони и заказы услуг
-    .flex.items-center.gap-3
-      = link_to new_booking_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg" do
-        Забронировать номер
-      - if active_booking?
-        = link_to new_service_order_path, class: "bg-slate-900 hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg" do
-          Заказать услугу
-  - if @notifications.any?
-    .mb-8.rounded-xl.border.border-slate-200.dark:border-slate-700.bg-white.dark:bg-slate-800.overflow-hidden
-      .border-b.border-slate-200.dark:border-slate-700.px-5.py-3.flex.items-center.justify-between
-        %h2.font-medium.text-slate-900.dark:text-white Последние уведомления
-        = link_to "Все уведомления", notifications_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
-      %ul.divide-y.divide-slate-100.dark:divide-slate-700
-        - @notifications.each do |notification|
-          %li{:class => "px-5 py-3 flex items-start justify-between gap-4 #{'bg-slate-50 dark:bg-slate-700/40' if notification.unread?}"}
+  .mb-8
+    %h1.text-2xl.font-semibold.text-slate-900.dark:text-white Мои бронирования
+    %p.mt-1.text-sm.text-slate-500.dark:text-slate-400 Проверьте статус броней по номеру телефона
+    %form.mt-4.flex.items-center.gap-3{:action => account_find_path, :method => "get"}
+      %input.w-64.rounded-lg.border.border-slate-300.dark:border-slate-600.bg-white.dark:bg-slate-800.dark:text-slate-100.dark:placeholder-slate-500.px-3.py-2.text-sm.focus:ring-2.focus:ring-indigo-500.outline-none{:name => "phone", :placeholder => "+7 900 000-00-00", :type => "tel", :value => @phone}
+      %button.bg-indigo-600.hover:bg-indigo-700.text-white.text-sm.font-medium.px-4.py-2.rounded-lg.transition-colors Найти
+  - if @guest
+    .mb-6.text-sm.text-slate-500.dark:text-slate-400
+      %span.font-medium.text-slate-700.dark:text-slate-300= @guest.full_name.presence || @guest.email.presence
+      - if @guest.is_vip?
+        %span.ml-2.inline-block.px-2.py-0.5.rounded-full.text-xs.font-medium.bg-amber-100.text-amber-700{:class => "dark:bg-amber-900/40 dark:text-amber-300"} VIP
+  - if @stays.none?
+    %p.text-slate-500.dark:text-slate-400.text-sm У вас пока нет броней.
+  - else
+    .space-y-3
+      - @stays.each do |stay|
+        .rounded-xl.border.border-slate-200.dark:border-slate-700.bg-white.dark:bg-slate-800.p-5
+          .flex.items-start.justify-between.gap-4
             %div
-              %p.text-sm.font-medium.text-slate-900.dark:text-white= notification.title
-              %p.text-sm.text-slate-500.dark:text-slate-400{:class => "mt-0.5"}= notification.body
-            %span.text-xs.text-slate-400.dark:text-slate-500.shrink-0= l(notification.created_at, format: :short)
-  .grid.lg:grid-cols-2.gap-8
-    %section
-      .flex.items-center.justify-between.mb-4
-        %h2.text-lg.font-semibold.text-slate-900.dark:text-white Бронирования
-        = link_to new_booking_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do
-          + Добавить
-      - if @bookings.none?
-        %p.text-slate-500.dark:text-slate-400.text-sm У вас пока нет броней.
-      - else
-        .space-y-3
-          - @bookings.each do |booking|
-            = link_to booking_path(booking), class: "block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors" do
-              .flex.items-start.justify-between.gap-4
-                %div
-                  %p.font-medium.text-slate-900.dark:text-white
-                    Бронь №#{booking.id} — номер #{booking.room.number}
-                  %p.mt-1.text-sm.text-slate-500.dark:text-slate-400
-                    = l(booking.check_in, format: :long)
-                    → #{l(booking.check_out, format: :long)}
-                    · #{booking.nights} ночей · #{booking.guests_count} чел.
-                .text-right.shrink-0
-                  %span{:class => "inline-block px-2.5 py-1 rounded-full text-xs font-medium #{status_badge_class(booking.status)}"}
-                    = booking_status_label(booking.status)
-                  %p.mt-1.text-sm.font-medium.text-slate-900.dark:text-white= number_to_currency(booking.total_price, unit: "₽", precision: 0)
-    %section
-      .flex.items-center.justify-between.mb-4
-        %h2.text-lg.font-semibold.text-slate-900.dark:text-white Заказы услуг
-        - if active_booking?
-          = link_to new_service_order_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do
-            + Добавить
-        - else
-          = link_to new_booking_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" do
-            Забронируйте номер
-      - if @service_orders.none?
-        %p.text-slate-500.dark:text-slate-400.text-sm У вас пока нет заказов услуг.
-      - else
-        .space-y-3
-          - @service_orders.each do |order|
-            .rounded-xl.border.border-slate-200.dark:border-slate-700.bg-white.dark:bg-slate-800.p-5
-              .flex.items-start.justify-between.gap-4
-                %div
-                  %p.font-medium.text-slate-900.dark:text-white= order.service.name
-                  %p.mt-1.text-sm.text-slate-500.dark:text-slate-400
-                    = l(order.service_date, format: :long)
-                    · #{order.quantity} шт.
-                    - if order.notes.present?
-                      %span.block.mt-1= order.notes
-                .text-right.shrink-0
-                  %span{:class => "inline-block px-2.5 py-1 rounded-full text-xs font-medium #{status_badge_class(order.status)}"}
-                    = service_order_status_label(order.status)
-                  %p.mt-1.text-sm.font-medium.text-slate-900.dark:text-white= number_to_currency(order.total_price, unit: "₽", precision: 0)
-                  - if order.pending?
-                    = button_to "Отменить", cancel_service_order_path(order), method: :post, remote: true, |
-                      data: { turbo_confirm: "Отменить заказ услуги?" },                                   |
-                      class: "mt-2 text-xs text-red-500 hover:text-red-700"                                |
+              %p.font-medium.text-slate-900.dark:text-white
+                Бронь №#{stay.id} — номер #{stay.room.number}
+              %p.mt-1.text-sm.text-slate-500.dark:text-slate-400
+                = l(stay.check_in, format: :long)
+                → #{l(stay.check_out, format: :long)}
+                · #{stay.nights_count} ночей · #{stay.guests_count} чел.
+              - if stay.notes.present?
+                %p.mt-2.text-sm.text-slate-500.dark:text-slate-400= stay.notes
+            .text-right.shrink-0
+              %span{:class => "inline-block px-2.5 py-1 rounded-full text-xs font-medium #{status_badge_class(stay.status)}"}
+                = stay_status_label(stay.status)
+              %p.mt-1.text-sm.font-medium.text-slate-900.dark:text-white= number_to_currency(stay.total_price, unit: "₽", precision: 0)

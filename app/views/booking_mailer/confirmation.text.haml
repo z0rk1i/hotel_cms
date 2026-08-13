@@ -1,0 +1,15 @@
+Бронь №#{@stay.id} создана и ожидает подтверждения
+
+Здравствуйте, #{@user.full_name}!
+
+Мы получили вашу заявку на бронирование и скоро подтвердим её.
+
+Номер: #{@stay.room.number}
+Категория: #{@stay.room.category}
+Заезд: #{l(@stay.check_in, format: :long)}
+Выезд: #{l(@stay.check_out, format: :long)}
+Ночей: #{@stay.nights_count}
+Гостей: #{@stay.guests_count}
+Стоимость: #{number_to_currency(@stay.total_price, unit: "₽", precision: 0, format: "%u%n")}
+
+Следить за статусом: #{account_url(phone: @user.phone.to_s)}

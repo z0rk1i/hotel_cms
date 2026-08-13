@@ -1,52 +1,48 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe "Authentication", type: :request do
-  describe "admin area" do
-    it "redirects anonymous users to sign in" do
-      get "/admin"
-      expect(response).to redirect_to("/admin/sign_in")
-    end
-
-    it "redirects anonymous users from protected pages" do
-      get "/admin/rooms"
-      expect(response).to redirect_to("/admin/sign_in")
-    end
-
-    it "allows authenticated administrators to access the dashboard" do
-      sign_in create(:administrator)
-      get "/admin"
+  describe "GET /admin/sign_in" do
+    it "renders the login form" do
+      get new_user_session_path
       expect(response).to have_http_status(:ok)
-    end
-
-    it "redirects an administrator to the dashboard after signing in" do
-      admin = create(:administrator)
-      post "/admin/sign_in", params: { administrator: { email: admin.email, password: admin.password } }
-      expect(response).to redirect_to(admin_root_path)
-    end
-
-    it "allows authenticated administrators to list rooms" do
-      sign_in create(:administrator)
-      get "/admin/rooms"
-      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Вход в панель управления")
     end
   end
 
-  describe "public site" do
-    it "renders the homepage" do
-      get "/"
+  describe "POST /admin/sign_in" do
+    it "signs an admin in and redirects to the dashboard" do
+      admin = create(:user, :admin, email: "admin@example.com", password: "password123")
+      post user_session_path, params: {
+        user: { email: admin.email, password: "password123" }
+      }
+      expect(response).to redirect_to(admin_root_path)
+      follow_redirect!
       expect(response).to have_http_status(:ok)
     end
 
-    it "renders a page by slug" do
-      page = create(:page, slug: "about", title: "О гостинице")
-      get "/pages/#{page.slug}"
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("О гостинице")
+    it "signs a guest in but keeps them on the public site" do
+      guest = create(:user, email: "guest@example.com", password: "password123")
+      post user_session_path, params: {
+        user: { email: guest.email, password: "password123" }
+      }
+      expect(response).to redirect_to(root_path)
     end
 
-    it "returns 404 for an unknown page" do
-      get "/pages/nonexistent"
-      expect(response).to have_http_status(:not_found)
+    it "rejects a wrong password" do
+      admin = create(:user, :admin, email: "admin@example.com", password: "password123")
+      post user_session_path, params: {
+        user: { email: admin.email, password: "wrong" }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
+
+  describe "DELETE /admin/sign_out" do
+    it "signs the user out" do
+      admin = create(:user, :admin)
+      sign_in admin
+      delete destroy_user_session_path
+      expect(response).to redirect_to(root_path)
     end
   end
 end

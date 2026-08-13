@@ -1,26 +1,77 @@
 class User < ApplicationRecord
-  devise :database_authenticatable, :registerable, :recoverable, :rememberable, :validatable,
-         :omniauthable, omniauth_providers: %i[vkontakte yandex]
+  devise :database_authenticatable, :recoverable, :rememberable
 
-  has_many :bookings, dependent: :nullify
-  has_many :guests, through: :bookings
-  has_many :service_orders, dependent: :destroy
-  has_many :notifications, dependent: :destroy
-  has_many :reviews, dependent: :destroy
+  enum :role, { guest: "guest", admin: "admin" }, validate: true
 
-  validates :full_name, presence: true
-  validates :phone, length: { maximum: 30 }, allow_blank: true
+  has_many :stays, dependent: :restrict_with_error
 
-  def self.from_omniauth(auth)
-    find_or_initialize_by(provider: auth.provider, uid: auth.uid).tap do |user|
-      user.email = auth.info.email.presence || "#{auth.provider}-#{auth.uid}@example.com"
-      user.full_name = auth.info.name if user.full_name.blank?
-      user.password = Devise.friendly_token[0, 20] if user.encrypted_password.blank?
-      user.save
-    end
+  validates :email, uniqueness: { case_sensitive: false }, allow_blank: true
+  validates :email, presence: true, format: { with: Devise.email_regexp }, if: :admin?
+  validates :full_name, presence: true, if: :guest?
+  validates :phone, format: { with: /\A[+\d][\d\s()-]{6,}\z/ }, allow_blank: true
+
+  scope :admins, -> { where(role: :admin) }
+  scope :guests, -> { where(role: :guest) }
+  scope :vips, -> { where(is_vip: true) }
+  scope :search, lambda { |query|
+    like = "%#{query}%"
+    where("full_name ILIKE :q OR phone ILIKE :q OR email ILIKE :q", q: like)
+  }
+
+  def admin?
+    role == "admin"
   end
 
-  def email_deliverable?
-    email.present? && !email.end_with?("@example.com")
+  def guest?
+    role == "guest"
+  end
+
+  def has_consent?
+    consent_signed_at.present?
+  end
+
+  def confirm_consent!
+    update!(consent_signed_at: Time.current) if consent_signed_at.nil?
+  end
+
+  def paid_amount
+    stays.sum(&:paid_amount)
+  end
+
+  def due_amount
+    stays.where(status: %w[pending confirmed checked_in]).sum(&:due_amount)
+  end
+
+  def total_spent
+    stays.where(status: "checked_out").sum(&:total_price)
+  end
+
+  def stays_count
+    stays.where(status: "checked_out").count
+  end
+
+  def merge_into!(target)
+    Stay.where(user_id: id).update_all(user_id: target.id) # rubocop:disable Rails/SkipsModelValidations
+    target.update!(
+      full_name: target.full_name.presence || full_name,
+      phone: target.phone.presence || phone,
+      passport_number: target.passport_number.presence || passport_number,
+      is_vip: is_vip || target.is_vip,
+      preferences: [ target.preferences, preferences ].compact.join("\n").presence,
+      consent_signed_at: target.consent_signed_at || consent_signed_at
+    )
+    target.reload
+    destroy!
+    target
+  end
+
+  def possible_duplicates
+    return User.guests.none if email.blank? && phone.blank?
+
+    User.guests.where.not(id: id).where("email = ? OR (phone <> '' AND phone = ?)", email, phone)
+  end
+
+  def letter_avatar
+    full_name.to_s.strip.split(/\s+/).first&.first&.upcase
   end
 end

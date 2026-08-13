@@ -1,112 +1,116 @@
 class Room < ApplicationRecord
-  belongs_to :category, class_name: "RoomCategory"
+  WEEKEND_DAYS = [ 5, 6 ].freeze
 
-  has_many :bookings, dependent: :restrict_with_error
-  has_many :reviews, as: :reviewable, dependent: :destroy
-  has_many :approved_reviews, -> { approved }, as: :reviewable, class_name: "Review"
+  has_many :stays, dependent: :restrict_with_error
   has_many_attached :photos
-  has_many :room_amenities, dependent: :destroy
-  has_many :amenities, through: :room_amenities
-  has_many :status_logs, class_name: "RoomStatusLog", dependent: :destroy
-
-  enum :status, { available: "available", occupied: "occupied", maintenance: "maintenance", cleaning: "cleaning" }
-
-  after_update :log_status_change, if: -> { saved_change_to_status? }
 
   validates :number, presence: true, uniqueness: true
-  validates :floor, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :capacity, presence: true, numericality: { greater_than: 0, only_integer: true }
-  validates :price_per_night, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :weekend_multiplier, numericality: { greater_than: 0 }, allow_nil: true
-  validates :size_sqm, numericality: { greater_than: 0 }, allow_nil: true
+  validates :category, presence: true
+  validates :floor, :capacity, numericality: { only_integer: true, greater_than: 0 }
+  validates :price_per_night, numericality: { greater_than_or_equal_to: 0 }
+  validates :weekend_multiplier, numericality: { greater_than: 0 }
+  validates :min_nights, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validates :status, inclusion: { in: %w[available occupied maintenance cleaning] }
 
-  validate :photo_count_within_limit
-  validate :photo_size_within_limit
-  validate :no_maintenance_while_guests_inside, on: :update, if: -> { status_changed? && (maintenance? || cleaning?) }
-  validate :unavailability_window_valid
+  scope :by_status, ->(status) { where(status: status) }
+  scope :by_category, ->(category) { where(category: category) }
+  scope :search, lambda { |query|
+    where("number ILIKE :q OR category ILIKE :q", q: "%#{query}%")
+  }
 
-  scope :available_now, -> { where(status: :available) }
-  scope :in_unavailability_window, ->(start_date, end_date) do
-    where("unavailable_from IS NOT NULL AND unavailable_until IS NOT NULL " \
-          "AND unavailable_from < ? AND unavailable_until > ?", end_date, start_date)
-  end
-  scope :bookable_on, ->(start_date, end_date) do
-    where.not(id: in_unavailability_window(start_date, end_date).select(:id))
-  end
-  scope :with_all_amenities, ->(ids) do
-    ids = Array(ids).map(&:to_i).reject(&:zero?)
-    next all if ids.empty?
-
-    joins(:room_amenities)
-      .where(room_amenities: { amenity_id: ids })
-      .group("rooms.id")
-      .having("COUNT(DISTINCT room_amenities.amenity_id) = ?", ids.size)
+  def available?
+    status == "available"
   end
 
-  MAX_PHOTOS = 10
-  MAX_PHOTO_SIZE = 10.megabytes
-
-  def label
-    "#{number} — #{category.name}"
+  def maintenance?
+    status == "maintenance"
   end
 
-  def occupied_during?(start_date, end_date, exclude_booking: nil)
-    bookings.active_overlapping(start_date, end_date).where.not(id: exclude_booking&.id).exists?
+  def cleaning?
+    status == "cleaning"
   end
 
-  def unavailable_during?(start_date, end_date)
-    unavailable_from.present? && unavailable_until.present? &&
-      unavailable_from < end_date && unavailable_until > start_date
+  def occupied?
+    status == "occupied"
   end
 
-  def next_free_window(from: Date.current, horizon: 60)
-    busy = bookings.where.not(status: :cancelled)
-                   .where("check_out > ?", from)
-                   .where("check_in < ?", from + horizon)
-                   .flat_map { |booking| (booking.check_in...booking.check_out).map(&:to_date) }
-
-    return [ from, from + horizon - 1 ] if busy.empty?
-
-    busy = busy.to_set
-    first_free = from
-    first_free += 1 while busy.include?(first_free)
-    return nil if first_free > from + horizon - 1
-
-    last_free = first_free
-    last_free += 1 while !busy.include?(last_free) && last_free <= from + horizon - 1
-    [ first_free, last_free - 1 ]
+  def bookable?
+    !maintenance?
   end
 
-  private
+  def unavailable_during?(from, to)
+    return false if unavailable_from.nil? || unavailable_until.nil?
 
-  def log_status_change
-    from, to = saved_change_to_status
-    RoomStatusLog.record!(room: self, from: from, to: to)
+    unavailable_from < to && unavailable_until > from
   end
 
-  def unavailability_window_valid
-    return if unavailable_from.blank? || unavailable_until.blank?
-
-    errors.add(:unavailable_until, "должна быть позже даты начала") if unavailable_until <= unavailable_from
+  def overlapping_stays(from, to)
+    stays.where(status: %w[pending confirmed checked_in checked_out])
+         .where("check_in < ? AND check_out > ?", to, from)
   end
 
-  def no_maintenance_while_guests_inside
-    return unless bookings.occupying_overlapping(Date.current, Date.current + 1).exists?
-
-    errors.add(:status, "нельзя перевести в ремонт/уборку, пока в номере гости")
+  def occupied_now?
+    stays.checked_in.overlapping_period(Date.current, Date.current + 1).exists?
   end
 
-  def photo_count_within_limit
-    return if photos.count <= MAX_PHOTOS
+  def available_on?(from, to)
+    return false unless bookable?
 
-    errors.add(:photos, "не более #{MAX_PHOTOS} фотографий на номер")
+    !unavailable_during?(from, to) && overlapping_stays(from, to).none?
   end
 
-  def photo_size_within_limit
-    photos.each do |photo|
-      next unless photo.blob&.byte_size.to_i > MAX_PHOTO_SIZE
+  def price_for_night(date)
+    amount = price_per_night.to_f
+    amount *= weekend_multiplier.to_f if WEEKEND_DAYS.include?(date.wday)
+    amount
+  end
 
-      errors.add(:photos, "фотография #{photo.filename} больше 10 МБ")
+  def price_for_stay(from, to)
+    nights(from, to).sum { |date| price_for_night(date) }
+  end
+
+  def nightly_breakdown(from, to)
+    nights(from, to).map { |date| { date: date, amount: price_for_night(date) } }
+  end
+
+  def nights(from, to)
+    (from...to).to_a
+  end
+
+  def next_free_window(horizon: 60.days.from_now)
+    last = [ horizon.to_date, (unavailable_until || horizon) + 1 ].compact.max
+    cursor = Date.current
+    while cursor <= last
+      from = cursor
+      to = from + min_nights
+      return { check_in: from, check_out: to, price: price_for_stay(from, to) } if available_on?(from, to)
+
+      cursor += 1
     end
+    nil
+  end
+
+  def approved_reviews
+    (reviews || []).select { |review| review["status"] == "approved" }
+  end
+
+  def add_review(user:, rating:, body:)
+    entry = {
+      "user_id" => user.id,
+      "author" => user.full_name.to_s.squish,
+      "rating" => rating.to_i,
+      "body" => body,
+      "status" => "pending",
+      "created_at" => Time.current.iso8601
+    }
+    update!(reviews: (reviews || []) + [ entry ])
+    entry
+  end
+
+  def review_average
+    approved = approved_reviews
+    return 0.0 if approved.empty?
+
+    (approved.sum { |review| review["rating"].to_i } / approved.size.to_f).round(1)
   end
 end

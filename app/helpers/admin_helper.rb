@@ -5,55 +5,6 @@ module AdminHelper
     active ? "#{base} bg-slate-800 text-white" : "#{base} hover:bg-slate-800 hover:text-white"
   end
 
-  def money(amount)
-    return "—" if amount.nil?
-
-    number_to_currency(amount, unit: "₽", separator: ",", delimiter: " ", precision: 0)
-  end
-
-  def room_status_label(status)
-    {
-      "available" => "Свободен",
-      "occupied" => "Занят",
-      "maintenance" => "Ремонт",
-      "cleaning" => "Уборка"
-    }.fetch(status.to_s, status.to_s)
-  end
-
-  def notification_target_path(notification)
-    case notification.notifiable
-    when Booking
-      admin_booking_path(notification.notifiable)
-    when Review
-      admin_reviews_path
-    else
-      admin_notifications_path
-    end
-  end
-
-  def calendar_booking_class(status)
-    colors = {
-      "pending" => "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600",
-      "confirmed" => "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/50 dark:text-blue-100 dark:border-blue-700",
-      "checked_in" => "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-100 dark:border-emerald-700",
-      "checked_out" => "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",
-      "cancelled" => "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700"
-    }
-    colors.fetch(status.to_s, "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600")
-  end
-
-  RUSSIAN_MONTHS = %w[января февраля марта апреля мая июня июля августа сентября октября ноября декабря].freeze
-  RUSSIAN_MONTHS_NOM = %w[Январь Февраль Март Апрель Май Июнь Июль Август Сентябрь Октябрь Ноябрь Декабрь].freeze
-  RUSSIAN_DAYS = %w[Вс Пн Вт Ср Чт Пт Сб].freeze
-
-  def russian_day_abbr(date)
-    RUSSIAN_DAYS[date.wday]
-  end
-
-  def russian_month_header(date)
-    "#{RUSSIAN_MONTHS_NOM[date.month - 1]} #{date.year}"
-  end
-
   def filter_link_class(active)
     base = "px-3 py-1.5 rounded-full text-sm border transition-colors"
     if active
