@@ -5,7 +5,7 @@ module Admin
       checked_in_now = Booking.checked_in_now
       occupied_room_ids = checked_in_now.select(:room_id).distinct
       booked_tonight_ids = Booking.occupying_overlapping(today, today + 1).select(:room_id)
-      unavailable_ids = Room.where(status: %i[maintenance cleaning]).select(:id)
+      unavailable_ids = Room.where(status: :maintenance).select(:id)
       unavailable_ids = unavailable_ids.or(Room.in_unavailability_window(today, today + 1).select(:id))
 
       @stats = {
@@ -24,7 +24,7 @@ module Admin
     private
 
     def occupancy_rate(date)
-      sellable_rooms = Room.where.not(status: %i[maintenance cleaning]).count
+      sellable_rooms = Room.where.not(status: :maintenance).count
       nights_in_month = date.end_of_month.day
       available_nights = sellable_rooms * nights_in_month
       return 0 if available_nights.zero?

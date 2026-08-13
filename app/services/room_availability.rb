@@ -1,7 +1,7 @@
 class RoomAvailability
   include Dry::Monads[:result]
 
-  NON_BOOKABLE_STATUSES = %i[maintenance cleaning].freeze
+  NON_BOOKABLE_STATUSES = %i[maintenance].freeze
 
   def call(check_in:, check_out:, exclude_room_id: nil)
     result = validate_dates(check_in, check_out)

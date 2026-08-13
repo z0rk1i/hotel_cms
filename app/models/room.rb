@@ -91,7 +91,7 @@ class Room < ApplicationRecord
   end
 
   def no_maintenance_while_guests_inside
-    return unless bookings.occupying_overlapping(Date.current, Date.current + 1).exists?
+    return unless bookings.checked_in_now.overlapping(Date.current, Date.current + 1).exists?
 
     errors.add(:status, "нельзя перевести в ремонт/уборку, пока в номере гости")
   end

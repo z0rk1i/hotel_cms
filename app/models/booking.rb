@@ -35,6 +35,7 @@ class Booking < ApplicationRecord
   validate :no_date_overlap
   validate :capacity_within_limit
   validate :room_bookable
+  validate :room_fixed_after_check_in, on: :update, if: -> { room_id_changed? }
 
   before_validation :set_defaults, on: :create
 
@@ -105,10 +106,16 @@ class Booking < ApplicationRecord
   def room_bookable
     return if room.blank?
 
-    errors.add(:room, "недоступен для бронирования") if room.maintenance? || room.cleaning?
+    errors.add(:room, "недоступен для бронирования") if room.maintenance?
     return if check_in.blank? || check_out.blank?
 
     errors.add(:room, "недоступен для бронирования на выбранные даты") if room.unavailable_during?(check_in, check_out)
+  end
+
+  def room_fixed_after_check_in
+    return unless checked_in? || checked_out?
+
+    errors.add(:room, "нельзя сменить у заселённой брони")
   end
 
   def cancel_pending_service_orders
