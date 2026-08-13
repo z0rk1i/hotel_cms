@@ -23,7 +23,7 @@
       = link_to "Сбросить", root_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400"
   - if @amenities.any?
     .mb-4.flex.flex-wrap.items-center.gap-2
-      = link_to "Все номера", root_path, class: amenity_chip_class(selected_amenity_ids.empty?)
+      = link_to "Все номера", rooms_search_path(amenities: []), class: amenity_chip_class(selected_amenity_ids.empty?)
       - @amenities.each do |amenity|
         = amenity_filter_link(amenity)
   - if @filter_categories.any?

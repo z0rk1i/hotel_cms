@@ -81,7 +81,7 @@ def service_order_status_label(status)
     selected = selected_amenity_ids
     currently_selected = selected.include?(amenity.id)
     toggled = currently_selected ? selected - [ amenity.id ] : selected + [ amenity.id ]
-    path = toggled.any? ? root_path(amenities: toggled) : root_path
+    path = rooms_search_path(amenities: toggled)
     link_to amenity.name, path, class: amenity_chip_class(currently_selected)
   end
 
@@ -103,7 +103,7 @@ def service_order_status_label(status)
                   .to_unsafe_h
                   .merge(overrides)
                   .reject { |_, value| value.blank? || value == [] || value == [ "" ] }
-    root_path(query)
+    root_path(query.symbolize_keys.merge(anchor: "rooms"))
   end
 
   def sort_link_class(value)

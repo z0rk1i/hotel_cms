@@ -93,6 +93,32 @@ RSpec.describe "Public room pages", type: :request do
       get root_path(sort: "price_desc")
       expect(response.body.index("Номер 201")).to be < response.body.index("Номер 101")
     end
+
+    it "anchors filter and sort links to the rooms section" do
+      create(:room, number: "101")
+      get root_path(sort: "price_asc")
+
+      expect(response.body).to include('href="/?sort=price_asc#rooms"')
+      expect(response.body).to include('href="/?sort=price_desc#rooms"')
+      expect(response.body).to include('href="/#rooms"')
+    end
+
+    it "keeps dates and sort when toggling an amenity filter" do
+      balcony = create(:amenity, name: "Балкон")
+      wifi = create(:amenity, name: "Wi-Fi")
+      room = create(:room, number: "101")
+      room.amenities << [ balcony, wifi ]
+      from = Date.current + 3
+      to = Date.current + 5
+
+      get root_path(amenities: [ wifi.id ], check_in: from, check_out: to, sort: "price_asc")
+
+      balcony_href = response.body[%r{<a[^>]*href="([^"]*)"[^>]*>[^<]*Балкон}, 1]
+      expect(balcony_href).to include("check_in=#{from}")
+      expect(balcony_href).to include("check_out=#{to}")
+      expect(balcony_href).to include("sort=price_asc")
+      expect(balcony_href).to include("#rooms")
+    end
   end
 
   describe "GET / with availability search" do
