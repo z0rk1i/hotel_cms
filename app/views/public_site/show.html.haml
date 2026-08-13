@@ -1,0 +1,63 @@
+.max-w-4xl.mx-auto.px-6.py-12
+  = link_to "← Назад к номерам", root_path(anchor: "rooms"), class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+  .mt-6.grid.lg:grid-cols-2.gap-8
+    %div
+      - if @room.photos.any?
+        = image_tag @room.photos.first, class: "w-full h-64 object-cover rounded-xl"
+        - if @room.photos.count > 1
+          .mt-3.grid.grid-cols-3.gap-2
+            - @room.photos.drop(1).each do |photo|
+              = image_tag image_thumb(photo, size: [ 320, 160 ]), class: "w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+      - else
+        .w-full.h-64.bg-slate-100.dark:bg-slate-700.rounded-xl.flex.items-center.justify-center.text-slate-300.text-sm Нет фото
+    %div
+      %h1.text-3xl.font-semibold.text-slate-900.dark:text-white
+        Номер #{@room.number}
+      %p.text-lg.text-slate-500.dark:text-slate-400.mt-1
+        = @room.category
+        · #{@room.capacity} чел. · #{@room.size_sqm ? "#{@room.size_sqm} м²" : "—"} · этаж #{@room.floor}
+      %p.mt-4.text-2xl.font-semibold.text-slate-900.dark:text-white
+        = number_to_currency(@room.price_per_night, unit: "₽", precision: 0)
+        %span.text-base.font-normal.text-slate-500.dark:text-slate-400 / ночь
+      .mt-4.flex.items-center.gap-2
+        %span.inline-flex.items-center.gap-1.text-sm.text-amber-500
+          - 5.times do |i|
+            %svg{:class => "w-4 h-4 #{i < @room.review_average.round ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
+              %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
+          %span.font-medium.text-slate-700.dark:text-slate-300= @room.review_average
+          %span.text-slate-400.dark:text-slate-500
+            · #{@reviews.count} #{russian_pluralize(@reviews.count, "отзыв", "отзыва", "отзывов")}
+      - if @room.description.present?
+        .mt-5.text-slate-700.dark:text-slate-300.leading-relaxed
+          = simple_format(@room.description)
+      - if @room.amenities.any?
+        .mt-5
+          %span.block.text-sm.font-medium.text-slate-500.dark:text-slate-400.mb-2 Удобства
+          .flex.flex-wrap.gap-2
+            - @room.amenities.each do |amenity|
+              %span.inline-flex.items-center.gap-1.rounded-full.bg-indigo-50.px-3.py-1.text-sm.text-indigo-600{:class => "dark:bg-indigo-900/40 dark:text-indigo-300"}
+                = amenity
+      - if @free_window
+        .mt-5.flex.items-center.gap-2.text-sm.text-slate-500.dark:text-slate-400
+          %span.inline-block.h-2.w-2.rounded-full.bg-emerald-500
+          Ближайшие свободные даты:
+          %span.font-medium.text-slate-700.dark:text-slate-300
+            = l(@free_window[:check_in], format: :long)
+            \— #{l(@free_window[:check_out], format: :long)}
+      .mt-6
+        = link_to "Забронировать", new_booking_path(room_id: @room.id), class: "inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors"
+  - if @reviews.any?
+    .mt-10
+      %h2.text-xl.font-semibold.text-slate-900.dark:text-white.mb-4 Отзывы
+      .space-y-4
+        - @reviews.each do |review|
+          .rounded-xl.border.border-slate-200.dark:border-slate-700.p-5
+            .flex.items-center.justify-between
+              .flex.items-center.gap-2.text-sm.text-amber-500
+                - 5.times do |i|
+                  %svg{:class => "w-3.5 h-3.5 #{i < review["rating"].to_i ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
+                    %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
+                %span.font-medium.text-slate-700.dark:text-slate-300= review["author"]
+              %time.text-xs.text-slate-400.dark:text-slate-500= l(Date.parse(review["created_at"]), format: :long)
+            - if review["body"].present?
+              %p.mt-2.text-sm.text-slate-600.dark:text-slate-300= review["body"]

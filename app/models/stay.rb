@@ -17,9 +17,10 @@ class Stay < ApplicationRecord
   validate :capacity_within_room
   validate :room_not_in_maintenance
 
-  before_validation :freeze_prices, on: :create
-  before_validation :freeze_prices, if: :price_settings_changed?
-  after_update :sync_room_state, if: -> { saved_change_to_status? && status_before_last_save == "checked_in" }
+  before_validation :freeze_prices, if: -> { new_record? || price_settings_changed? }
+  after_update :sync_room_state, if: :room_status_changed?
+
+  before_destroy :free_room_state, if: :was_checked_in?
 
   scope :pending, -> { where(status: :pending) }
   scope :confirmed, -> { where(status: :confirmed) }
@@ -33,6 +34,10 @@ class Stay < ApplicationRecord
     raise ArgumentError, "invalid transition #{status} -> #{to}" unless allowed_transition?(to)
 
     update!(status: to)
+  end
+
+  %w[pending confirmed checked_in checked_out cancelled].each do |state|
+    define_method("#{state}?") { status == state }
   end
 
   def confirm!
@@ -163,10 +168,32 @@ class Stay < ApplicationRecord
     errors.add(:room, "недоступен для бронирования") if room.maintenance?
   end
 
-  def sync_room_state
-    return unless status == "checked_out"
-    return if room.stays.checked_in.where.not(id: id).exists?
+  def room_status_changed?
+    return false unless saved_change_to_status?
 
-    room.update_columns(status: "cleaning") if room.available?
+    %w[pending confirmed cancelled].include?(status_before_last_save) && status == "checked_in" ||
+      status_before_last_save == "checked_in"
+  end
+
+  def was_checked_in?
+    status == "checked_in"
+  end
+
+  def sync_room_state
+    room.update_columns(status: "occupied") if status == "checked_in"
+    if status_before_last_save == "checked_in" && status != "checked_in"
+      if room.stays.checked_in.where.not(id: id).exists?
+        room.update_columns(status: "occupied")
+      else
+        room.update_columns(status: status == "checked_out" ? "cleaning" : "available")
+      end
+    end
+  end
+
+  def free_room_state
+    return if room.nil?
+
+    status = room.stays.checked_in.where.not(id: id).exists? ? "occupied" : "available"
+    room.update_columns(status: status)
   end
 end

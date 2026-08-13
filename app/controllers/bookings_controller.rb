@@ -1,77 +1,84 @@
 class BookingsController < ApplicationController
-  layout "public"
-
-  before_action :authenticate_user!, only: %i[show cancel]
-
   def new
-    @booking = Booking.new
-    @booking.check_in = parse_date_param(params[:check_in]) || Date.current + 1
-    @booking.check_out = parse_date_param(params[:check_out]) || Date.current + 2
-    @booking.guests_count = 1
-    @booking.room_id = params[:room_id] if params[:room_id].present?
-    @user = current_user || User.new
-  end
-
-  def create
-    result = BookingCreator.new.call(
-      current_user: current_user,
-      booking_attrs: booking_params,
-      user_attrs: (user_signed_in? ? {} : user_params),
-      consent_given: params[:consent_given] == "1"
-    )
-
-    payload = result.value_or(result.failure)
-    @booking = payload.booking
-    @user = payload.user
-
-    if result.success?
-      sign_in(@user, scope: :user) unless user_signed_in?
-      redirect_to account_path, notice: "Бронь создана! Ожидает подтверждения отеля."
-    else
-      render :new, status: :unprocessable_entity
-    end
-  end
-
-  def show
-    @booking = current_user.bookings.includes(:room, :guest).find(params[:id])
-  end
-
-  def cancel
-    @booking = current_user.bookings.find(params[:id])
-    if %w[pending confirmed].include?(@booking.status) && @booking.transition_to(:cancelled)
-      redirect_to account_path, notice: "Бронь отменена."
-    else
-      redirect_to account_path, alert: "Эту бронь нельзя отменить в текущем статусе."
-    end
+    @room = Room.find(params[:room_id]) if params[:room_id].present?
+    @from = params[:check_in]
+    @to = params[:check_out]
+    @guests = params[:guests_count].presence || 1
   end
 
   def available_rooms
-    result = RoomAvailability.new.call(check_in: params[:check_in], check_out: params[:check_out])
+    from = Date.parse(params[:check_in])
+    to = Date.parse(params[:check_out])
+    guests = params[:guests_count].to_i
 
-    if result.success?
-      render json: result.value!
-    else
-      render json: { error: availability_error_message(result.failure) }, status: :unprocessable_entity
+    rooms = Room.order(:number).select do |room|
+      room.capacity >= guests && room.bookable? && room.available_on?(from, to)
     end
+
+    render json: rooms.map { |room| room_summary(room, from, to) }
+  rescue Date::Error
+    render json: { error: "Неверный формат дат" }, status: :unprocessable_entity
+  end
+
+  def create
+    from = Date.parse(params[:check_in])
+    to = Date.parse(params[:check_out])
+    room = Room.find(params[:room_id])
+    user = find_or_create_guest
+
+    @stay = Stay.new(room: room, user: user, check_in: from, check_out: to,
+                     guests_count: params[:guests_count].to_i, notes: params[:notes])
+    errors = collect_errors(from, to, room, user)
+
+    if errors.empty? && @stay.valid?
+      Stay.transaction do
+        user.save!
+        user.confirm_consent!
+        @stay.save!
+      end
+      BookingMailer.confirmation(@stay).deliver_later if user.email.present?
+      redirect_to account_path(phone: user.phone.to_s),
+                  notice: "Заявка принята! Менеджер подтвердит её в ближайшее время."
+    else
+      @room = room
+      @from = params[:check_in]
+      @to = params[:check_out]
+      @guests = params[:guests_count]
+      @errors = errors + user.errors.full_messages
+      render :new, status: :unprocessable_entity
+    end
+  rescue Date::Error
+    @errors = [ "Неверный формат дат" ]
+    render :new, status: :unprocessable_entity
   end
 
   private
 
-  def user_params
-    params.require(:user).permit(:full_name, :email, :phone, :password, :password_confirmation)
+  def collect_errors(from, to, room, user)
+    errors = []
+    errors << "Необходимо согласие на обработку персональных данных" if params[:consent].blank?
+    errors << "Дата заезда не может быть в прошлом" if from < Date.current
+    errors << "Номер уже занят на выбранные даты" unless room.available_on?(from, to)
+    errors << @stay.errors.full_messages.to_sentence unless @stay.valid?
+    errors
   end
 
-  def parse_date_param(value)
-    DateParams.parse(value)
+  def find_or_create_guest
+    phone = params[:phone].to_s.strip
+    user = User.guests.find_by(phone: phone) if phone.present?
+    user || User.new(role: :guest, full_name: params[:full_name], phone: phone, email: params[:email].presence)
   end
 
-  def availability_error_message(failure)
-    return failure if failure.is_a?(String)
-
-    "Укажите корректные даты"
-  end
-
-  def booking_params
-    params.require(:booking).permit(:room_id, :check_in, :check_out, :guests_count, :notes)
+  def room_summary(room, from, to)
+    {
+      id: room.id,
+      number: room.number,
+      category: room.category,
+      capacity: room.capacity,
+      amenities: room.amenities,
+      price: room.price_per_night,
+      total_price: room.price_for_stay(from, to),
+      label: "#{room.number} · #{room.category}"
+    }
   end
 end

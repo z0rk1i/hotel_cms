@@ -39,11 +39,6 @@ gem "devise"
 # HAML templates
 gem "haml-rails"
 
-# OAuth authentication for public users (VK.ru, Yandex)
-gem "omniauth"
-gem "omniauth-oauth2"
-gem "omniauth-rails_csrf_protection"
-
 # Pagination
 gem "pagy", "~> 9.0"
 

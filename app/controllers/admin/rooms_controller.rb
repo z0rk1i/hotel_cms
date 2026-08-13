@@ -1,69 +1,70 @@
 module Admin
-  class RoomsController < CrudController
+  class RoomsController < BaseController
+    before_action :set_room, only: %i[edit update destroy complete_cleaning destroy_photo]
+
     def index
-      @rooms = Room.includes(:category).order(:floor, :number)
-      @rooms = @rooms.where(status: params[:status]) if params[:status].present?
+      @rooms = Room.order(:floor, :number)
+      @rooms = @rooms.by_status(params[:status].downcase) if params[:status].present?
+      @rooms = @rooms.search(params[:query]) if params[:query].present?
     end
 
-    def available
-      result = RoomAvailability.new.call(
-        check_in: params[:check_in],
-        check_out: params[:check_out],
-        exclude_room_id: params[:exclude]
-      )
+    def new
+      @room = Room.new(status: :available)
+    end
 
-      if result.success?
-        render json: result.value!
+    def create
+      @room = Room.new(room_params)
+      if @room.save
+        redirect_to admin_rooms_path, notice: "Номер добавлен"
       else
-        render json: { error: "Укажите корректные даты" }, status: :unprocessable_entity
+        render :new, status: :unprocessable_entity
       end
     end
 
-    def destroy_photo
-      room = Room.find(params[:room_id])
-      photo = room.photos.find(params[:photo_id])
-      photo.purge
-      redirect_to edit_admin_room_path(room), notice: "Фото удалено."
+    def edit
     end
 
-    def status_history
-      @room = Room.find(params[:id])
-      @logs = @room.status_logs.ordered.limit(200)
+    def update
+      if @room.update(room_params)
+        redirect_to admin_rooms_path, notice: "Номер обновлён"
+      else
+        render :edit, status: :unprocessable_entity
+      end
+    end
+
+    def destroy
+      if @room.destroy
+        redirect_to admin_rooms_path, notice: "Номер удалён"
+      else
+        redirect_to admin_rooms_path, alert: @room.errors.full_messages.to_sentence
+      end
     end
 
     def complete_cleaning
-      room = Room.find(params[:id])
-      room.update!(status: :available)
-      redirect_back fallback_location: admin_rooms_path, notice: "Уборка завершена."
+      @room.update!(status: :available)
+      redirect_to admin_rooms_path, notice: "Уборка завершена, номер доступен"
+    end
+
+    def destroy_photo
+      photo = @room.photos.find(params[:photo_id])
+      photo.purge
+      redirect_to edit_admin_room_path(@room), notice: "Фотография удалена"
+    rescue ActiveRecord::RecordNotFound
+      redirect_to edit_admin_room_path(@room), alert: "Фотография не найдена"
     end
 
     private
 
-    def model_class
-      Room
+    def set_room
+      @room = Room.find(params[:id])
     end
 
-    def resource_params
-      params.require(:room).permit(:number, :category_id, :floor, :size_sqm, :capacity,
-                                   :price_per_night, :weekend_multiplier, :status, :description,
-                                   :unavailable_from, :unavailable_until,
-                                   photos: [], amenity_ids: [])
-    end
-
-    def resource_index_path
-      admin_rooms_path
-    end
-
-    def created_notice
-      "Номер создан."
-    end
-
-    def updated_notice
-      "Номер обновлён."
-    end
-
-    def destroyed_notice
-      "Номер удалён."
+    def room_params
+      params.require(:room).permit(
+        :number, :category, :floor, :capacity, :size_sqm, :description,
+        :price_per_night, :weekend_multiplier, :min_nights, :status,
+        :unavailable_from, :unavailable_until, amenities: [], photos: []
+      )
     end
   end
 end

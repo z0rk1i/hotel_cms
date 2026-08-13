@@ -1,29 +1,12 @@
-%body
-  %header.sticky.top-0.z-40.backdrop-blur.border-b.border-slate-100.dark:border-slate-800{:class => "bg-white/90 dark:bg-slate-900/90"}
-    .max-w-6xl.mx-auto.px-6.py-4.flex.items-center.justify-between
-      %a.text-xl.font-semibold.text-slate-900.dark:text-white.tracking-tight{:href => root_path} Гостиница
-      %nav.flex.items-center.gap-6.text-sm.text-slate-600.dark:text-slate-300
-        = link_to "Номера", root_path(anchor: "rooms"), class: "hover:text-slate-900 dark:hover:text-white"
-        = link_to "Услуги", root_path(anchor: "services"), class: "hover:text-slate-900 dark:hover:text-white"
-        = link_to "Новости", root_path(anchor: "news"), class: "hover:text-slate-900 dark:hover:text-white"
-        = link_to "Галерея", gallery_path, class: "hover:text-slate-900 dark:hover:text-white"
-        - Page.order(:title).limit(4).each do |page|
-          = link_to page.title, public_page_path(page.slug), class: "hover:text-slate-900 dark:hover:text-white"
-        %button.ml-2.inline-flex.items-center.justify-center.w-8.h-8.rounded-lg.bg-slate-100.dark:bg-slate-800.text-slate-600.dark:text-slate-300.hover:bg-slate-200.dark:hover:bg-slate-700.transition-colors{"aria-label" => "Переключить тему", "data-action" => "click->theme#toggle", "data-controller" => "theme", "data-theme-target" => "icon", :type => "button"}
-          = render "shared/theme_icon"
-        - if user_signed_in?
-          - unread_count = current_user.notifications.unread.count
-          = link_to notifications_path, class: "relative ml-1 inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors", aria_label: "Уведомления" do
-            %svg.w-5.h-5{:fill => "none", :stroke => "currentColor", "stroke-width" => "2", :viewbox => "0 0 24 24"}
-              %path{:d => "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9", "stroke-linecap" => "round", "stroke-linejoin" => "round"}
-            - if unread_count.positive?
-              %span.absolute.min-w-4.h-4.px-1.rounded-full.bg-red-500.text-white.font-medium.flex.items-center.justify-center{:class => "-top-0.5 -right-0.5 text-[10px]"}= unread_count
-          = link_to "Личный кабинет", account_path,                                                                                                                                  |
-            class: "px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
-          = button_to "Выйти", destroy_user_session_path, method: :delete,                                                                                                           |
-            class: "px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
-        - else
-          = link_to "Войти", new_user_session_path,                                                                                                                                  |
-            class: "px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
-        = link_to "Вход для персонала", new_administrator_session_path,                                                                               |
-          class: "ml-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors" |
+%header.sticky.top-0.z-40.backdrop-blur.border-b.border-slate-100.dark:border-slate-800{:class => "bg-white/90 dark:bg-slate-900/90"}
+  .max-w-6xl.mx-auto.px-6.py-4.flex.items-center.justify-between
+    %a.text-xl.font-semibold.text-slate-900.dark:text-white.tracking-tight{:href => root_path} Гостиница
+    %nav.flex.items-center.gap-6.text-sm.text-slate-600.dark:text-slate-300
+      = link_to "Номера", root_path(anchor: "rooms"), class: "hover:text-slate-900 dark:hover:text-white"
+      = link_to "Новости", root_path(anchor: "news"), class: "hover:text-slate-900 dark:hover:text-white"
+      = link_to "Галерея", gallery_path, class: "hover:text-slate-900 dark:hover:text-white"
+      - StaticContent.all_pages.each do |slug, entry|
+        = link_to entry["title"], page_path(slug), class: "hover:text-slate-900 dark:hover:text-white"
+      %button.ml-2.inline-flex.items-center.justify-center.w-8.h-8.rounded-lg.bg-slate-100.dark:bg-slate-800.text-slate-600.dark:text-slate-300.hover:bg-slate-200.dark:hover:bg-slate-700.transition-colors{"aria-label" => "Переключить тему", "data-action" => "click->theme#toggle", "data-controller" => "theme", "data-theme-target" => "icon", :type => "button"}
+        = render "shared/theme_icon"
+      = link_to "Вход для персонала", new_user_session_path, class: "px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors"

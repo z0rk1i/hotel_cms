@@ -5,7 +5,7 @@ module Users
     private
 
     def after_sign_in_path_for(_resource)
-      account_path
+      current_user&.admin? ? admin_root_path : root_path
     end
   end
 end

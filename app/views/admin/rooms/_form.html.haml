@@ -1,86 +1,76 @@
+- if @room.errors.any?
+  .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
+    %strong
+      = pluralize(@room.errors.count, "ошибка")
+      \:
+    = @room.errors.full_messages.to_sentence
 = form_with model: [:admin, @room], class: "space-y-6" do |form|
-  - if @room.errors.any?
-    .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
-      %strong
-        = pluralize(@room.errors.count, "ошибка")
-        \:
-      = @room.errors.full_messages.to_sentence
   .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6.space-y-4
     .grid.grid-cols-2.gap-4
       %div
-        = field_label(form, :number, "Номер комнаты")
-        = text_input(form, :number, placeholder: "Напр. 101")
+        = field_label(form, :number, "Номер")
+        = text_input(form, :number, placeholder: "101")
         = field_errors(form, :number)
       %div
-        = field_label(form, :category_id, "Категория")
-        = select_input(form, :category_id, RoomCategory.order(:name).map { |c| [c.name, c.id] })
-        = field_errors(form, :category_id)
+        = field_label(form, :category, "Категория")
+        = text_input(form, :category, placeholder: "Стандарт")
+        = field_errors(form, :category)
       %div
         = field_label(form, :floor, "Этаж")
-        = number_input(form, :floor, min: 0)
+        = number_input(form, :floor, min: 1)
         = field_errors(form, :floor)
       %div
-        = field_label(form, :size_sqm, "Площадь, м²")
-        = number_input(form, :size_sqm, min: 1)
-        = field_errors(form, :size_sqm)
-      %div
-        = field_label(form, :capacity, "Вместимость (чел.)")
+        = field_label(form, :capacity, "Вместимость")
         = number_input(form, :capacity, min: 1)
         = field_errors(form, :capacity)
       %div
+        = field_label(form, :size_sqm, "Площадь, м²")
+        = number_input(form, :size_sqm, min: 0, step: 0.5)
+        = field_errors(form, :size_sqm)
+      %div
         = field_label(form, :price_per_night, "Цена за ночь, ₽")
-        = number_input(form, :price_per_night, step: "0.01", min: 0)
+        = number_input(form, :price_per_night, min: 0, step: 100)
         = field_errors(form, :price_per_night)
       %div
-        = field_label(form, :weekend_multiplier, "Коэффициент выходных")
-        = number_input(form, :weekend_multiplier, step: "0.01", min: 1)
-        %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 1.2 — пт/сб на 20% дороже
+        = field_label(form, :weekend_multiplier, "Коэффициент на выходные")
+        = number_input(form, :weekend_multiplier, min: 1, step: 0.1)
         = field_errors(form, :weekend_multiplier)
       %div
-        = field_label(form, :status, "Статус")
-        = select_input(form, :status, Room.statuses.keys.map { |s| [room_status_label(s), s] }, selected: @room.status)
-        = field_errors(form, :status)
-    .grid.grid-cols-2.gap-4
+        = field_label(form, :min_nights, "Минимальное число ночей")
+        = number_input(form, :min_nights, min: 1)
+        = field_errors(form, :min_nights)
       %div
-        = field_label(form, :unavailable_from, "Недоступен с (дата)")
+        = field_label(form, :status, "Статус")
+        = select_input(form, :status, %w[available maintenance cleaning].map { |s| [room_status_label(s), s] })
+        = field_errors(form, :status)
+      %div
+        = field_label(form, :amenities, "Удобства")
+        = form.select :amenities, offered_amenities.map { |a| [a, a] }, { include_blank: true }, multiple: true, class: "w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm bg-white dark:bg-slate-800"
+        = field_errors(form, :amenities)
+        %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 Удерживайте Cmd/Ctrl для выбора нескольких
+      %div
+        = field_label(form, :unavailable_from, "Недоступен с")
         = date_input(form, :unavailable_from)
         = field_errors(form, :unavailable_from)
       %div
-        = field_label(form, :unavailable_until, "Недоступен по (дата)")
+        = field_label(form, :unavailable_until, "Недоступен по")
         = date_input(form, :unavailable_until)
         = field_errors(form, :unavailable_until)
-    %p.text-xs.text-slate-400.dark:text-slate-500
-      На эти даты номер не будет предлагаться к бронированию (плановый ремонт, закрытие на сезон).
     %div
       = field_label(form, :description, "Описание")
-      = text_area(form, :description, rows: 4, placeholder: "Удобства, вид из окна, оснащение…")
-  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6
+      = text_area(form, :description, rows: 4, placeholder: "Описание номера…")
+      = field_errors(form, :description)
     %div
-      %span.block.text-sm.font-medium.text-slate-700.dark:text-slate-300.mb-2 Удобства номера
-      - if Amenity.any?
-        .grid.grid-cols-2.md:grid-cols-3.gap-3
-          - Amenity.order(:name).each do |amenity|
-            %label.flex.items-center.gap-2.rounded-lg.border.border-slate-200.dark:border-slate-700.px-3.py-2.text-sm.cursor-pointer{:class => "#{'border-indigo-400 dark:border-indigo-500' if @room.amenities.include?(amenity)}"}
-              = form.check_box :amenity_ids, { multiple: true, checked: @room.amenities.include?(amenity) }, amenity.id, nil
-              %span.text-slate-800.dark:text-slate-200= amenity.name
-      - else
-        %p.text-sm.text-slate-400.dark:text-slate-500
-          Удобств пока нет — #{link_to "добавьте", admin_amenities_path} в разделе «Удобства».
-  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6
-    %div
-      = field_label(form, :photos, "Фотографии номера")
-      = form.file_field :photos, multiple: true, accept: "image/*",                                                                                                                                                                                                                                                      |
-        class: "block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 dark:file:bg-indigo-900/40 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/60" |
-      %p.mt-1.text-xs.text-slate-400.dark:text-slate-500
-        Можно выбрать до #{Room::MAX_PHOTOS} изображений, каждое до #{Room::MAX_PHOTO_SIZE / 1.megabyte} МБ (сейчас: #{@room.photos.count})
-    - if @room.photos.any?
-      .mt-4.grid.grid-cols-4.gap-3
-        - @room.photos.select { |photo| photo.persisted? && photo.blob.persisted? }.each do |photo|
-          .relative
-            = image_tag photo, class: "w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-            = link_to "Удалить", admin_room_photo_path(@room, photo),                                 |
-              data: { turbo_method: :delete, turbo_confirm: "Удалить фото?" },                       |
-              class: "absolute top-1 right-1 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded"     |
+      = field_label(form, :photos, "Фотографии")
+      - if @room.photos.any?
+        .flex.flex-wrap.gap-3.mb-3
+          - @room.photos.each do |photo|
+            .relative
+              = image_tag image_thumb(photo), class: "h-24 w-32 object-cover rounded-lg border border-slate-200"
+              = button_to "×", admin_room_photo_path(@room, photo), method: :delete, class: "absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-sm leading-none flex items-center justify-center"
+      = form.file_field :photos, multiple: true, accept: "image/*",
+        class: "block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-600 hover:file:bg-indigo-100"
+      = field_errors(form, :photos)
   .flex.items-center.gap-3
     = form.submit @room.new_record? ? "Создать номер" : "Сохранить", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg"
     = link_to "Отмена", admin_rooms_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"

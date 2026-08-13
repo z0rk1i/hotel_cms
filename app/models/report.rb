@@ -14,6 +14,10 @@ class Report < ApplicationRecord
     report
   end
 
+  def self.refresh_month(month)
+    refresh!(from: month.beginning_of_month, to: month.end_of_month)
+  end
+
   def self.range_kind(from, to)
     from == from.beginning_of_month && to == to.end_of_month ? "month" : "custom"
   end

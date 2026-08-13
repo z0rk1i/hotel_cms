@@ -10,7 +10,7 @@ class Room < ApplicationRecord
   validates :price_per_night, numericality: { greater_than_or_equal_to: 0 }
   validates :weekend_multiplier, numericality: { greater_than: 0 }
   validates :min_nights, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
-  validates :status, inclusion: { in: %w[available maintenance cleaning] }
+  validates :status, inclusion: { in: %w[available occupied maintenance cleaning] }
 
   scope :by_status, ->(status) { where(status: status) }
   scope :by_category, ->(category) { where(category: category) }
@@ -28,6 +28,10 @@ class Room < ApplicationRecord
 
   def cleaning?
     status == "cleaning"
+  end
+
+  def occupied?
+    status == "occupied"
   end
 
   def bookable?

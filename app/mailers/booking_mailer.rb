@@ -1,29 +1,8 @@
 class BookingMailer < ApplicationMailer
-  def created(booking)
-    @booking = booking
-    @user = booking.user
+  def confirmation(stay)
+    @stay = stay
+    @user = stay.user
 
-    mail(to: @user.email, subject: "Бронь №#{booking.id} создана — ожидает подтверждения")
-  end
-
-  def confirmed(booking)
-    @booking = booking
-    @user = booking.user
-
-    mail(to: @user.email, subject: "Бронь №#{booking.id} подтверждена")
-  end
-
-  def cancelled(booking)
-    @booking = booking
-    @user = booking.user
-
-    mail(to: @user.email, subject: "Бронь №#{booking.id} отменена")
-  end
-
-  def check_in_reminder(booking)
-    @booking = booking
-    @user = booking.user
-
-    mail(to: @user.email, subject: "Напоминание: заезд завтра, бронь №#{booking.id}")
+    mail(to: @user.email, subject: "Бронь №#{stay.id} создана — ожидает подтверждения")
   end
 end

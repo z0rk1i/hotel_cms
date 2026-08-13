@@ -21,27 +21,30 @@
       %p.text-sm.text-indigo-800.dark:text-indigo-200
         = "Свободные номера #{format_search_dates} #{search_guests_label}" .strip
       = link_to "Сбросить", root_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400"
-  - if @amenities.any?
+  - if @date_error
+    .mb-6.rounded-xl.border.border-red-200.bg-red-50.px-4.py-3.text-sm.text-red-800{:class => "dark:border-red-800 dark:bg-red-900/30 dark:text-red-200"}
+      = @date_error
+  - if offered_amenities.any?
     .mb-4.flex.flex-wrap.items-center.gap-2
-      = link_to "Все номера", rooms_search_path(amenities: []), class: amenity_chip_class(selected_amenity_ids.empty?)
-      - @amenities.each do |amenity|
+      = link_to "Все номера", rooms_search_path(amenities: []), class: amenity_chip_class(selected_amenities.empty?)
+      - offered_amenities.each do |amenity|
         = amenity_filter_link(amenity)
   - if @filter_categories.any?
     .mb-4.flex.flex-wrap.items-center.gap-2
-      = link_to "Все типы", rooms_search_path(category_id: nil), class: amenity_chip_class(selected_category_id.zero?)
+      = link_to "Все типы", rooms_search_path(category: nil), class: amenity_chip_class(params[:category].blank?)
       - @filter_categories.each do |category|
-        = link_to category.name, rooms_search_path(category_id: category.id), class: amenity_chip_class(selected_category_id == category.id)
+        = link_to category, rooms_search_path(category: category), class: amenity_chip_class(params[:category] == category)
   .mb-6.flex.items-center.gap-3
     %span.text-sm.text-slate-500.dark:text-slate-400 Сортировка:
     = link_to "по цене ↑", rooms_search_path(sort: "price_asc"), class: sort_link_class("price_asc")
     = link_to "по цене ↓", rooms_search_path(sort: "price_desc"), class: sort_link_class("price_desc")
   - @categories.each do |category|
-    - rooms = @rooms_by_category.fetch(category.id, [])
+    - rooms = @rooms_by_category.fetch(category, [])
     .mb-10
       .flex.items-baseline.justify-between.mb-4
-        %h3.text-xl.font-medium.text-slate-900.dark:text-white= category.name
+        %h3.text-xl.font-medium.text-slate-900.dark:text-white= category
         %span.text-sm.text-slate-500.dark:text-slate-400
-          от #{number_to_currency(category.base_price, unit: "₽", precision: 0)} / ночь
+          от #{number_to_currency(rooms.map(&:price_per_night).min.to_i, unit: "₽", precision: 0)} / ночь
       .grid.grid-cols-1.md:grid-cols-2.lg:grid-cols-3.gap-6
         - rooms.each do |room|
           = link_to room_path(room), class: "group block rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all" do
@@ -63,13 +66,13 @@
                 .mt-3.flex.flex-wrap.gap-1.5
                   - room.amenities.each do |amenity|
                     %span.inline-flex.items-center.gap-1.rounded-full.bg-indigo-50.px-2.5.py-0.5.text-xs.font-medium.text-indigo-600{:class => "dark:bg-indigo-900/40 dark:text-indigo-300"}
-                      = amenity.name
-              - if room.approved_reviews.any?
+                      = amenity
+              - if room.review_average.positive?
                 .mt-2.flex.items-center.gap-1.text-xs.text-amber-500
                   - 5.times do |i|
-                    %svg{:class => "w-3.5 h-3.5 #{i < average_rating(room) ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
+                    %svg{:class => "w-3.5 h-3.5 #{i < room.review_average.round ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
                       %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
-                  %span.font-medium.text-slate-600.dark:text-slate-400= average_rating(room)
+                  %span.font-medium.text-slate-600.dark:text-slate-400= room.review_average
               - if room.description.present?
                 %p.mt-2.text-sm.text-slate-500.dark:text-slate-400.line-clamp-2= room.description
               %span.mt-4.inline-block.w-full.text-center.bg-slate-900.hover:bg-slate-700.text-white.text-sm.font-medium.py-2.rounded-lg.transition-colors.dark:bg-indigo-600.dark:hover:bg-indigo-500 Забронировать
@@ -79,42 +82,24 @@
         На выбранные даты свободных номеров нет — попробуйте другие даты.
       - else
         Номера появятся скоро
-%section#services.bg-slate-50.border-y.border-slate-100{:class => "dark:bg-slate-800/60"}
-  .max-w-6xl.mx-auto.px-6.py-16
-    %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Услуги
-    .grid.grid-cols-1.md:grid-cols-3.gap-6
-      - @services.each do |service|
-        = link_to service_path(service), class: "group block bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all" do
-          .flex.items-center.justify-between
-            %h3.font-medium.text-slate-900.dark:text-white.group-hover:text-indigo-600.dark:group-hover:text-indigo-400.transition-colors= service.name
-            - if service.price && service.price.positive?
-              %span.text-sm.font-medium.text-indigo-600= number_to_currency(service.price, unit: "₽", precision: 0)
-          - if service.approved_reviews.any?
-            .mt-2.flex.items-center.gap-1.text-xs.text-amber-500
-              - 5.times do |i|
-                %svg{:class => "w-3.5 h-3.5 #{i < average_rating(service) ? 'fill-amber-400' : 'fill-slate-200 dark:fill-slate-600'}", :viewbox => "0 0 24 24"}
-                  %path{:d => "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"}
-              %span.font-medium.text-slate-600.dark:text-slate-400= average_rating(service)
-          - if service.description.present?
-            %p.mt-2.text-sm.text-slate-500.dark:text-slate-400= service.description
-          %span.mt-4.inline-block.w-full.text-center.bg-indigo-600.hover:bg-indigo-700.text-white.text-sm.font-medium.py-2.rounded-lg.transition-colors Заказать
 - if @news.any?
   %section#news.max-w-6xl.mx-auto.px-6.py-16
     %h2.text-2xl.font-semibold.text-slate-900.dark:text-white.mb-8 Новости
     .grid.grid-cols-1.md:grid-cols-3.gap-6
-      - @news.each do |item|
-        = link_to public_news_path(item.slug), class: "block rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-colors" do
-          %time.text-xs.text-slate-400.dark:text-slate-500= l(item.published_at, format: :long)
-          %h3.mt-1.font-medium.text-slate-900.dark:text-white= item.title
-          - if item.body.present?
-            %p.mt-2.text-sm.text-slate-500.dark:text-slate-400.line-clamp-3= item.body
+      - @news.first(3).each do |item|
+        = link_to news_article_path(item["slug"]), class: "block rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-colors" do
+          %time.text-xs.text-slate-400.dark:text-slate-500= I18n.l(Date.parse(item["date"]), format: :long)
+          %h3.mt-1.font-medium.text-slate-900.dark:text-white= item["title"]
+          - if item["body"].present?
+            %p.mt-2.text-sm.text-slate-500.dark:text-slate-400.line-clamp-3= item["body"]
           %span.mt-3.inline-block.text-sm.font-medium.text-indigo-600.dark:text-indigo-400 Читать далее
-- if @gallery.any?
+- if @gallery_rooms.any?
   %section#gallery.max-w-6xl.mx-auto.px-6.py-16
     .flex.items-center.justify-between.mb-8
       %h2.text-2xl.font-semibold.text-slate-900.dark:text-white Галерея
       = link_to "Смотреть все", gallery_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
     .grid.grid-cols-2.md:grid-cols-4.gap-4
-      - @gallery.each do |image|
-        = link_to gallery_path, class: "block group" do
-          = image_tag image_thumb(image.image), alt: image.title, class: "w-full h-40 object-cover rounded-xl group-hover:opacity-90 transition-opacity"
+      - @gallery_rooms.each do |room|
+        - room.photos.each do |photo|
+          = link_to room_path(room), class: "block group" do
+            = image_tag image_thumb(photo), alt: "Номер #{room.number}", class: "w-full h-40 object-cover rounded-xl group-hover:opacity-90 transition-opacity"

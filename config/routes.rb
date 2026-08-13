@@ -1,89 +1,55 @@
 Rails.application.routes.draw do
-  devise_for :administrators, path: "admin", controllers: { sessions: "administrators/sessions" }
-  devise_for :users, controllers: {
-    omniauth_callbacks: "users/omniauth_callbacks",
-    registrations: "users/registrations",
-    sessions: "users/sessions"
-  }
+  root "public_site#index"
 
-  resources :bookings, only: %i[new create show] do
-    get :available_rooms, on: :collection
-    post :cancel, on: :member
-  end
-  get "bookings", to: redirect("/account"), as: :bookings_redirect
-  resources :rooms, only: %i[show]
-  resources :services, only: %i[show]
-  resources :reviews, only: %i[create]
-  resources :service_orders, only: %i[new create] do
-    post :cancel, on: :member
-  end
-  resources :notifications, only: %i[index] do
-    patch :read, on: :member
-    post :mark_all_read, on: :collection
-  end
-  get "account", to: "account#show"
-  get "gallery", to: "public_site#gallery"
+  # Public site
+  get "/gallery" => "public_site#gallery"
+  get "/news" => "public_site#news"
+  get "/news/:slug" => "public_site#news_article", as: :news_article
+  get "/page/:slug" => "public_site#page", as: :page
+  get "/privacy" => "public_site#privacy", as: :privacy_policy
+  get "/rooms/:id" => "public_site#show", as: :room
 
+  # Public booking flow
+  get "/bookings/available_rooms" => "bookings#available_rooms"
+  get "/bookings/new" => "bookings#new", as: :new_booking
+  post "/bookings" => "bookings#create", as: :bookings
+
+  # Guest stays lookup
+  get "/account" => "account#show", as: :account
+  get "/account/find" => "account#find", as: :account_find
+
+  # Admin authentication (single User model, role-based)
+  devise_for :users, path: "admin", controllers: { sessions: "users/sessions" }
+
+  # Admin area
   namespace :admin do
-    root to: "dashboard#index"
-    resources :notifications, only: %i[index] do
-      member { patch :read }
-      collection { post :mark_all_read }
+    root "dashboard#index"
+
+    resources :rooms, except: [ :show ] do
+      patch :complete_cleaning, on: :member
+      delete "photo/:photo_id", on: :member, action: :destroy_photo, as: :photo
     end
-    resources :room_categories
-    resources :rooms do
-      get :available, on: :collection
-      member do
-        get :status_history
-        patch :complete_cleaning
-      end
-      delete "photo/:photo_id", to: "rooms#destroy_photo", as: :photo
-    end
-    resources :amenities
-    resources :price_periods
-    resources :closed_dates
-    get "reports", to: "reports#index", as: :reports
-    get "reports/export", to: "reports#export", as: :reports_export
-    resources :guests do
-      member do
-        post :merge
-      end
-    end
-    resources :bookings do
-      collection do
-        get :calendar
-      end
+
+    resources :stays, only: %i[index show new create edit update destroy] do
       member do
         patch :confirm
         patch :check_in
         patch :check_out
         patch :cancel
+        post :add_payment
+        delete "remove_payment/:payment_id", action: :remove_payment, as: :remove_payment
+        post :add_service
+        delete "cancel_service/:service_id", action: :cancel_service, as: :cancel_service
       end
-      resources :payments, only: %i[new create destroy]
     end
-    resources :pages
-    resources :news, only: %i[index new create edit update destroy]
-    resources :services
-    resources :service_orders, only: %i[index] do
+
+    resources :users, only: %i[index show destroy] do
       member do
-        patch :confirm
-        patch :cancel
+        post :merge_into
+        patch :toggle_vip
       end
     end
-    resources :gallery_images, only: %i[index new create edit update destroy]
-    resources :reviews, only: %i[index destroy] do
-      member do
-        patch :approve
-        patch :reject
-      end
-    end
+
+    get "/reports" => "reports#show", as: :reports
   end
-
-  get "pages/:slug", to: "public_site#page", as: :public_page
-    get "privacy", to: "public_site#privacy", as: :privacy
-  get "news/:slug", to: "public_site#news", as: :public_news
-  root to: "public_site#index"
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  get "up" => "rails/health#show", as: :rails_health_check
 end

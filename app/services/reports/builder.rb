@@ -41,6 +41,12 @@ module Reports
       [ from, stay.check_in ].max...[ to, stay.check_out ].min
     end
 
+    def nights_count(range)
+      return 0 if range.nil? || range.end <= range.begin
+
+      (range.end - range.begin).to_i
+    end
+
     def amount_on(date, breakdown)
       entry = breakdown.find { |row| row["date"] == date.to_s }
       entry ? entry["amount"].to_f : 0.0
@@ -63,7 +69,7 @@ module Reports
     end
 
     def booked_nights(stays)
-      stays.sum { |stay| clipped_range(stay).size }
+      stays.sum { |stay| nights_count(clipped_range(stay)) }
     end
 
     def capacity_nights
@@ -80,7 +86,7 @@ module Reports
       stays.each_with_object({}) do |stay, result|
         category = stay.room.category
         result[category] ||= { "nights" => 0, "plan" => 0.0, "fact" => 0.0 }
-        result[category]["nights"] += clipped_range(stay).size
+        result[category]["nights"] += nights_count(clipped_range(stay))
         clipped_range(stay).each do |date|
           result[category]["plan"] += amount_on(date, stay.price_breakdown)
         end
