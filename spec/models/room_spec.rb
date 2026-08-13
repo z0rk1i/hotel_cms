@@ -135,10 +135,18 @@ RSpec.describe Room, type: :model do
 
     it "rejects cleaning while a guest is checked in today" do
       room = create(:room)
-      create(:booking, :confirmed, room: room, check_in: Date.current, check_out: Date.current + 2)
+      create(:booking, :checked_in, room: room, check_in: Date.current, check_out: Date.current + 2)
 
       room.status = :cleaning
       expect(room).to be_invalid
+    end
+
+    it "allows cleaning when the guest is confirmed but not yet checked in" do
+      room = create(:room)
+      create(:booking, :confirmed, room: room, check_in: Date.current, check_out: Date.current + 2)
+
+      room.status = :cleaning
+      expect(room).to be_valid
     end
 
     it "allows maintenance when no guests are present today" do

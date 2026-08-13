@@ -21,12 +21,19 @@ RSpec.describe "Admin rooms", type: :request do
       expect(body.map { |r| r["id"] }).not_to include(room.id)
     end
 
-    it "excludes rooms under maintenance or cleaning" do
+    it "excludes rooms under maintenance" do
       create(:room, status: :maintenance)
       free_room = create(:room)
       get available_admin_rooms_path(check_in: Date.current + 10, check_out: Date.current + 12)
       body = JSON.parse(response.body)
       expect(body.map { |r| r["id"] }).to eq([ free_room.id ])
+    end
+
+    it "includes rooms being cleaned" do
+      cleaning_room = create(:room, status: :cleaning)
+      get available_admin_rooms_path(check_in: Date.current + 10, check_out: Date.current + 12)
+      body = JSON.parse(response.body)
+      expect(body.map { |r| r["id"] }).to eq([ cleaning_room.id ])
     end
 
     it "excludes rooms with an overlapping unavailability window" do

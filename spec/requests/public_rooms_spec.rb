@@ -134,7 +134,7 @@ RSpec.describe "Public room pages", type: :request do
       expect(response.body).not_to include("Номер 102")
     end
 
-    it "hides rooms under maintenance or cleaning" do
+    it "hides rooms under maintenance" do
       maintenance_room = create(:room, number: "101", status: :maintenance)
       free_room = create(:room, number: "102")
 

@@ -289,6 +289,36 @@ RSpec.describe Booking, type: :model do
       booking.cancelled!
       expect(room.reload).to be_available
     end
+
+    it "keeps the room occupied while another booking is still checked in" do
+      room = create(:room)
+      first = create(:booking, :checked_in, room: room, check_in: Date.current, check_out: Date.current + 3)
+      second = create(:booking, :checked_in, room: room, check_in: Date.current + 3, check_out: Date.current + 5)
+      expect(room.reload).to be_occupied
+
+      first.checked_out!
+
+      expect(room.reload).to be_occupied
+      second.checked_out!
+      expect(room.reload).to be_cleaning
+    end
+
+    it "allows booking a room that is being cleaned" do
+      room = create(:room, status: :cleaning)
+
+      expect(build(:booking, room: room)).to be_valid
+    end
+
+    it "rejects changing the room of a checked-in booking" do
+      room = create(:room)
+      other = create(:room)
+      booking = create(:booking, :confirmed, room: room)
+      booking.checked_in!
+      booking.room = other
+
+      expect(booking).to be_invalid
+      expect(booking.errors[:room]).to include("нельзя сменить у заселённой брони")
+    end
   end
 
   describe "service orders" do

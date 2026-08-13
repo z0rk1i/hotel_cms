@@ -50,14 +50,21 @@ RSpec.describe RoomAvailability do
       expect(result.value!.map { |r| r[:id] }).to include(cancelled.id)
     end
 
-    it "excludes rooms under maintenance or cleaning" do
+    it "excludes rooms under maintenance" do
       create(:room, status: :maintenance)
-      create(:room, status: :cleaning)
       free = create(:room)
 
       result = described_class.new.call(check_in: Date.current + 3, check_out: Date.current + 5)
 
       expect(result.value!.map { |r| r[:id] }).to eq([ free.id ])
+    end
+
+    it "includes rooms being cleaned" do
+      cleaning = create(:room, status: :cleaning)
+
+      result = described_class.new.call(check_in: Date.current + 3, check_out: Date.current + 5)
+
+      expect(result.value!.map { |r| r[:id] }).to include(cleaning.id)
     end
 
     it "excludes rooms in an unavailability window overlapping the range" do
