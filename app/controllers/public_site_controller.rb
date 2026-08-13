@@ -14,6 +14,7 @@ class PublicSiteController < ApplicationController
     apply_sort
     @filter_categories = RoomCategory.order(:name)
     @rooms_by_category = @rooms.group_by(&:category_id)
+    order_categories_by_price if params[:sort].in?(%w[price_asc price_desc])
   end
 
   def page
@@ -57,6 +58,13 @@ class PublicSiteController < ApplicationController
     when "price_desc"
       @rooms = @rooms.reorder(price_per_night: :desc)
     end
+  end
+
+  def order_categories_by_price
+    descending = params[:sort] == "price_desc"
+    rank = @rooms_by_category.transform_values { |rooms| rooms.map(&:price_per_night).send(descending ? :max : :min) || 0 }
+    sign = descending ? -1 : 1
+    @categories = @categories.sort_by { |category| [ sign * (rank[category.id] || 0), category.id ] }
   end
 
   def search_params

@@ -80,6 +80,19 @@ RSpec.describe "Public room pages", type: :request do
 
       expect(response.body.index("Номер 101")).to be < response.body.index("Номер 201")
     end
+
+    it "reorders category sections by room price when sorting" do
+      standard = create(:room_category, name: "Стандарт")
+      luxury = create(:room_category, name: "Люкс")
+      create(:room, number: "101", category: standard, price_per_night: 1500)
+      create(:room, number: "201", category: luxury, price_per_night: 9000)
+
+      get root_path(sort: "price_asc")
+      expect(response.body.index("Номер 101")).to be < response.body.index("Номер 201")
+
+      get root_path(sort: "price_desc")
+      expect(response.body.index("Номер 201")).to be < response.body.index("Номер 101")
+    end
   end
 
   describe "GET / with availability search" do
