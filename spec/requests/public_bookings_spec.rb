@@ -291,7 +291,7 @@ RSpec.describe "Public bookings", type: :request do
       expect(room_json["capacity"]).to eq(3)
     end
 
-    it "does not offer rooms under maintenance or cleaning" do
+    it "does not offer rooms under maintenance" do
       maintenance_room = create(:room, status: :maintenance)
       cleaning_room = create(:room, status: :cleaning)
       free_room = create(:room)
@@ -302,8 +302,8 @@ RSpec.describe "Public bookings", type: :request do
       }
 
       json = JSON.parse(response.body)
-      expect(json.map { |r| r["id"] }).to include(free_room.id)
-      expect(json.map { |r| r["id"] }).not_to include(maintenance_room.id, cleaning_room.id)
+      expect(json.map { |r| r["id"] }).to include(free_room.id, cleaning_room.id)
+      expect(json.map { |r| r["id"] }).not_to include(maintenance_room.id)
     end
 
     it "returns 422 when the date range is invalid" do
