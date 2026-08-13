@@ -130,6 +130,37 @@ statuses = %i[pending confirmed checked_in checked_out cancelled]
   end
 end
 
+# --- Nightly price snapshots (backfill for legacy bookings) ---
+unfrozen_before = Booking.where(price_frozen_on: nil).count
+NightlyPriceBackfiller.run
+puts "Nightly price snapshots: #{Booking.where.not(price_frozen_on: nil).count} bookings (backfilled #{unfrozen_before})."
+
+# --- Payments (current month, demo) ---
+month_start = Date.current.beginning_of_month
+payment_plans = [
+  [ "cash", 1.0 ],
+  [ "card", 0.5 ],
+  [ "transfer", 0.8 ],
+  [ "card", 1.0 ],
+  [ "cash", 0.6 ]
+]
+bookable_payments = Booking.where(status: %w[confirmed checked_in checked_out]).order(:id).to_a
+payment_plans.each_with_index do |(method, ratio), i|
+  booking = bookable_payments[i] || bookable_payments.sample
+  next if booking.nil? || booking.payments.exists?(note: "Демо-оплата")
+
+  amount = (booking.total_price.to_f * ratio).round
+  next if amount.zero?
+
+  booking.payments.create!(
+    method: method,
+    amount: amount,
+    paid_at: [ month_start + (i * 2).days + 11.hours, Time.current ].min,
+    note: "Демо-оплата"
+  )
+  puts "Payment: №#{booking.id} #{booking.room.number} — #{method} #{amount} ₽"
+end
+
 # --- Content ---
 Page.find_or_create_by!(slug: "about") do |page|
   page.title = "О гостинице"

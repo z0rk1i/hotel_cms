@@ -6,6 +6,10 @@ RSpec.describe "Admin reports", type: :request do
   let(:from) { Date.current + 1 }
   let(:to) { from + 3 }
 
+  def money_string(amount)
+    ActionController::Base.helpers.number_to_currency(amount, unit: "₽", separator: ",", delimiter: " ", precision: 0)
+  end
+
   describe "GET /admin/reports" do
     it "renders the period report with revenue and occupancy" do
       room = create(:room)
@@ -18,6 +22,10 @@ RSpec.describe "Admin reports", type: :request do
       expect(response.body).to include("Отчёты")
       expect(response.body).to include("Загрузка по категориям номеров")
       expect(response.body).to include("Ночная загрузка")
+      frozen_plan = BookingNightlyPrice.where(booking: booking).sum(:amount)
+      expect(frozen_plan).to eq(booking.reload.total_price)
+      expect(response.body).to include(money_string(booking.total_price))
+      expect(response.body).to include("₽2 500")
     end
 
     it "defaults to the current month when params are absent" do
