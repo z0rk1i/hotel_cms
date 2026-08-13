@@ -116,6 +116,8 @@ statuses = %i[pending confirmed checked_in checked_out cancelled]
   nights = rand(1..4)
   check_out = check_in + nights
 
+  next if room.maintenance? || room.cleaning?
+  next if room.unavailable_during?(check_in, check_out)
   next if Booking.active_overlapping(check_in, check_out).where(room_id: room.id).exists?
 
   Booking.find_or_create_by!(
