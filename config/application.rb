@@ -15,6 +15,10 @@ module HotelCms
     config.i18n.default_locale = :ru
     config.i18n.fallbacks = [ :en ]
 
+    # Exclusion constraints (stays.no_overlapping) are PostgreSQL-specific and
+    # are not dumped by schema.rb, so keep the schema as structure.sql.
+    config.active_record.schema_format = :sql
+
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
