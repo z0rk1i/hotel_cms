@@ -1,3 +1,12 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict nmN3idxrKaUXdzu09uN91Sj9gFaikuwSdRJ53fimBxeLWkRWAc4UcZIbyFUSbbq
+
+-- Dumped from database version 14.23 (Homebrew)
+-- Dumped by pg_dump version 14.23 (Homebrew)
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -17,7 +26,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION btree_gist; Type: COMMENT; Schema: -; Owner: -
+-- Name: EXTENSION btree_gist; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiST';
@@ -28,7 +37,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: active_storage_attachments; Type: TABLE; Schema: public; Owner: -
+-- Name: active_storage_attachments; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.active_storage_attachments (
@@ -41,8 +50,10 @@ CREATE TABLE public.active_storage_attachments (
 );
 
 
+ALTER TABLE public.active_storage_attachments OWNER TO z0rk1;
+
 --
--- Name: active_storage_attachments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: active_storage_attachments_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.active_storage_attachments_id_seq
@@ -53,15 +64,17 @@ CREATE SEQUENCE public.active_storage_attachments_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.active_storage_attachments_id_seq OWNER TO z0rk1;
+
 --
--- Name: active_storage_attachments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: active_storage_attachments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.active_storage_attachments_id_seq OWNED BY public.active_storage_attachments.id;
 
 
 --
--- Name: active_storage_blobs; Type: TABLE; Schema: public; Owner: -
+-- Name: active_storage_blobs; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.active_storage_blobs (
@@ -77,8 +90,10 @@ CREATE TABLE public.active_storage_blobs (
 );
 
 
+ALTER TABLE public.active_storage_blobs OWNER TO z0rk1;
+
 --
--- Name: active_storage_blobs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: active_storage_blobs_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.active_storage_blobs_id_seq
@@ -89,15 +104,17 @@ CREATE SEQUENCE public.active_storage_blobs_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.active_storage_blobs_id_seq OWNER TO z0rk1;
+
 --
--- Name: active_storage_blobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: active_storage_blobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.active_storage_blobs_id_seq OWNED BY public.active_storage_blobs.id;
 
 
 --
--- Name: active_storage_variant_records; Type: TABLE; Schema: public; Owner: -
+-- Name: active_storage_variant_records; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.active_storage_variant_records (
@@ -108,8 +125,10 @@ CREATE TABLE public.active_storage_variant_records (
 );
 
 
+ALTER TABLE public.active_storage_variant_records OWNER TO z0rk1;
+
 --
--- Name: active_storage_variant_records_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: active_storage_variant_records_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.active_storage_variant_records_id_seq
@@ -120,15 +139,17 @@ CREATE SEQUENCE public.active_storage_variant_records_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.active_storage_variant_records_id_seq OWNER TO z0rk1;
+
 --
--- Name: active_storage_variant_records_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: active_storage_variant_records_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.active_storage_variant_records_id_seq OWNED BY public.active_storage_variant_records.id;
 
 
 --
--- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
+-- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.ar_internal_metadata (
@@ -139,8 +160,10 @@ CREATE TABLE public.ar_internal_metadata (
 );
 
 
+ALTER TABLE public.ar_internal_metadata OWNER TO z0rk1;
+
 --
--- Name: reports; Type: TABLE; Schema: public; Owner: -
+-- Name: reports; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.reports (
@@ -154,8 +177,10 @@ CREATE TABLE public.reports (
 );
 
 
+ALTER TABLE public.reports OWNER TO z0rk1;
+
 --
--- Name: reports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: reports_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.reports_id_seq
@@ -166,15 +191,55 @@ CREATE SEQUENCE public.reports_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.reports_id_seq OWNER TO z0rk1;
+
 --
--- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.reports_id_seq OWNED BY public.reports.id;
 
 
 --
--- Name: rooms; Type: TABLE; Schema: public; Owner: -
+-- Name: room_photos; Type: TABLE; Schema: public; Owner: z0rk1
+--
+
+CREATE TABLE public.room_photos (
+    id bigint NOT NULL,
+    room_id bigint NOT NULL,
+    filename character varying NOT NULL,
+    thumb_filename character varying,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
+
+
+ALTER TABLE public.room_photos OWNER TO z0rk1;
+
+--
+-- Name: room_photos_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
+--
+
+CREATE SEQUENCE public.room_photos_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.room_photos_id_seq OWNER TO z0rk1;
+
+--
+-- Name: room_photos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
+--
+
+ALTER SEQUENCE public.room_photos_id_seq OWNED BY public.room_photos.id;
+
+
+--
+-- Name: rooms; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.rooms (
@@ -198,8 +263,10 @@ CREATE TABLE public.rooms (
 );
 
 
+ALTER TABLE public.rooms OWNER TO z0rk1;
+
 --
--- Name: rooms_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: rooms_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.rooms_id_seq
@@ -210,15 +277,17 @@ CREATE SEQUENCE public.rooms_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.rooms_id_seq OWNER TO z0rk1;
+
 --
--- Name: rooms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: rooms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.rooms_id_seq OWNED BY public.rooms.id;
 
 
 --
--- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
+-- Name: schema_migrations; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.schema_migrations (
@@ -226,8 +295,10 @@ CREATE TABLE public.schema_migrations (
 );
 
 
+ALTER TABLE public.schema_migrations OWNER TO z0rk1;
+
 --
--- Name: stays; Type: TABLE; Schema: public; Owner: -
+-- Name: stays; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.stays (
@@ -249,8 +320,10 @@ CREATE TABLE public.stays (
 );
 
 
+ALTER TABLE public.stays OWNER TO z0rk1;
+
 --
--- Name: stays_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: stays_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.stays_id_seq
@@ -261,15 +334,17 @@ CREATE SEQUENCE public.stays_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.stays_id_seq OWNER TO z0rk1;
+
 --
--- Name: stays_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: stays_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.stays_id_seq OWNED BY public.stays.id;
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: -
+-- Name: users; Type: TABLE; Schema: public; Owner: z0rk1
 --
 
 CREATE TABLE public.users (
@@ -297,8 +372,10 @@ CREATE TABLE public.users (
 );
 
 
+ALTER TABLE public.users OWNER TO z0rk1;
+
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: z0rk1
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -309,64 +386,73 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
+ALTER TABLE public.users_id_seq OWNER TO z0rk1;
+
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: z0rk1
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: active_storage_attachments id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: active_storage_attachments id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_attachments ALTER COLUMN id SET DEFAULT nextval('public.active_storage_attachments_id_seq'::regclass);
 
 
 --
--- Name: active_storage_blobs id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: active_storage_blobs id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_blobs ALTER COLUMN id SET DEFAULT nextval('public.active_storage_blobs_id_seq'::regclass);
 
 
 --
--- Name: active_storage_variant_records id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: active_storage_variant_records id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_variant_records ALTER COLUMN id SET DEFAULT nextval('public.active_storage_variant_records_id_seq'::regclass);
 
 
 --
--- Name: reports id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: reports id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.reports ALTER COLUMN id SET DEFAULT nextval('public.reports_id_seq'::regclass);
 
 
 --
--- Name: rooms id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: room_photos id; Type: DEFAULT; Schema: public; Owner: z0rk1
+--
+
+ALTER TABLE ONLY public.room_photos ALTER COLUMN id SET DEFAULT nextval('public.room_photos_id_seq'::regclass);
+
+
+--
+-- Name: rooms id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.rooms ALTER COLUMN id SET DEFAULT nextval('public.rooms_id_seq'::regclass);
 
 
 --
--- Name: stays id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: stays id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.stays ALTER COLUMN id SET DEFAULT nextval('public.stays_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Name: active_storage_attachments active_storage_attachments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: active_storage_attachments active_storage_attachments_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_attachments
@@ -374,7 +460,7 @@ ALTER TABLE ONLY public.active_storage_attachments
 
 
 --
--- Name: active_storage_blobs active_storage_blobs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: active_storage_blobs active_storage_blobs_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_blobs
@@ -382,7 +468,7 @@ ALTER TABLE ONLY public.active_storage_blobs
 
 
 --
--- Name: active_storage_variant_records active_storage_variant_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: active_storage_variant_records active_storage_variant_records_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_variant_records
@@ -390,7 +476,7 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
--- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.ar_internal_metadata
@@ -398,7 +484,7 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
--- Name: stays no_overlapping_stays; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: stays no_overlapping_stays; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.stays
@@ -406,7 +492,7 @@ ALTER TABLE ONLY public.stays
 
 
 --
--- Name: reports reports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: reports reports_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.reports
@@ -414,7 +500,15 @@ ALTER TABLE ONLY public.reports
 
 
 --
--- Name: rooms rooms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: room_photos room_photos_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
+--
+
+ALTER TABLE ONLY public.room_photos
+    ADD CONSTRAINT room_photos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rooms rooms_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.rooms
@@ -422,7 +516,7 @@ ALTER TABLE ONLY public.rooms
 
 
 --
--- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.schema_migrations
@@ -430,7 +524,7 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Name: stays stays_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: stays stays_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.stays
@@ -438,7 +532,7 @@ ALTER TABLE ONLY public.stays
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.users
@@ -446,105 +540,112 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: idx_on_blob_id_variation_digest_f36bede0d9; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_on_blob_id_variation_digest_f36bede0d9; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX idx_on_blob_id_variation_digest_f36bede0d9 ON public.active_storage_variant_records USING btree (blob_id, variation_digest);
 
 
 --
--- Name: index_active_storage_attachments_uniqueness; Type: INDEX; Schema: public; Owner: -
+-- Name: index_active_storage_attachments_uniqueness; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX index_active_storage_attachments_uniqueness ON public.active_storage_attachments USING btree (record_type, record_id, name, blob_id);
 
 
 --
--- Name: index_active_storage_blobs_on_key; Type: INDEX; Schema: public; Owner: -
+-- Name: index_active_storage_blobs_on_key; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX index_active_storage_blobs_on_key ON public.active_storage_blobs USING btree (key);
 
 
 --
--- Name: index_reports_on_kind_and_period_start_and_period_end; Type: INDEX; Schema: public; Owner: -
+-- Name: index_reports_on_kind_and_period_start_and_period_end; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX index_reports_on_kind_and_period_start_and_period_end ON public.reports USING btree (kind, period_start, period_end);
 
 
 --
--- Name: index_rooms_on_category; Type: INDEX; Schema: public; Owner: -
+-- Name: index_room_photos_on_room_id; Type: INDEX; Schema: public; Owner: z0rk1
+--
+
+CREATE INDEX index_room_photos_on_room_id ON public.room_photos USING btree (room_id);
+
+
+--
+-- Name: index_rooms_on_category; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_rooms_on_category ON public.rooms USING btree (category);
 
 
 --
--- Name: index_rooms_on_number; Type: INDEX; Schema: public; Owner: -
+-- Name: index_rooms_on_number; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX index_rooms_on_number ON public.rooms USING btree (number);
 
 
 --
--- Name: index_rooms_on_status; Type: INDEX; Schema: public; Owner: -
+-- Name: index_rooms_on_status; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_rooms_on_status ON public.rooms USING btree (status);
 
 
 --
--- Name: index_stays_on_room_id; Type: INDEX; Schema: public; Owner: -
+-- Name: index_stays_on_room_id; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_stays_on_room_id ON public.stays USING btree (room_id);
 
 
 --
--- Name: index_stays_on_room_id_and_check_in; Type: INDEX; Schema: public; Owner: -
+-- Name: index_stays_on_room_id_and_check_in; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_stays_on_room_id_and_check_in ON public.stays USING btree (room_id, check_in);
 
 
 --
--- Name: index_stays_on_status; Type: INDEX; Schema: public; Owner: -
+-- Name: index_stays_on_status; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_stays_on_status ON public.stays USING btree (status);
 
 
 --
--- Name: index_stays_on_user_id; Type: INDEX; Schema: public; Owner: -
+-- Name: index_stays_on_user_id; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_stays_on_user_id ON public.stays USING btree (user_id);
 
 
 --
--- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: -
+-- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 
 
 --
--- Name: index_users_on_reset_password_token; Type: INDEX; Schema: public; Owner: -
+-- Name: index_users_on_reset_password_token; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE UNIQUE INDEX index_users_on_reset_password_token ON public.users USING btree (reset_password_token);
 
 
 --
--- Name: index_users_on_role; Type: INDEX; Schema: public; Owner: -
+-- Name: index_users_on_role; Type: INDEX; Schema: public; Owner: z0rk1
 --
 
 CREATE INDEX index_users_on_role ON public.users USING btree (role);
 
 
 --
--- Name: stays fk_rails_271e9b10c3; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: stays fk_rails_271e9b10c3; Type: FK CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.stays
@@ -552,7 +653,7 @@ ALTER TABLE ONLY public.stays
 
 
 --
--- Name: stays fk_rails_57a645631d; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: stays fk_rails_57a645631d; Type: FK CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.stays
@@ -560,7 +661,7 @@ ALTER TABLE ONLY public.stays
 
 
 --
--- Name: active_storage_variant_records fk_rails_993965df05; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: active_storage_variant_records fk_rails_993965df05; Type: FK CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_variant_records
@@ -568,7 +669,7 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
--- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: public; Owner: z0rk1
 --
 
 ALTER TABLE ONLY public.active_storage_attachments
@@ -576,11 +677,16 @@ ALTER TABLE ONLY public.active_storage_attachments
 
 
 --
+-- Name: room_photos fk_rails_room_photos_room; Type: FK CONSTRAINT; Schema: public; Owner: z0rk1
+--
+
+ALTER TABLE ONLY public.room_photos
+    ADD CONSTRAINT fk_rails_room_photos_room FOREIGN KEY (room_id) REFERENCES public.rooms(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-SET search_path TO "$user", public;
-
-INSERT INTO "schema_migrations" (version) VALUES
-('20260814100000');
+\unrestrict nmN3idxrKaUXdzu09uN91Sj9gFaikuwSdRJ53fimBxeLWkRWAc4UcZIbyFUSbbq
 

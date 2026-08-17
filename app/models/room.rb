@@ -2,7 +2,7 @@ class Room < ApplicationRecord
   WEEKEND_DAYS = [ 5, 6 ].freeze
 
   has_many :stays, dependent: :restrict_with_error
-  has_many_attached :photos
+  has_many :photos, class_name: "RoomPhoto", dependent: :destroy
 
   validates :number, presence: true, uniqueness: true
   validates :category, presence: true
@@ -45,7 +45,7 @@ class Room < ApplicationRecord
   end
 
   def overlapping_stays(from, to)
-    stays.where(status: %w[pending confirmed checked_in checked_out])
+    stays.where(status: %w[pending confirmed checked_in])
          .where("check_in < ? AND check_out > ?", to, from)
   end
 
@@ -57,6 +57,14 @@ class Room < ApplicationRecord
     return false unless bookable?
 
     !unavailable_during?(from, to) && overlapping_stays(from, to).none?
+  end
+
+  def available_for_booking?(from:, to:, guests: 1)
+    capacity >= guests && available_on?(from, to)
+  end
+
+  def self.available_for(from:, to:, guests: 1)
+    order(:number).select { |room| room.available_for_booking?(from: from, to: to, guests: guests) }
   end
 
   def price_for_night(date)
@@ -78,7 +86,7 @@ class Room < ApplicationRecord
   end
 
   def next_free_window(horizon: 60.days.from_now)
-    last = [ horizon.to_date, (unavailable_until || horizon) + 1 ].compact.max
+    last = [ horizon.to_date, (unavailable_until || horizon).to_date + 1 ].compact.max
     cursor = Date.current
     while cursor <= last
       from = cursor

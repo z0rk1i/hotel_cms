@@ -16,6 +16,7 @@ class Stay < ApplicationRecord
   validate :no_overlap
   validate :capacity_within_room
   validate :room_not_in_maintenance
+  validate :min_nights_respected
 
   before_validation :freeze_prices, if: -> { new_record? || price_settings_changed? }
   after_update :sync_room_state, if: :room_status_changed?
@@ -134,7 +135,7 @@ class Stay < ApplicationRecord
   end
 
   def freeze_prices
-    return if check_in.nil? || check_out.nil?
+    return if check_in.nil? || check_out.nil? || room.nil?
 
     self.price_breakdown = room.nightly_breakdown(check_in, check_out).map do |entry|
       { "date" => entry[:date].to_s, "amount" => entry[:amount].round(2) }
@@ -166,6 +167,15 @@ class Stay < ApplicationRecord
     return if room.nil?
 
     errors.add(:room, "недоступен для бронирования") if room.maintenance?
+  end
+
+  def min_nights_respected
+    return if room.nil? || check_in.nil? || check_out.nil?
+
+    nights = (check_out - check_in).to_i
+    return if nights >= room.min_nights.to_i
+
+    errors.add(:check_out, "короче минимального срока бронирования (#{room.min_nights} ноч.)")
   end
 
   def room_status_changed?

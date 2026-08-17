@@ -1,58 +1,115 @@
-# This file is copied to spec/ when you run 'rails generate rspec:install'
-require 'spec_helper'
-ENV['RAILS_ENV'] ||= 'test'
-require_relative '../config/environment'
-# Prevent database truncation if the environment is production
-abort("The Rails environment is running in production mode!") if Rails.env.production?
-# Uncomment the line below in case you have `--require rails_helper` in the `.rspec` file
-# that will avoid rails generators crashing because migrations haven't been run yet
-# return unless Rails.env.test?
-require 'rspec/rails'
-# Add additional requires below this line. Rails is not loaded until this point!
-require 'factory_bot_rails'
-require 'devise'
+ENV["APP_ENV"] ||= "test"
+require "spec_helper"
+require_relative "../config/environment"
+require_relative "../app"
+require_relative "../admin"
+require "rack/test"
+require "factory_bot"
+require "database_cleaner/active_record"
+require "json"
 
-# Requires supporting ruby files with custom matchers and macros, etc, in
-# spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
-# run as spec files by default. This means that files in spec/support that end
-# in _spec.rb will both be required and run as specs, causing the specs to be
-# run twice. It is recommended that you do not name files matching this glob to
-# end with _spec.rb. You can configure this pattern with the --pattern
-# option on the command line or in ~/.rspec, .rspec or `.rspec-local`.
-#
-# The following line is provided for convenience purposes. It has the downside
-# of increasing the boot-up time by auto-requiring all files in the support
-# directory. Alternatively, in the individual `*_spec.rb` files, manually
-# require only the support files necessary.
-#
-Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+Dir[File.join(APP_ROOT, "spec", "support", "**", "*.rb")].sort.each { |f| require f }
+Dir[File.join(APP_ROOT, "spec", "factories", "*.rb")].sort.each { |f| require f }
 
-# Ensures that the test database schema matches the current schema file.
-# If there are pending migrations it will invoke `db:test:prepare` to
-# recreate the test database by loading the schema.
-# If you are not using ActiveRecord, you can remove these lines.
-begin
-  ActiveRecord::Migration.maintain_test_schema!
-rescue ActiveRecord::PendingMigrationError => e
-  abort e.to_s.strip
+# Defined with a guard: rspec can load this file under two different relative
+# paths (./spec/... and ../spec/...), which would otherwise re-define the
+# constant and emit "already initialized constant CODES" warnings.
+CODES = {
+  ok: 200, created: 201, redirect: 302, bad_request: 400,
+  forbidden: 403, not_found: 404, unprocessable_entity: 422,
+  internal_server_error: 500
+}.freeze unless defined?(CODES)
+
+RSpec::Matchers.define :have_http_status do |status|
+  match do |response|
+    response.status == (CODES[status] || status)
+  end
+
+  failure_message do |response|
+    "expected response to have HTTP status #{status.inspect}, got #{response.status}"
+  end
+end
+
+RSpec::Matchers.define :redirect_to do |expected|
+  match do |response|
+    location = response.location.to_s
+    location == expected || location.end_with?(expected)
+  end
+
+  failure_message do |response|
+    "expected response to redirect to #{expected.inspect}, got #{response.location.inspect}"
+  end
+end
+
+class Rack::MockResponse
+  def parsed_body
+    JSON.parse(body)
+  end
+end
+
+# Rack::Test verbs take params positionally; specs call them Rails-style with a
+# `params:` keyword. Normalize so both forms work.
+Rack::Test::Methods.instance_methods(false).each do |m|
+  next unless %i[get post put patch delete head options].include?(m)
+
+  Rack::Test::Methods.class_eval do
+    alias_method :"rack_#{m}", m
+    define_method(m) do |uri, params = {}, env = {}, &block|
+      if params.is_a?(Hash) && params.key?(:params)
+        kw = params
+        params = kw.delete(:params) || {}
+        env = kw.delete(:env) || env
+      end
+      send(:"rack_#{m}", uri, params, env, &block)
+    end
+  end
+end
+
+module RequestSpecHelpers
+  include RoutesHelper
+  def app
+    @app ||= Rack::Builder.new do
+      map("/admin") { run AdminApp }
+      map("/") { run App }
+    end
+  end
+
+  def response
+    last_response
+  end
+
+  def flash
+    session = last_request.session || {}
+    (session["flash"] || {}).transform_keys(&:to_sym)
+  end
+
+  def sign_in(user)
+    post "/admin/users/sign_in", { email: user.email, password: user.password }
+    follow_redirect! if last_response.status == 302
+  end
+
+  def account_url(phone: nil)
+    "http://localhost:3000/account"
+  end
 end
 
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include StayHelpers
-  config.include Devise::Test::ControllerHelpers, type: :controller
-  config.include Devise::Test::IntegrationHelpers, type: :request
+  config.include Rack::Test::Methods, type: :request
+  config.include RequestSpecHelpers, type: :request
+  config.include RequestSpecHelpers, type: :mailer
 
-  # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_paths = [
-    Rails.root.join('spec/fixtures')
-  ]
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
 
-  # If you're not using ActiveRecord, or you'd prefer not to run each of your
-  # examples within a transaction, remove the following line or assign false
-  # instead of true.
-  config.use_transactional_fixtures = true
+  config.before do
+    DatabaseCleaner.start
+  end
 
-  # Filter lines from Rails gems in backtraces.
-  config.filter_rails_from_backtrace!
+  config.after do
+    DatabaseCleaner.clean
+  end
 end

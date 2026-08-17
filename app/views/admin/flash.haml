@@ -1,0 +1,6 @@
+- if notice.present?
+  .mb-6.rounded-lg.bg-emerald-50.border.border-emerald-200.text-emerald-800.dark:text-emerald-200.px-4.py-3.text-sm{"data-autodismiss" => "4000", :class => "dark:bg-emerald-900/40 dark:border-emerald-700/50"}
+    = notice
+- if alert.present?
+  .mb-6.rounded-lg.bg-red-50.border.border-red-200.text-red-800.dark:text-red-200.px-4.py-3.text-sm{"data-autodismiss" => "4000", :class => "dark:bg-red-900/40 dark:border-red-700/50"}
+    = alert

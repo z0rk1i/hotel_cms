@@ -40,3 +40,7 @@
 # tooling state
 .omo/
 session-*.md
+.cortexkit/
+
+# uploaded room photos (runtime data, replaces Active Storage storage/)
+/public/uploads/photos

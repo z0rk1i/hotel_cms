@@ -1,0 +1,21 @@
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %title= content_for(:title) || "Вход"
+    %meta{:content => "width=device-width,initial-scale=1", :name => "viewport"}/
+    %meta{:content => "Hotel", :name => "application-name"}/
+    = csrf_meta_tag
+    = content_for(:head)
+    :javascript
+      (function () {
+        var saved = null;
+        try { saved = localStorage.getItem("hotel-theme"); } catch (e) {}
+        var dark = saved ? saved === "dark"
+                         : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    %link{:href => "/assets/tailwind.css", :rel => "stylesheet"}/
+    %script{:src => "/assets/application.js", :type => "module"}
+  %body.bg-slate-50.text-slate-800.dark:bg-slate-950.dark:text-slate-200.font-sans.antialiased.min-h-screen
+    = yield

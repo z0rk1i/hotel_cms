@@ -9,6 +9,46 @@ created: 2026-08-12
 
 Значимые решения проекта в хронологическом порядке. Новые записи — сверху.
 
+## 2026-08-17 — Багфикс после аудита логики: 9 багов, commit 4e2d86c
+
+- **Контекст:** эмпирический аудит (спеки + живой сервер + curl) выявил баги, не покрытые тестами. Часть найдена анализом, часть — смоуком после первых фиксов.
+- **Решение:**
+  - `Stay#freeze_prices`: guard `room.nil?` — создание брони без номера падало NoMethodError (500) вместо ошибки валидации.
+  - `AppBase error ActiveRecord::RecordNotFound`: добавлен `status 404` — хендлер отдавал тело 404-страницы со статусом 500.
+  - `RoutesHelper#path_with`: массивы в query-строке теперь `key[]=a&key[]=b` вместо склейки через запятую — мультивыбор удобств (`amenities=Wi-Fi,TV` парсился как одна строка) давал 0 номеров.
+  - `App#post /bookings`: `collect_errors` валидирует юзера (`user.valid?`) + rescue `RecordInvalid` — бронь без full_name падала 500 внутри транзакции.
+  - `ApplicationRecord`: `self.belongs_to_required_by_default = true` — вне Rails этот дефолт nil, из-за чего Stay без room проходил save и падал на `PG::NotNullViolation` (500).
+  - `Room#next_free_window`: чистая Date-арифметика `(unavailable_until || horizon.to_date) + 1` — раньше при nil `+1` прибавлял секунду к Time.
+  - `Room#overlapping_stays`: исключён статус `checked_out` — ранний выезд гостя блокировал оставшиеся ночи окна (потерянный доход) вопреки `sync_room_state` (номер уже cleaning/available).
+  - `Stay`: валидация `min_nights_respected` — `min_nights` был только подсказкой виджета, бронь короче срока проходила.
+  - `User#merge_into!`: guard self-merge (`id == target.id` → ArgumentError) + `rescue ArgumentError` в маршруте — слияние профиля с самим собой уничтожило бы его.
+- **Статус:** ✅ реализовано (128 тестов, rubocop 0, smoke зелёный)
+
+## 2026-08-17 — Рефакторинг после миграции: AppBase, модули admin, RoomSearch
+
+- **Контекст:** после переезда на Sinatra app.rb (246 строк) и admin.rb (419 строк) дублировали общий конфиг (~30 строк × 2: set, host_authorization, before-блок с flash+CSRF, not_found/error-хендлеры), а фильтры поиска номеров жили в контроллере.
+- **Решение:**
+  - `app/app_base.rb` — `AppBase < Sinatra::Base`: общий конфиг, before-блок (flash+CSRF), 404/500-хендлеры, общие хелперы `parse_date` (единый вместо трёх дублей parse_date_or_now/parse_date_or_today/parse_date) и `slice_params` (вместо ручных room_params/stay_params-циклов).
+  - `admin.rb` разбит на 6 модулей по ресурсам в `app/controllers/admin/`: AuthRoutes, DashboardRoutes, RoomsRoutes, StaysRoutes, UsersRoutes, ReportsRoutes (паттерн Sinatra-расширений `self.registered(app)` + `register`).
+  - `app/services/room_search.rb` — `RoomSearch` инкапсулирует фильтры (категория/удобства), сортировку по цене и проверку доступности; `Room#available_for_booking?` + `Room.available_for` — единый предикат вместо двух копий условия в app.rb.
+  - Мёртвый код удалён: POST-дубликат `toggle_vip` (вьюха использует PATCH), двойной `authenticity_token` в `button_to` (csrf_field уже добавляет), `require "pathname"` перенесён наверх static_content.rb.
+- **Статус:** ✅ реализовано (128 тестов, rubocop 0, smoke публичного + админ-сайта зелёный).
+
+## 2026-08-16 — Миграция с Rails на Sinatra (этапы 1–9)
+
+- **Контекст:** приложение держало полноценный Rails 8.1 (контроллеры, devise, Active Storage, asset pipeline, Solid Queue, Hotwire) ради трёх CRUD-списков и пары форм; стек стал избыточным, а устаревшие зависимости (Stimulus/Turbo) требовали поддержки. Проект переведён на Sinatra 4 (single-file `app.rb` + `admin.rb`, Rack-приложение).
+- **Решение:**
+  - Модели/логика переехали как есть (AR 8.1, JSONB payments/services/reviews): `app/models/`, `app/services/` сохранены.
+  - Devise заменён на BCrypt + Rack::Session с CSRF (`protect_from_forgery`), роли User enum `guest/admin`.
+  - Active Storage заменён на прямое сохранение фото в `public/uploads/photos` (`RoomPhoto`).
+  - Статические страницы (pages/news) — YAML в `db/seeds/static/` через `StaticContent`.
+  - HAML-вьюхи пересобраны под Sinatra-лейауты (`layout: :application`/`:admin`).
+  - Спеки портированы (128 зелёных), `Rakefile` для db-задач, `config.ru` монтирует `/admin` и `/`.
+  - Rails-хвосты удалены: `bin/`, `config/application|boot|routes|initializers|environments|puma|credentials`, `app/controllers|jobs|javascript|assets`, devise-locales, `db/migrate|schema.rb` (схема — `db/structure.sql`), Rails-страницы ошибок (кроме 404/500), `Procfile.dev`, `spec/fixtures/files`.
+  - Ошибки: 404/500 хендлеры читают `public/404.html`/`500.html` через `File.read` (не `send_file` — тот сбрасывает статус на 200).
+- **Нюанс времени (puma-треды):** `Time.zone = "UTC"` задаёт зону только текущего треда (`IsolatedExecutionState`) — в консоли работает, а в puma-воркерах `Time.zone` = nil. В `config/environment.rb` используется `Time.zone_default = Time.find_zone!("UTC")` (процесс-широко), иначе отчёты/дашборд падают с 500.
+- **Статус:** ✅ реализовано (128 тестов, rubocop 0), команда запуска `rackup -p 3100 -o 127.0.0.1`.
+
 ## 2026-08-13 — Ревью новой 4-модельной архитектуры: автопересчёт цены и заморозка снимка
 
 - **Контекст:** после рефакторинга (Room/User/Stay/Report, JSONB payments/services/reviews) в `Stay` остался `before_validation :freeze_prices` с `on: :create` + `if: :price_settings_changed?` на одном методе — при регистрации колбэков второй вызов перекрывал первый, и цена вообще не считалась (все `total_price` = 0).
