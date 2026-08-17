@@ -37,6 +37,7 @@ require_relative "mail"
 require_relative "../app/models/application_record"
 %w[room room_photo user stay report].each { |m| require_relative "../app/models/#{m}" }
 require_relative "../app/services/static_content"
+require_relative "../app/services/room_search"
 require_relative "../app/services/reports/builder"
 require_relative "../app/helpers/application_helper"
 require_relative "../app/helpers/admin_helper"

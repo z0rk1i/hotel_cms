@@ -59,6 +59,14 @@ class Room < ApplicationRecord
     !unavailable_during?(from, to) && overlapping_stays(from, to).none?
   end
 
+  def available_for_booking?(from:, to:, guests: 1)
+    capacity >= guests && available_on?(from, to)
+  end
+
+  def self.available_for(from:, to:, guests: 1)
+    order(:number).select { |room| room.available_for_booking?(from: from, to: to, guests: guests) }
+  end
+
   def price_for_night(date)
     amount = price_per_night.to_f
     amount *= weekend_multiplier.to_f if WEEKEND_DAYS.include?(date.wday)

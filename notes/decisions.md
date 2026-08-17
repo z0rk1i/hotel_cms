@@ -9,6 +9,16 @@ created: 2026-08-12
 
 Значимые решения проекта в хронологическом порядке. Новые записи — сверху.
 
+## 2026-08-17 — Рефакторинг после миграции: AppBase, модули admin, RoomSearch
+
+- **Контекст:** после переезда на Sinatra app.rb (246 строк) и admin.rb (419 строк) дублировали общий конфиг (~30 строк × 2: set, host_authorization, before-блок с flash+CSRF, not_found/error-хендлеры), а фильтры поиска номеров жили в контроллере.
+- **Решение:**
+  - `app/app_base.rb` — `AppBase < Sinatra::Base`: общий конфиг, before-блок (flash+CSRF), 404/500-хендлеры, общие хелперы `parse_date` (единый вместо трёх дублей parse_date_or_now/parse_date_or_today/parse_date) и `slice_params` (вместо ручных room_params/stay_params-циклов).
+  - `admin.rb` разбит на 6 модулей по ресурсам в `app/controllers/admin/`: AuthRoutes, DashboardRoutes, RoomsRoutes, StaysRoutes, UsersRoutes, ReportsRoutes (паттерн Sinatra-расширений `self.registered(app)` + `register`).
+  - `app/services/room_search.rb` — `RoomSearch` инкапсулирует фильтры (категория/удобства), сортировку по цене и проверку доступности; `Room#available_for_booking?` + `Room.available_for` — единый предикат вместо двух копий условия в app.rb.
+  - Мёртвый код удалён: POST-дубликат `toggle_vip` (вьюха использует PATCH), двойной `authenticity_token` в `button_to` (csrf_field уже добавляет), `require "pathname"` перенесён наверх static_content.rb.
+- **Статус:** ✅ реализовано (128 тестов, rubocop 0, smoke публичного + админ-сайта зелёный).
+
 ## 2026-08-16 — Миграция с Rails на Sinatra (этапы 1–9)
 
 - **Контекст:** приложение держало полноценный Rails 8.1 (контроллеры, devise, Active Storage, asset pipeline, Solid Queue, Hotwire) ради трёх CRUD-списков и пары форм; стек стал избыточным, а устаревшие зависимости (Stimulus/Turbo) требовали поддержки. Проект переведён на Sinatra 4 (single-file `app.rb` + `admin.rb`, Rack-приложение).

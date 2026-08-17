@@ -58,7 +58,6 @@ module ApplicationHelper
   def button_to(text, path, method: :post, class: nil, confirm: nil)
     hidden = []
     hidden << %(<input type="hidden" name="_method" value="#{method}">) unless %i[get post].include?(method.to_sym)
-    hidden << %(<input type="hidden" name="authenticity_token" value="#{h(authenticity_token)}">)
     onsubmit = confirm ? %( onsubmit="return confirm('#{h(confirm)}')") : ""
     klass = binding.local_variable_get(:class)
     %(<form action="#{h(path)}" method="post" style="display:inline"#{onsubmit}>#{hidden.join}#{csrf_field}<button type="submit" class="#{h(klass)}">#{text}</button></form>)

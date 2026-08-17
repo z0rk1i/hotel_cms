@@ -1,5 +1,6 @@
+require "pathname"
+
 class StaticContent
-  require "pathname"
   PAGES_PATH = Pathname.new(File.join(APP_ROOT, "db", "seeds", "static"))
 
   def self.all_pages

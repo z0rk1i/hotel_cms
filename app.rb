@@ -1,39 +1,12 @@
 require_relative "config/environment"
-require "sinatra/base"
+require_relative "app/app_base"
 
-class App < Sinatra::Base
-  set :root, APP_ROOT
-  set :views, File.join(APP_ROOT, "app", "views")
-  set :public_folder, File.join(APP_ROOT, "public")
-  set :show_exceptions, false
-  set :haml, escape_html: false
-  set :raise_errors, ENV["APP_ENV"] == "test"
-  set :session_secret, ENV.fetch("SESSION_SECRET", "dev-secret-hotel-cms-change-me-in-production-00000000000000000000000000")
-  require "ipaddr"
-  hosts = ENV.fetch("HOSTS", "").split(",").reject(&:empty?)
-  set :host_authorization, ->() do
-    if hosts.any?
-      { permitted_hosts: hosts }
-    else
-      { permitted_hosts: [ "localhost", ".localhost", ".test", "example.org", "127.0.0.1", IPAddr.new("0.0.0.0/0"), IPAddr.new("::/0") ] }
-    end
-  end
-  set :protection, except: [ :remote_token, :http_origin ]
-
-  enable :sessions
-  use Rack::MethodOverride
-
-  helpers ApplicationHelper, RoutesHelper, AppSupport
-
-  before do
-    @flash = session.delete("flash") || {}
-    protect_from_forgery
-  end
-
+class App < AppBase
   # ---- Public site ----
   get "/" do
-    @rooms = Room.order(:number)
-    apply_filters
+    search = RoomSearch.new(params)
+    @rooms = search.rooms
+    @date_error = search.date_error
     @rooms_by_category = @rooms.group_by(&:category)
     @categories = ordered_categories
     @filter_categories = Room.order(:category).distinct.pluck(:category)
@@ -83,10 +56,7 @@ class App < Sinatra::Base
     to = Date.parse(params["check_out"])
     guests = params["guests_count"].to_i
 
-    rooms = Room.order(:number).select do |room|
-      room.capacity >= guests && room.bookable? && room.available_on?(from, to)
-    end
-
+    rooms = Room.available_for(from: from, to: to, guests: guests)
     rooms.map { |room| room_summary(room, from, to) }.to_json
   rescue Date::Error
     status 422
@@ -147,61 +117,10 @@ class App < Sinatra::Base
     redirect account_path(phone: params["phone"].to_s.strip)
   end
 
-  not_found do
-    File.read(File.join(APP_ROOT, "public", "404.html"))
-  end
-
-  error ActiveRecord::RecordNotFound do
-    File.read(File.join(APP_ROOT, "public", "404.html"))
-  end
-
-  error do
-    status 500
-    File.read(File.join(APP_ROOT, "public", "500.html"))
-  end
-
   private
 
   def not_found!
     halt 404
-  end
-
-  def apply_filters
-    @rooms = @rooms.where(category: params["category"]) if params["category"].present?
-
-    amenities = Array(params["amenities"]).map(&:presence).compact
-    @rooms = @rooms.where("amenities @> ?::jsonb", amenities.to_json) if amenities.any?
-
-    apply_sort
-    apply_availability
-  end
-
-  def apply_sort
-    direction = params["sort"] == "price_desc" ? :desc : :asc
-    @rooms = @rooms.order(price_per_night: direction) if params["sort"].in?(%w[price_asc price_desc])
-  end
-
-  def apply_availability
-    return unless params["check_in"].present? && params["check_out"].present?
-
-    from = Date.parse(params["check_in"])
-    to = Date.parse(params["check_out"])
-    guests = params["guests_count"].to_i
-    @availability_search = true
-
-    @date_error =
-      if to <= from
-        "Дата выезда должна быть позже даты заезда"
-      elsif from < Date.current
-        "Дата заезда не может быть в прошлом"
-      end
-    return if @date_error
-
-    @rooms = @rooms.select do |room|
-      room.capacity >= guests && room.bookable? && room.available_on?(from, to)
-    end
-  rescue Date::Error
-    @date_error = "Неверный формат дат"
   end
 
   def ordered_categories

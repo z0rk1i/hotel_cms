@@ -34,12 +34,13 @@ bundle exec rubocop                                # стиль
 ## Структура
 
 - `app.rb` — Sinatra-приложение публичного сайта (монтируется на `/` в `config.ru`)
-- `admin.rb` — Sinatra-приложение админки (монтируется на `/admin`)
+- `admin.rb` — Sinatra-приложение админки (монтируется на `/admin`); маршруты в `app/controllers/admin/*_routes.rb` (модули AuthRoutes/DashboardRoutes/RoomsRoutes/StaysRoutes/UsersRoutes/ReportsRoutes)
+- `app/app_base.rb` — `AppBase < Sinatra::Base`: общий конфиг обоих приложений, before-блок (flash+CSRF), 404/500-хендлеры, хелперы `parse_date`/`slice_params`
 - `config/environment.rb` — загрузка приложения (bundler, AR, I18n, модели, сервисы)
 - `config/database.rb` — подключение БД из `config/database.yml`
 - `config/mail.rb` — SMTP-настройки (письма BookingMailer)
 - `app/models/` — Room, User, Stay, Report (+ RoomPhoto)
-- `app/services/` — StaticContent, Reports::Builder
+- `app/services/` — StaticContent, RoomSearch (фильтры/сортировка/доступность номеров), Reports::Builder
 - `app/helpers/` — ApplicationHelper, AdminHelper, AppSupport, Routes
 - `app/mailers/booking_mailer.rb` — письма гостю/админу (gem `mail`, без Rails)
 - `app/views/` — HAML-вьюхи (public + admin)
