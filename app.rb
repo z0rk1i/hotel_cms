@@ -159,6 +159,7 @@ class App < AppBase
     errors << "Необходимо согласие на обработку персональных данных" if params["consent"].blank?
     errors << "Дата заезда не может быть в прошлом" if from < Date.current
     errors << "Номер уже занят на выбранные даты" unless room.available_on?(from, to)
+    errors << user.errors.full_messages.to_sentence unless user.valid?
     errors << @stay.errors.full_messages.to_sentence unless @stay.valid?
     errors
   end

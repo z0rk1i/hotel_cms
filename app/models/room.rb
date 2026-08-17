@@ -45,7 +45,7 @@ class Room < ApplicationRecord
   end
 
   def overlapping_stays(from, to)
-    stays.where(status: %w[pending confirmed checked_in checked_out])
+    stays.where(status: %w[pending confirmed checked_in])
          .where("check_in < ? AND check_out > ?", to, from)
   end
 
@@ -86,7 +86,7 @@ class Room < ApplicationRecord
   end
 
   def next_free_window(horizon: 60.days.from_now)
-    last = [ horizon.to_date, (unavailable_until || horizon) + 1 ].compact.max
+    last = [ horizon.to_date, (unavailable_until || horizon).to_date + 1 ].compact.max
     cursor = Date.current
     while cursor <= last
       from = cursor

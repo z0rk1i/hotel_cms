@@ -38,6 +38,7 @@ class AppBase < Sinatra::Base
   end
 
   error ActiveRecord::RecordNotFound do
+    status 404
     File.read(File.join(APP_ROOT, "public", "404.html"))
   end
 

@@ -66,6 +66,8 @@ class User < ApplicationRecord
   end
 
   def merge_into!(target)
+    raise ArgumentError, "нельзя объединить профиль с самим собой" if id == target.id
+
     Stay.where(user_id: id).update_all(user_id: target.id) # rubocop:disable Rails/SkipsModelValidations
     target.update!(
       full_name: target.full_name.presence || full_name,

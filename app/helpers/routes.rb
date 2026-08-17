@@ -2,7 +2,13 @@ module RoutesHelper
   def path_with(path, query = {})
     parts = query.reject { |_, v| v.nil? || v == "" || v == [] || v == [ "" ] }
     anchor = parts.delete(:anchor)
-    qs = parts.map { |k, v| "#{Rack::Utils.escape(k.to_s)}=#{Rack::Utils.escape(Array(v).join(","))}" }.join("&")
+    qs = parts.map do |k, v|
+      if v.is_a?(Array)
+        v.map { |item| "#{Rack::Utils.escape(k.to_s)}[]=#{Rack::Utils.escape(item.to_s)}" }.join("&")
+      else
+        "#{Rack::Utils.escape(k.to_s)}=#{Rack::Utils.escape(v.to_s)}"
+      end
+    end.join("&")
     result = qs.empty? ? path : "#{path}?#{qs}"
     anchor.present? ? "#{result}##{anchor}" : result
   end

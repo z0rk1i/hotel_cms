@@ -38,7 +38,7 @@ module Admin
         @user.merge_into!(target)
         session["flash"] = { "notice" => "Профили объединены" }
         redirect admin_user_path(target)
-      rescue ActiveRecord::RecordNotFound
+      rescue ActiveRecord::RecordNotFound, ArgumentError
         session["flash"] = { "alert" => "Пользователь не найден" }
         redirect admin_user_path(@user)
       end
