@@ -16,6 +16,6 @@
         document.documentElement.classList.toggle("dark", dark);
       })();
     %link{:href => "/assets/tailwind.css", :rel => "stylesheet"}/
-    %script{:src => "/assets/application.js", :type => "module"}/
+    %script{:src => "/assets/application.js", :type => "module"}
   %body.bg-slate-50.text-slate-800.dark:bg-slate-950.dark:text-slate-200.font-sans.antialiased.min-h-screen
     = yield
