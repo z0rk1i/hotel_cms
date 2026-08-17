@@ -9,6 +9,21 @@ created: 2026-08-12
 
 Значимые решения проекта в хронологическом порядке. Новые записи — сверху.
 
+## 2026-08-17 — Багфикс после аудита логики: 9 багов, commit 4e2d86c
+
+- **Контекст:** эмпирический аудит (спеки + живой сервер + curl) выявил баги, не покрытые тестами. Часть найдена анализом, часть — смоуком после первых фиксов.
+- **Решение:**
+  - `Stay#freeze_prices`: guard `room.nil?` — создание брони без номера падало NoMethodError (500) вместо ошибки валидации.
+  - `AppBase error ActiveRecord::RecordNotFound`: добавлен `status 404` — хендлер отдавал тело 404-страницы со статусом 500.
+  - `RoutesHelper#path_with`: массивы в query-строке теперь `key[]=a&key[]=b` вместо склейки через запятую — мультивыбор удобств (`amenities=Wi-Fi,TV` парсился как одна строка) давал 0 номеров.
+  - `App#post /bookings`: `collect_errors` валидирует юзера (`user.valid?`) + rescue `RecordInvalid` — бронь без full_name падала 500 внутри транзакции.
+  - `ApplicationRecord`: `self.belongs_to_required_by_default = true` — вне Rails этот дефолт nil, из-за чего Stay без room проходил save и падал на `PG::NotNullViolation` (500).
+  - `Room#next_free_window`: чистая Date-арифметика `(unavailable_until || horizon.to_date) + 1` — раньше при nil `+1` прибавлял секунду к Time.
+  - `Room#overlapping_stays`: исключён статус `checked_out` — ранний выезд гостя блокировал оставшиеся ночи окна (потерянный доход) вопреки `sync_room_state` (номер уже cleaning/available).
+  - `Stay`: валидация `min_nights_respected` — `min_nights` был только подсказкой виджета, бронь короче срока проходила.
+  - `User#merge_into!`: guard self-merge (`id == target.id` → ArgumentError) + `rescue ArgumentError` в маршруте — слияние профиля с самим собой уничтожило бы его.
+- **Статус:** ✅ реализовано (128 тестов, rubocop 0, smoke зелёный)
+
 ## 2026-08-17 — Рефакторинг после миграции: AppBase, модули admin, RoomSearch
 
 - **Контекст:** после переезда на Sinatra app.rb (246 строк) и admin.rb (419 строк) дублировали общий конфиг (~30 строк × 2: set, host_authorization, before-блок с flash+CSRF, not_found/error-хендлеры), а фильтры поиска номеров жили в контроллере.
