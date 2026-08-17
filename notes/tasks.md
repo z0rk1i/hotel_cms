@@ -41,6 +41,7 @@ created: 2026-08-12
 - [x] Админ-уведомления: `Notification#to_admin` (user_id необязателен), колокол «Уведомления» с бейджем в topbar, список + «Прочитать»/«Прочитать все», уведомления при новых бронях/отзывах (кроме броней, созданных самим админом) (483 теста, rubocop 0)
 - [x] Рефакторинг в 4 модели: Room/User/Stay/Report + JSONB (payments/services/reviews/amenities) + статический контент (pages/news в YAML), публичные и админ-контроллеры переписаны, виды пересобраны (36 файлов), seeds переписаны (коммит 5944051 + продолжение)
 - [x] Ревью новой архитектуры: фикс автопересчёта цены Stay (`before_validation :freeze_prices`), удаление мёртвого omniauth (zeitwerk), фикс CSV-отчёта (write_headers), разделение `remove_payment/:payment_id` и `cancel_service/:service_id` в маршрутах, счёт дней в Reports::Builder (128 тестов, rubocop 0)
+- [x] Миграция на Sinatra (этапы 1–9): перевод с Rails 8.1 на Sinatra 4 — `app.rb`/`admin.rb`, devise → BCrypt + сессии, Active Storage → `public/uploads/photos`, статические страницы → YAML, спеки портированы (128 зелёных), Rakefile, `config.ru`; этап 9 — удалены Rails-хвосты (`bin/`, `config/initializers`, `app/controllers|jobs|javascript|assets`, devise-locales, миграции), error-хендлеры 404/500, фикс `Time.zone_default` для puma-воркеров, rubocop 0, smoke публичного и админ-сайта зелёный (подробности — [[decisions]])
 - [ ] Инструментальные сервисы публичного сайта на dry-monads (`room_availability_controller.js` уже guard-ит range — только спека)
 
 ## Идеи на будущее

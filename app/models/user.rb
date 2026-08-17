@@ -1,12 +1,12 @@
 class User < ApplicationRecord
-  devise :database_authenticatable, :recoverable, :rememberable
+  attr_reader :password, :password_confirmation
 
   enum :role, { guest: "guest", admin: "admin" }, validate: true
 
   has_many :stays, dependent: :restrict_with_error
 
   validates :email, uniqueness: { case_sensitive: false }, allow_blank: true
-  validates :email, presence: true, format: { with: Devise.email_regexp }, if: :admin?
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :admin?
   validates :full_name, presence: true, if: :guest?
   validates :phone, format: { with: /\A[+\d][\d\s()-]{6,}\z/ }, allow_blank: true
 
@@ -20,6 +20,21 @@ class User < ApplicationRecord
 
   def admin?
     role == "admin"
+  end
+
+  def password=(plain)
+    return if plain.blank?
+
+    self.encrypted_password = BCrypt::Password.create(plain)
+    @password = plain
+  end
+
+  def password_confirmation=(plain)
+    @password_confirmation = plain
+  end
+
+  def valid_password?(plain)
+    encrypted_password.present? && BCrypt::Password.new(encrypted_password) == plain
   end
 
   def guest?

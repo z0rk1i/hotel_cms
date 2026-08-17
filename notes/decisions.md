@@ -9,6 +9,21 @@ created: 2026-08-12
 
 Значимые решения проекта в хронологическом порядке. Новые записи — сверху.
 
+## 2026-08-16 — Миграция с Rails на Sinatra (этапы 1–9)
+
+- **Контекст:** приложение держало полноценный Rails 8.1 (контроллеры, devise, Active Storage, asset pipeline, Solid Queue, Hotwire) ради трёх CRUD-списков и пары форм; стек стал избыточным, а устаревшие зависимости (Stimulus/Turbo) требовали поддержки. Проект переведён на Sinatra 4 (single-file `app.rb` + `admin.rb`, Rack-приложение).
+- **Решение:**
+  - Модели/логика переехали как есть (AR 8.1, JSONB payments/services/reviews): `app/models/`, `app/services/` сохранены.
+  - Devise заменён на BCrypt + Rack::Session с CSRF (`protect_from_forgery`), роли User enum `guest/admin`.
+  - Active Storage заменён на прямое сохранение фото в `public/uploads/photos` (`RoomPhoto`).
+  - Статические страницы (pages/news) — YAML в `db/seeds/static/` через `StaticContent`.
+  - HAML-вьюхи пересобраны под Sinatra-лейауты (`layout: :application`/`:admin`).
+  - Спеки портированы (128 зелёных), `Rakefile` для db-задач, `config.ru` монтирует `/admin` и `/`.
+  - Rails-хвосты удалены: `bin/`, `config/application|boot|routes|initializers|environments|puma|credentials`, `app/controllers|jobs|javascript|assets`, devise-locales, `db/migrate|schema.rb` (схема — `db/structure.sql`), Rails-страницы ошибок (кроме 404/500), `Procfile.dev`, `spec/fixtures/files`.
+  - Ошибки: 404/500 хендлеры читают `public/404.html`/`500.html` через `File.read` (не `send_file` — тот сбрасывает статус на 200).
+- **Нюанс времени (puma-треды):** `Time.zone = "UTC"` задаёт зону только текущего треда (`IsolatedExecutionState`) — в консоли работает, а в puma-воркерах `Time.zone` = nil. В `config/environment.rb` используется `Time.zone_default = Time.find_zone!("UTC")` (процесс-широко), иначе отчёты/дашборд падают с 500.
+- **Статус:** ✅ реализовано (128 тестов, rubocop 0), команда запуска `rackup -p 3100 -o 127.0.0.1`.
+
 ## 2026-08-13 — Ревью новой 4-модельной архитектуры: автопересчёт цены и заморозка снимка
 
 - **Контекст:** после рефакторинга (Room/User/Stay/Report, JSONB payments/services/reviews) в `Stay` остался `before_validation :freeze_prices` с `on: :create` + `if: :price_settings_changed?` на одном методе — при регистрации колбэков второй вызов перекрывал первый, и цена вообще не считалась (все `total_price` = 0).

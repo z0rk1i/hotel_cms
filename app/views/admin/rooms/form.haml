@@ -1,0 +1,82 @@
+- if @room.errors.any?
+  .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
+    %strong
+      = russian_pluralize(@room.errors.count, "ошибка", "ошибки", "ошибок")
+      \:
+    = @room.errors.full_messages.to_sentence
+%form.space-y-6{:action => @form_action, :method => "post"}
+  = csrf_field
+  - unless @form_method == :post
+    %input{:name => "_method", :type => "hidden", :value => @form_method}/
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6.space-y-4
+    .grid.grid-cols-2.gap-4
+      %div
+        = field_label("room_number", "Номер")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :number), :name => "room[number]", :placeholder => "101", :type => "text", :value => @room.number}
+        = field_errors(@room, :number)
+      %div
+        = field_label("room_category", "Категория")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :category), :name => "room[category]", :placeholder => "Стандарт", :type => "text", :value => @room.category}
+        = field_errors(@room, :category)
+      %div
+        = field_label("room_floor", "Этаж")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :floor), :min => 1, :name => "room[floor]", :type => "number", :value => @room.floor}
+        = field_errors(@room, :floor)
+      %div
+        = field_label("room_capacity", "Вместимость")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :capacity), :min => 1, :name => "room[capacity]", :type => "number", :value => @room.capacity}
+        = field_errors(@room, :capacity)
+      %div
+        = field_label("room_size_sqm", "Площадь, м²")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :size_sqm), :min => 0, :name => "room[size_sqm]", :step => "0.5", :type => "number", :value => @room.size_sqm}
+        = field_errors(@room, :size_sqm)
+      %div
+        = field_label("room_price_per_night", "Цена за ночь, ₽")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :price_per_night), :min => 0, :name => "room[price_per_night]", :step => "100", :type => "number", :value => @room.price_per_night}
+        = field_errors(@room, :price_per_night)
+      %div
+        = field_label("room_weekend_multiplier", "Коэффициент на выходные")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :weekend_multiplier), :min => 1, :name => "room[weekend_multiplier]", :step => "0.1", :type => "number", :value => @room.weekend_multiplier}
+        = field_errors(@room, :weekend_multiplier)
+      %div
+        = field_label("room_min_nights", "Минимальное число ночей")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :min_nights), :min => 1, :name => "room[min_nights]", :type => "number", :value => @room.min_nights}
+        = field_errors(@room, :min_nights)
+      %div
+        = field_label("room_status", "Статус")
+        %select.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :status), :name => "room[status]"}
+          - %w[available maintenance cleaning].each do |status|
+            %option{:selected => (@room.status == status ? "" : nil), :value => status}= room_status_label(status)
+        = field_errors(@room, :status)
+      %div
+        = field_label("room_amenities", "Удобства")
+        %select.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:multiple => "", :name => "room[amenities][]"}
+          - offered_amenities.each do |amenity|
+            %option{:selected => (@room.amenities.include?(amenity) ? "" : nil), :value => amenity}= amenity
+        = field_errors(@room, :amenities)
+        %p.mt-1.text-xs.text-slate-400.dark:text-slate-500 Удерживайте Cmd/Ctrl для выбора нескольких
+      %div
+        = field_label("room_unavailable_from", "Недоступен с")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :unavailable_from), :name => "room[unavailable_from]", :type => "date", :value => @room.unavailable_from}
+        = field_errors(@room, :unavailable_from)
+      %div
+        = field_label("room_unavailable_until", "Недоступен по")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :unavailable_until), :name => "room[unavailable_until]", :type => "date", :value => @room.unavailable_until}
+        = field_errors(@room, :unavailable_until)
+    %div
+      = field_label("room_description", "Описание")
+      %textarea.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@room, :description), :name => "room[description]", :placeholder => "Описание номера…", :rows => 4}= @room.description
+      = field_errors(@room, :description)
+    %div
+      = field_label("room_photos", "Фотографии")
+      - if @room.photos.any?
+        .flex.flex-wrap.gap-3.mb-3
+          - @room.photos.each do |photo|
+            .relative
+              = image_tag photo.thumb_url, class: "h-24 w-32 object-cover rounded-lg border border-slate-200"
+              = button_to "×", admin_room_photo_path(@room, photo), method: :delete, class: "absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-sm leading-none flex items-center justify-center"
+      %input.block.w-full.text-sm.text-slate-600.dark:text-slate-300{:accept => "image/*", :class => "file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-600 hover:file:bg-indigo-100", :multiple => "", :name => "photos[]", :type => "file"}
+      = field_errors(@room, :photos)
+  .flex.items-center.gap-3
+    %button.bg-indigo-600.hover:bg-indigo-700.text-white.font-medium.px-5.py-2.rounded-lg{:type => "submit"}= @room.new_record? ? "Создать номер" : "Сохранить"
+    = link_to "Отмена", admin_rooms_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"

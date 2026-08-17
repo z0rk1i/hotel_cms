@@ -25,8 +25,8 @@ FactoryBot.define do
     end
 
     trait :with_photos do
-      after(:build) do |room|
-        room.photos.attach(io: StringIO.new("fake image"), filename: "photo.jpg", content_type: "image/jpeg")
+      after(:create) do |room|
+        room.photos.create!(filename: "photo_#{SecureRandom.hex(4)}.jpg", thumb_filename: "thumb.jpg", position: 1)
       end
     end
   end

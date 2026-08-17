@@ -1,0 +1,13 @@
+.max-w-6xl.mx-auto.px-6.py-12
+  = link_to "← На главную", root_path, class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+  %h1.mt-6.text-3xl.font-semibold.text-slate-900.dark:text-white Галерея
+  - rooms_with_photos = @rooms.select { |room| room.photos.any? }
+  - if rooms_with_photos.any?
+    .mt-8.grid.grid-cols-2.md:grid-cols-3.lg:grid-cols-4.gap-4
+      - rooms_with_photos.each do |room|
+        - room.photos.each do |photo|
+          %a{:href => room_path(room)}
+            = image_tag photo.thumb_url, alt: "Номер #{room.number}", class: "w-full h-48 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
+  - else
+    .mt-8.bg-slate-50.rounded-xl.py-16.text-center.text-slate-400.dark:text-slate-500.text-sm{:class => "dark:bg-slate-800/60"}
+      Фотографии появятся скоро

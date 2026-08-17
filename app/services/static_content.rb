@@ -1,5 +1,6 @@
 class StaticContent
-  PAGES_PATH = Rails.root.join("db/seeds/static")
+  require "pathname"
+  PAGES_PATH = Pathname.new(File.join(APP_ROOT, "db", "seeds", "static"))
 
   def self.all_pages
     @all_pages ||= YAML.safe_load_file(PAGES_PATH.join("pages.yml"), permitted_classes: [ Date ]).freeze

@@ -2,7 +2,7 @@ class Room < ApplicationRecord
   WEEKEND_DAYS = [ 5, 6 ].freeze
 
   has_many :stays, dependent: :restrict_with_error
-  has_many_attached :photos
+  has_many :photos, class_name: "RoomPhoto", dependent: :destroy
 
   validates :number, presence: true, uniqueness: true
   validates :category, presence: true

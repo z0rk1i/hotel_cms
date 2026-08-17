@@ -15,55 +15,22 @@ module AdminHelper
     end
   end
 
-  def field_label(form, field, text)
-    content_tag :label, text, for: form.field_id(field), class: "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+  def field_label(id, text, required: false)
+    suffix = required ? " *" : ""
+    %(<label for="#{h(id)}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">#{h(text)}#{suffix}</label>)
   end
 
-  def field_errors(form, field)
-    return if form.object.errors[field].blank?
+  def field_errors(object, field)
+    return "" if object.errors[field].blank?
 
-    content_tag :p, form.object.errors.full_messages_for(field).to_sentence, class: "mt-1 text-sm text-red-600 dark:text-red-400"
+    content_tag :p, object.errors.full_messages_for(field).to_sentence, class: "mt-1 text-sm text-red-600 dark:text-red-400"
   end
 
-  def text_input(form, field, **opts)
-    classes = input_classes(form, field)
-    form.text_field(field, **opts, class: classes)
-  end
-
-  def number_input(form, field, **opts)
-    classes = input_classes(form, field)
-    form.number_field(field, **opts, class: classes)
-  end
-
-  def date_input(form, field, **opts)
-    classes = input_classes(form, field)
-    form.date_field(field, **opts, class: classes)
-  end
-
-  def text_area(form, field, **opts)
-    classes = input_classes(form, field)
-    form.text_area(field, **opts, class: classes)
-  end
-
-  def select_input(form, field, collection, **opts)
-    classes = input_classes(form, field) + " bg-white dark:bg-slate-800"
-    form.select(field, collection, { include_blank: true }, **opts, class: classes)
-  end
-
-  def check_box_input(form, field, label)
-    content_tag :label, class: "flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer" do
-      form.check_box(field, class: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500") +
-        content_tag(:span, label)
-    end
-  end
-
-  private
-
-  def input_classes(form, field)
+  def input_class(object, field)
     classes = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none " \
               "bg-white dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 dark:border-slate-600 " \
               "focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-    classes += " border-red-400 dark:border-red-500" if form.object.errors[field].any?
+    classes += " border-red-400 dark:border-red-500" if object.errors[field].any?
     classes
   end
 end

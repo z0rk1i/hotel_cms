@@ -1,0 +1,51 @@
+- if @stay.errors.any?
+  .rounded-lg.bg-red-50.border.border-red-200.text-red-800.px-4.py-3.text-sm
+    %strong
+      = russian_pluralize(@stay.errors.count, "ошибка", "ошибки", "ошибок")
+      \:
+    = @stay.errors.full_messages.to_sentence
+%form.space-y-6{:action => @form_action, :method => "post"}
+  = csrf_field
+  - unless @form_method == :post
+    %input{:name => "_method", :type => "hidden", :value => @form_method}/
+  .bg-white.dark:bg-slate-800.rounded-xl.border.border-slate-200.dark:border-slate-700.p-6.space-y-4
+    .grid.grid-cols-2.gap-4
+      %div
+        = field_label("stay_user_id", "Гость")
+        %select.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :user_id), :name => "stay[user_id]"}
+          %option{:value => ""}— выберите гостя —
+          - User.guests.order(:full_name).each do |user|
+            %option{:selected => (@stay.user_id == user.id ? "" : nil), :value => user.id}= "#{user.full_name} — #{user.phone}"
+        = field_errors(@stay, :user_id)
+      %div
+        = field_label("stay_room_id", "Номер")
+        %select.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :room_id), :name => "stay[room_id]"}
+          %option{:value => ""}— выберите номер —
+          - Room.order(:number).each do |room|
+            %option{:selected => (@stay.room_id == room.id ? "" : nil), :value => room.id}= "#{room.number} · #{room.category} — #{room.capacity} чел."
+        = field_errors(@stay, :room_id)
+      %div
+        = field_label("stay_check_in", "Дата заезда")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :check_in), :name => "stay[check_in]", :type => "date", :value => @stay.check_in}
+        = field_errors(@stay, :check_in)
+      %div
+        = field_label("stay_check_out", "Дата выезда")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :check_out), :name => "stay[check_out]", :type => "date", :value => @stay.check_out}
+        = field_errors(@stay, :check_out)
+      %div
+        = field_label("stay_guests_count", "Количество гостей")
+        %input.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :guests_count), :min => 1, :name => "stay[guests_count]", :type => "number", :value => @stay.guests_count}
+        = field_errors(@stay, :guests_count)
+      %div
+        = field_label("stay_status", "Статус")
+        %select.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :status), :name => "stay[status]"}
+          - %w[pending confirmed checked_in checked_out cancelled].each do |status|
+            %option{:selected => (@stay.status == status ? "" : nil), :value => status}= stay_status_label(status)
+        = field_errors(@stay, :status)
+    %div
+      = field_label("stay_notes", "Заметки")
+      %textarea.w-full.rounded-lg.border.border-slate-300.dark:border-slate-600.px-3.py-2.text-sm.bg-white.dark:bg-slate-800{:class => input_class(@stay, :notes), :name => "stay[notes]", :placeholder => "Пожелания, особые условия…", :rows => 3}= @stay.notes
+      = field_errors(@stay, :notes)
+  .flex.items-center.gap-3
+    %button.bg-indigo-600.hover:bg-indigo-700.text-white.font-medium.px-5.py-2.rounded-lg{:type => "submit"}= @stay.new_record? ? "Создать бронь" : "Сохранить"
+    = link_to "Отмена", admin_stays_path, class: "text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 px-3 py-2"
