@@ -24,7 +24,7 @@ gem "mail", "~> 2.8"
 gem "i18n"
 
 # Image thumbnails
-gem "mini_magick", "~> 4.12"
+gem "mini_magick", "~> 5.3"
 
 # CSS build tool
 gem "tailwindcss-ruby", "~> 4.0"

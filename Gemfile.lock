@@ -80,7 +80,8 @@ GEM
       net-imap
       net-pop
       net-smtp
-    mini_magick (4.13.2)
+    mini_magick (5.3.3)
+      logger
     mini_mime (1.1.5)
     minitest (6.0.6)
       drb (~> 2.0)
@@ -228,7 +229,7 @@ DEPENDENCIES
   i18n
   letter_opener
   mail (~> 2.8)
-  mini_magick (~> 4.12)
+  mini_magick (~> 5.3)
   pg (~> 1.1)
   puma (>= 6.0)
   rack-protection (~> 4.1)
