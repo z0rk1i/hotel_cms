@@ -54,7 +54,8 @@ GEM
     ffi (1.17.4-x86_64-darwin)
     ffi (1.17.4-x86_64-linux-gnu)
     ffi (1.17.4-x86_64-linux-musl)
-    haml (6.4.0)
+    haml (7.3.1)
+      prism (>= 1.1.0)
       temple (>= 0.8.2)
       thor
       tilt
@@ -189,9 +190,9 @@ GEM
     tailwindcss-ruby (4.3.3-x86_64-darwin)
     tailwindcss-ruby (4.3.3-x86_64-linux-gnu)
     tailwindcss-ruby (4.3.3-x86_64-linux-musl)
-    temple (0.10.6)
+    temple (0.10.7)
     thor (1.5.0)
-    tilt (2.8.0)
+    tilt (2.9.0)
     timeout (0.6.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -224,7 +225,7 @@ DEPENDENCIES
   dotenv
   factory_bot
   faker
-  haml (~> 6.0)
+  haml (~> 7.3)
   i18n
   letter_opener
   mail (~> 2.8)
