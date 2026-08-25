@@ -7,7 +7,7 @@ gem "puma", ">= 6.0"
 gem "rake"
 
 # Templates
-gem "haml", "~> 6.0"
+gem "haml", "~> 7.4"
 
 # Data
 gem "activerecord", "~> 8.1"
