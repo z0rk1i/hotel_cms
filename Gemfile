@@ -11,7 +11,7 @@ gem "haml", "~> 6.0"
 
 # Data
 gem "activerecord", "~> 8.1"
-gem "pg", "~> 1.1"
+gem "pg", "~> 1.7"
 
 # Auth / security
 gem "bcrypt", "~> 3.1"
