@@ -34,7 +34,7 @@ gem "csv"
 
 group :development, :test do
   gem "rspec", "~> 3.13"
-  gem "rack-test", "~> 2.2"
+  gem "rack-test", "~> 2.3"
   gem "factory_bot"
   gem "faker"
   gem "database_cleaner-active_record"
